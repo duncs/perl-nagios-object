@@ -1,0 +1,29 @@
+--- #YAML:1.0
+name: Nagios-Object
+version: 0.01
+license: gpl
+distribution_type: module
+requires:
+  perl: 5.6.0
+recommends: {}
+build_requires:
+  Test::Exception: 0
+  Test::More: 0
+conflicts: {}
+provides:
+  Nagios::Config:
+    file: lib/Nagios/Config.pm
+    version: ~
+  Nagios::Config::File:
+    file: lib/Nagios/Config/File.pm
+    version: ~
+  Nagios::Object:
+    file: lib/Nagios/Object.pm
+    version: ~
+  Nagios::Object::Config:
+    file: lib/Nagios/Object/Config.pm
+    version: ~
+  Nagios::StatusLog:
+    file: lib/Nagios/StatusLog.pm
+    version: ~
+generated_by: Module::Build version 0.18
