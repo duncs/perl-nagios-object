@@ -3,7 +3,7 @@
 # Nagios::Object                                                          #
 # Written by Albert Tobey <tobeya@cpan.org>                               #
 # Copyright 2003, Albert P Tobey                                          #
-# CVS Revision $Revision: 1.9 $                                           #
+# CVS Revision $Revision: 1.10 $                                           #
 #                                                                         #
 # This program is free software; you can redistribute it and/or modify it #
 # under the terms of the GNU General Public License as published by the   #
@@ -162,7 +162,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         file                          => ['filename',                6  ]
     },
     ContactGroup => {
-	    use                           => ['Nagios::ContractGroup',   8  ],
+	    use                           => ['Nagios::ContactGroup',    8  ],
         contactgroup_name             => ['STRING',                  8  ],
         alias                         => ['STRING',                  8  ],
         members	                      => [['Nagios::Contact'],       8  ],

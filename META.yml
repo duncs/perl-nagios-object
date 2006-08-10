@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: Nagios-Object
-version: 0.07
+version: 0.07a
 author: ~
 abstract: ~
 license: gpl
