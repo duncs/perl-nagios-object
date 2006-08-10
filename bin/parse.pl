@@ -7,9 +7,9 @@ use Getopt::Std;
 use Benchmark qw(:all);
 use Data::Dumper;
 
-our( $opt_n, $opt_o, $opt_v, $opt_b, $opt_d, $opt_f );
+our( $opt_n, $opt_o, $opt_v, $opt_b, $opt_d, $opt_f, $opt_r );
 getopt( 'n:o:v:' );
-getopt( 'bdf' );
+getopt( 'bdfr' );
 
 if ( $opt_f ) {
     Nagios::Config->fast_mode(1);
@@ -29,6 +29,11 @@ if ( $opt_n ) {
 if ( $opt_o ) {
     $obj = Nagios::Object::Config->new( Version => $opt_v );
     $obj->parse( $opt_o );
+
+    if ( $opt_r ) {
+        $obj->resolve_objects;
+        $obj->register_objects;
+    }
 }
 
 if ( $opt_d ) {

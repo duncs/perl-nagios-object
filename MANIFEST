@@ -2,6 +2,7 @@ t/00object.t
 t/05object_config.t
 t/10config_file.t
 t/50config.t
+t/51config-wildcards.t
 t/99config-extend.t
 t/nagios.cfg
 t/status.log
@@ -17,6 +18,7 @@ t/sample-config-minimal.cfg
 t/98nagios-sample-config.t
 t/jfrancois.pl
 t/jfrancois.cfg
+t/v2_wildcards.cfg
 t/v2_config/cgi.cfg
 t/v2_config/hostextinfo.cfg
 t/v2_config/contacts.cfg
@@ -41,6 +43,7 @@ ChangeLog
 bin/config_status_demo.pl
 bin/parse.pl
 bin/decode_flags.pl
+bin/statusdat_demo.pl
 lib/Nagios/Config/File.pm
 lib/Nagios/Object/Config.pm
 lib/Nagios/Object.pm

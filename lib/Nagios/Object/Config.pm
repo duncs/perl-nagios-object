@@ -42,15 +42,25 @@ Create a new configuration object.  If Version is not specified, the already wea
 validation will be weakened further to allow mixing of Nagios 1.0 and 2.0 configurations.
 For now, the minor numbers of Version are ignored.  Do not specify any letters as in '2.0a1'.
 
+To enable regular expression matching, use either the "regexp_matching" or "true_regexp_matching"
+arguments to new().    See enable_regexp_matching() and enable_true_regexp_matching() below.
+
  my $objects = Nagios::Object::Config->new();
  my $objects = Nagios::Object::Config->new( Version => 1.2 );
- my $objects = Nagios::Object::Config->new( Version => 2.0 );
+
+ my $objects = Nagios::Object::Config->new(
+                    Version => 2.0,
+                    regexp_matching => 1,
+                    true_regexp_matching => 2
+ );
 
 =cut
 
 sub new {
     my $class = ref($_[0]) ? ref(shift) : shift;
     my $self = {
+        regexp_matching      => undef,
+        true_regexp_matching => undef,
         config_files    => [],
         host_list       => [],
         contact_list    => [],
@@ -97,6 +107,14 @@ sub new {
         else {
             $self->{nagios_version} = undef;
         }
+
+        if ( $args{regexp_matching} ) {
+            $self->{_regexp_matching_enabled} = 1;
+        }
+        elsif ( $args{true_regexp_matching} ) {
+            $self->{_regexp_matching_enabled} = 1;
+            $self->{_true_regexp_matching_enabled} = 1;
+        }
     }
     else {
         croak "Single argument form of this constructor is not supported.\n",
@@ -119,10 +137,76 @@ Parse a nagios object configuration file into memory.  Although Nagios::Objects 
 
 =cut
 
+=item COMMENTED OUT NEW PARSER WORK IN PROGRESS
+
+# this is the new one I'm working on to improve speed and flexibility
+sub parse2 {
+    my( $self, $filename ) = @_;
+    croak "cannot read file '$filename': $!" unless ( $filename && -r $filename );
+
+    my $object_re = qr/
+        # the type gets captured into $1
+        define \s* (\w+) \s*
+        # capture all of the text between the brackets into $2
+        {( .*?
+        # match the last bracket only if followed by another definition
+        )} (?= \s* define \s+ \w+ \s* {)
+        # capture extra text into $3 for further processing
+        (.*)$
+    /sx;
+
+    my $attr_line_re = qr/
+        # attribute name => $1
+        ^\s* (\w+) \s+
+        # non-capture grouping
+        (?:
+            # capture value into $2
+            # |        make sure semicolon is not escaped
+            # |        |            capture comment into $3
+            (.+?) \s* (?<!\\)(; \s* .+?)
+            |
+            # capture value into $4 when there is no comment on the same line
+            (.+)
+        )$ # EOL
+    /x;
+
+    $Nagios::Object::pre_link = 1;
+
+    # $file_idx is for tracking source files so modified
+    # configurations can be written out to the same files
+    my $file_idx = push( @{$self->{config_files}}, $filename ) - 1;
+
+	my $fh = gensym();
+	open( $fh, "<$filename" )
+	    || croak "could not open $filename for reading: $!";
+
+    my( $entry, $type, $data ) = ( '', '', '' );
+    while ( my $line = <$fh> ) {
+        $entry .= $line;
+        if ( $entry =~ /$entry_re/ ) {
+            ($type, $data, $entry) = ($1, $2, $3);
+
+            my( %object, %comments, $key ) = ();
+            foreach ( split /[\r\n]+/, $data ) {
+                if ( $line =~ /$line_re/ ) {
+                    $key = $1;
+                    # see the definition of $line_re above to understand this
+                    $object{$1} = defined($2) ? $2 : $4;
+                    $comments{$1} = $3 if defined($3);
+                }
+                elsif ( $line =~ /^\s*;\s*(.*)$/ ) {
+                    $comments{$key} = $1;
+                }
+            }
+        }
+    }
+}
+
+=cut
+
 # TODO: add checks for undefined values where prohibited in %nagios_setup
 sub parse {
     my( $self, $filename ) = @_;
-    croak "cannot read file '$filename': $!" unless ( $filename && -r $filename );
 
     $Nagios::Object::pre_link = 1;
 
@@ -165,7 +249,7 @@ sub parse {
             next;
 	    }
 	    # beginning of object definition
-	    elsif ( $line =~ /define\s+(\w+) ?{(.*)$/ ) {
+	    elsif ( $line =~ /define\s+(\w+)\s*{?(.*)$/ ) {
 	        $type = $1;
 	        if ( $in_definition ) {
 	            croak "Error: Unexpected start of object definition in file '$filename' on line $line_no.  Make sure you close preceding objects before starting a new one.\n";
@@ -237,11 +321,39 @@ sub find_object {
     my( $self, $name, $type ) = @_;
     my $searchlist = $self->all_objects_for_type( $type );
     foreach my $obj ( @$searchlist ) {
-        if ( $obj->name eq $name ) {
+        if ( $obj->name && $obj->name eq $name ) {
             #printf "obj name %s, name searched %s\n", $obj->name, $name;
             return $obj;
         }
     }
+}
+
+=item find_objects_by_regex()
+
+Search through the list of objects' names and return a list of matches.
+The first argument will be evaluated as a regular expression.   The second
+argument is required and specifies what kind of object to search for.
+
+The regular expressions are created by translating the "*" to ".*?" and "?"
+to ".".   For now (v0.9), this code completely ignores Nagios's use_regexp_matching
+and use_true_regexp_matching and does full RE matching all the time.
+
+ my @objects = $parser->find_objects_by_regex( "switch_*", "Nagios::Host" );
+ my @objects = $parser->find_objects_by_regex( "server0?", "Nagios::Host" );
+
+=cut
+
+sub find_objects_by_regex {
+    my( $self, $re, $type ) = @_;
+    my @retval;
+    my $searchlist = $self->all_objects_for_type( $type );
+    foreach my $obj ( @$searchlist ) {
+        my $objname = $obj->name;
+        if ( $objname && $objname =~ /$re/ ) {
+            push @retval, $obj;
+        }
+    }
+    return @retval;
 }
 
 =item all_objects_for_type()
@@ -312,8 +424,21 @@ sub find_attribute {
     }
 
     foreach my $type ( @to_search ) {
-        foreach my $candidate ( @{$self->{"${type}_list"}} ) {
-            return $candidate if ( $candidate->name eq $what );
+        foreach my $obj ( @{$self->{"${type}_list"}} ) {
+            if ( $obj->has_attribute($attribute) && $obj->$attribute() eq $what ) {
+                return $obj;
+            }
+            #if ( $obj->has_attribute($attribute) ) {
+            #    my $match_attr = $obj->$attribute();
+            #    if ( ref $match_attr && $match_attr->name eq $what ) {
+            #        warn "Woot! $obj";
+            #        return $obj;
+            #    }
+            #    elsif ( $match_attr eq $what ) {
+            #        return $obj;
+            #    }
+            #}
+            #return $obj if ( $obj->name eq $what );
         }
     }
 }
@@ -336,7 +461,8 @@ sub resolve {
     $object->resolved(1);
 
     if ( $object->has_attribute('use') && $object->use ) {
-        my $template = $self->find_attribute( 'use', $object->use, ref $object );
+        my $template = $self->find_object( $object->use, ref $object );
+        #my $template = $self->find_attribute( 'use', $object->use, ref $object );
         $object->_set( 'use', $template );
     }
 
@@ -373,40 +499,72 @@ sub register {
         next if ( !defined $object->$attribute() );
 
         my $attr_type = $object->attribute_type($attribute);
-        if ( $attr_type =~ /^Nagios::(.*)$/ ) {
-            if ( $object->attribute_is_list($attribute) ) {
-                my @to_find = split /\s*,\s*|\s+/, $object->$attribute();
-                my @found = ();
+        
+        # all done unless the attribute is supposed to point to another object
+        next unless $attr_type =~ /^Nagios::.*$/;
 
-                # handle splat '*' matching of all objects of a type
-                if ( @to_find == 1 && $to_find[0] eq '*' ) {
-                    @found = @{ $self->all_objects_for_type($attr_type); };
-                    if ( !@found ) {
-                        confess "Wildcard matching failed.  Have you defined any $attr_type objects?";
-                    }
-                }
-                # this is the normal case - match each object
-                else {
-                    foreach my $item ( @to_find ) {
-                        my $ref = $self->find_attribute( $attribute, $item, $attr_type );
-                        push( @found, $ref ) if ( $ref );
-                    }
-
-                    if ( @to_find != @found ) {
-                        confess "Could not link all elements (",$object->$attribute(),") for attribute '$attribute'.  Check your configuration file for referenced objects that are not defined.\n"
-                    }
-                }
-                $object->_set( $attribute, \@found );
-            }
-            else {
-                my $ref = $self->find_attribute( $attribute, $object->$attribute(), $attr_type );
-                $object->_set( $attribute, $ref ) if ( $ref );
-            }
+        # deal with lists types
+        if ( $object->attribute_is_list($attribute) ) {
+            # pushed out to subroutine to keep things readable
+            my @refs = $self->register_object_list( $object, $attribute, $attr_type );
+            $object->_set( $attribute, \@refs );
 
         }
+        else {
+            my $ref = $self->find_object( $object->$attribute(), $attr_type );
+            $object->_set( $attribute, $ref ) if ( $ref );
+        }
+
     }
 
     $object->registered(1);
+}
+
+sub register_object_list {
+    my( $self, $object, $attribute, $attr_type ) = @_;
+
+    # split on comma surrounded by whitespace or by just whitespace
+    my @to_find = split /\s*,\s*|\s+/, $object->$attribute();
+    my @found = ();
+
+    # handle splat '*' matching of all objects of a type (optimization)
+    if ( @to_find == 1 && $to_find[0] eq '*' ) {
+        @found = @{ $self->all_objects_for_type($attr_type); };
+        confess "Wildcard matching failed.  Have you defined any $attr_type objects?"
+            unless ( @found > 0 );
+        return @found;
+    }
+    # now back to our regularly scheduled search ...
+
+    my %wildcard_finds = ();
+
+    foreach my $item ( @to_find ) {
+        # no regular expression matching if both flags are false OR
+        # only "regexp_matching" is enabled and the string does not contain ? or *
+        if ( (!$self->{_regexp_matching_enabled} && !$self->{_true_regexp_matching_enabled})
+          || (!$self->{_true_regexp_matching_enabled} && $item !~ /[\*\?]/) ) {
+            my $ref = $self->find_object( $item, $attr_type );
+            push( @found, $ref ) if ( $ref );
+        }
+        # otherwise, use RE's (I bet most people have this turned on)
+        else {
+            my $re = $item;
+            $re =~ s/(<=\.)\*/.*?/g; # convert "*" to ".*?"
+            $re =~ s/\?/./g;         # convert "?" to "."
+            # when true_regexp... isn't on, the RE is anchored
+            if ( !$self->{_true_regexp_matching_enabled} ) {
+                $re = "^$re\$"; # anchor the RE for Nagios "light" RE's
+            }
+
+            my @ret = $self->find_objects_by_regex( $re, $attr_type );
+
+            croak "Wildcard match failed.   The generated regular expression was '$re'.  Maybe you meant to enable_true_regexp_matching?"
+                unless @ret > 0;
+
+            push @found, @ret;
+        }
+    }
+    return @found;
 }
 
 =item resolve_objects()
@@ -448,6 +606,41 @@ sub register_objects {
     $Nagios::Object::pre_link = undef;
     return 1;
 }
+
+=item enable_regexp_matching()/disable_regexp_matching()
+
+This correlates to the "use_regexp_matching" option in nagios.cfg.
+When this option is enabled, Nagios::Object::Config will translate "*" to ".*?" and "?" to "." and
+evaluate the result as a perl RE, anchored at both ends for any value that can point to multiple
+other objects (^ and $ are added to either end).
+
+ $parser->enable_regexp_matching;
+ $parser->disable_regexp_matching;
+
+=cut
+
+sub enable_regexp_matching { shift->{_regexp_matching_enabled} = 1 }
+sub disable_regexp_matching { shift->{_regexp_matching_enabled} = undef }
+
+=item enable_true_regexp_matching()/disable_true_regexp_matching()
+
+This correlates to the "use_true_regexp_matching" option in nagios.cfg.   This is very similar to
+the enable_regexp_matching() option, but matches more data and allows more powerful RE syntax.
+These modules will allow you the full power of perl RE's - this is probably more than is available
+in Nagios, so don't blame me if something works here but not in Nagios (it's usually the other way
+around anyways).
+
+The generated RE's have the same translation as above, but do not have the anchors to ^ and $.
+
+This option always supercedes enable_regexp_matching.
+
+ $parser->enable_true_regexp_matching;
+ $parser->disable_true_regexp_matching;
+
+=cut
+
+sub enable_true_regexp_matching { shift->{_true_regexp_matching_enabled} = 1 }
+sub disable_true_regexp_matching { shift->{_true_regexp_matching_enabled} = undef }
 
 =item list_hosts(), list_hostgroups(), etc.
 

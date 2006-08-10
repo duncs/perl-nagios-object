@@ -34,4 +34,9 @@
 0.07d - fixed some bugs reported via email with tests and parsing
 
 0.08 should be coming soon, since I've got a good start on the Nagios::Test:: modules I'm forcing myself to write for it.   Once those modules are functioning, I'll be able to do some real testing on the performance of various pieces and start to replace those pesky linear (or worse) searches.  
+	... fill this in from CVS later
+
+0.09 - added support for Nagios 2.x status.dat files in StatusLog.pm
+	   - applied patch from Székelyi Szabolcs that fixed a bunch of bugs
+	   - added wildcard/regular expression support
 

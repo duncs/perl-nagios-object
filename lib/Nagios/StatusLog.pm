@@ -20,16 +20,27 @@ use Carp;
 use strict qw( subs vars );
 use warnings;
 use Symbol;
-our $Log_Cache_Enabled = 1;
 
-# for an explanation of what happens in this block, look at Nagios::Object
+# this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
+    # first block of items is from Nagios v1, second is new stuff in Nagios v2
     my %_tags = (
-        Service => [qw(host_name description status current_attempt state_type last_check next_check check_type checks_enabled accept_passive_service_checks event_handler_enabled last_state_change problem_has_been_acknowledged last_hard_state time_ok time_unknown time_warning time_critical last_notification current_notification_number notifications_enabled latency execution_time flap_detection_enabled is_flapping percent_state_change scheduled_downtime_depth failure_prediction_enabled process_performance_data obsess_over_service plugin_output)],
+        Service => [qw(
+            host_name description status current_attempt state_type last_check next_check check_type checks_enabled accept_passive_service_checks event_handler_enabled last_state_change problem_has_been_acknowledged last_hard_state time_ok time_unknown time_warning time_critical last_notification current_notification_number notifications_enabled latency execution_time flap_detection_enabled is_flapping percent_state_change scheduled_downtime_depth failure_prediction_enabled process_performance_data obsess_over_service plugin_output
+            service_description modified_attributes check_command event_handler has_been_checked should_be_scheduled check_execution_time check_latency current_state max_attempts last_hard_state_change last_time_ok last_time_warning last_time_unknown last_time_critical performance_data next_notification no_more_notifications active_checks_enabled passive_checks_enabled acknowledgement_type last_update 
+        )],
 
-        Host => [qw( host_name status last_check last_state_change problem_has_been_acknowledged time_up time_down time_unreachable last_notification current_notification_number notifications_enabled event_handler_enabled checks_enabled flap_detection_enabled is_flapping percent_state_change scheduled_downtime_depth failure_prediction_enabled process_performance_data plugin_output )],
+        Host => [qw(
+            host_name status last_check last_state_change problem_has_been_acknowledged time_up time_down time_unreachable last_notification current_notification_number notifications_enabled event_handler_enabled checks_enabled flap_detection_enabled is_flapping percent_state_change scheduled_downtime_depth failure_prediction_enabled process_performance_data plugin_output
+            modified_attributes check_command event_handler has_been_checked should_be_scheduled check_execution_time check_latency current_state last_hard_state check_type performance_data next_check current_attempt max_attempts state_type last_hard_state_change last_time_up last_time_down last_time_unreachable next_notification no_more_notifications acknowledgement_type active_checks_enabled passive_checks_enabled obsess_over_host last_update
+        )],
 
-        Program => [qw( program_start nagios_pid daemon_mode last_command_check last_log_rotation enable_notifications execute_service_checks accept_passive_service_checks enable_event_handlers obsess_over_services enable_flap_detection enable_failure_prediction process_performance_data )]
+        Program => [qw(
+            program_start nagios_pid daemon_mode last_command_check last_log_rotation enable_notifications execute_service_checks accept_passive_service_checks enable_event_handlers obsess_over_services enable_flap_detection enable_failure_prediction process_performance_data
+            modified_host_attributes modified_service_attributes active_service_checks_enabled passive_service_checks_enabled active_host_checks_enabled passive_host_checks_enabled obsess_over_hosts check_service_freshness check_host_freshness global_host_event_handler global_service_event_handler
+        )],
+
+        Info => [qw( created version )]
     );
 
     GENESIS: {
@@ -59,13 +70,23 @@ Nagios::StatusLog, Nagios::(Service|Host|Program)::Status
 =head1 DESCRIPTION
 
 Reads the Nagios status log and returns ::Status objects that can
-be used to get status information about a host.
+be used to get status information about a host.   For Nagios version 2.x logs,
+pass in the Version => 2.0 parameter to new().
 
- my $log = Nagios::StatusLog->new( "/var/opt/nagios/status.log" );
+ my $log = Nagios::StatusLog->new(
+                Filename => "/var/opt/nagios/status.log",
+                Version  => 1.0
+           );
  $localhost = $log->host( "localhost" );
  print "status of localhost is now ",$localhost->status(),"\n";
  $log->update();
  print "status of localhost is now ",$localhost->status(),"\n";
+
+ # for Nagios v2.0
+ my $log = Nagios::StatusLog->new(
+                Filename => "/var/opt/nagios/status.dat",
+                Version  => 2.0
+           );
 
 =head1 METHODS
 
@@ -81,15 +102,26 @@ be initialized for you (using $self->update()).
 
 sub new {
     my $type = shift;
-    my $logfile = $_[0];
-    if ( @_ == 2 && $_[0] =~ /^filename$/i ) {
-       $logfile = $_[1];
+    my $logfile = $_[0] if ( @_ == 1 );
+    my $version = 1;
+    
+    if ( @_ % 2 == 0 ) {
+        my %args = @_;
+        while ( my($param,$value) = each %args ) {
+            if ( $param =~ /^filename$/i ) {
+                $logfile = $value;
+            }
+            elsif ( $param =~ /^version$/i ) {
+                $version = $value;
+            }
+        }
     }
-        
+
     if ( !defined($logfile) || !-r $logfile ) {
         die "could not open $logfile for reading: $!";
     }
-    my $self = bless( { LOGFILE => $logfile }, $type );
+
+    my $self = bless( { LOGFILE => $logfile, VERSION => $version }, $type );
     $self->update();
     return $self;
 }
@@ -101,7 +133,15 @@ Updates the internal data structures from the logfile.
 
 =cut
 
-sub update ($) {
+sub update {
+    my $self = shift;
+    if ( $self->{VERSION} >= 2 ) {
+        return $self->update_v2( @_ );
+    }
+    return $self->update_v1( @_ );
+}
+
+sub update_v1 ($) {
     my $self = shift;
 
     # break the line down into a hash, return a reference
@@ -173,6 +213,88 @@ sub update ($) {
     1;
 }
 
+sub update_v2 ($) {
+    my $self = shift;
+
+    # be compatible with StatusLog which makes sure that references
+    # held in client code remain valid during update (also prevents
+    # some memory leaks)
+    sub _copy {
+        my( $from, $to ) = @_; 
+        foreach my $key ( keys %$from ) {
+            $to->{$key} = $from->{$key};
+        }
+    }
+
+    my %handlers = (
+        host => sub {
+            my $item = shift;
+            my $host = $item->{host_name};
+            if ( !exists $self->{HOST}{$host} ) {
+                $self->{HOST}{$host} = {};
+            }
+            _copy( $item, $self->{HOST}{$host} );
+        },
+        service => sub {
+            my $item = shift;
+            my $host = $item->{host_name};
+            my $svc  = $item->{service_description};
+
+            if ( !exists $self->{SERVICE}{$host}{$svc} ) {
+                $self->{SERVICE}{$host}{$svc} = {};
+            }
+            _copy( $item, $self->{SERVICE}{$host}{$svc} );
+        },
+        info => sub {
+            if ( !exists $self->{INFO} ) {
+                $self->{INFO} = {};
+            }
+            _copy( shift, $self->{INFO} );
+        },
+        program => sub { 
+            if ( !exists $self->{PROGRAM} ) {
+                $self->{PROGRAM} = {};
+            }
+            _copy( shift, $self->{PROGRAM} );
+        }
+
+    );
+
+    my $log_fh = gensym;
+    open( $log_fh, "<$self->{LOGFILE}" )
+        || croak "could not open file $self->{LOGFILE} for reading: $!";
+
+    # change the first line of the RE to this:
+    # (info|program|host|service) \s* {(
+    # to make it a bit more careful, but it has a measurable cost on runtime
+    my $entry_re = qr/
+        # capture the type into $1
+        (\w+) \s*
+            # capture all of the text between the brackets into $2
+            {( .*? )}
+            # match the last bracket only if followed by another definition
+            (?= \s* (?:info|program|host|service) \s* { )
+        # capture remaining text (1-2 lines) into $3 for re-processing
+        (.*)$
+    /xs;
+
+    my $entry = '';
+    while ( my $line = <$log_fh> ) {
+        next if ( $line =~ /^\s*#/ );
+        $entry .= $line;
+        if ( $entry =~ m/$entry_re/ ) {
+            ( my $type, my $text, $entry ) = ( $1, $2, $3 );
+            $text =~ s/[\r\n]+\s*/\n/g; # clean up whitespace and newlines
+            my %item = map { split /\s*=\s*/, $_, 2 } split /\n/, $text;
+            $handlers{$type}->( \%item );
+        }
+    }
+
+    close( $log_fh );
+
+    1;
+}
+
 sub list_tags {
     my $type = ref($_[0]) ? ref($_[0]) : $_[0];
     my $listref = ${"$type\::tags"};
@@ -185,7 +307,7 @@ Returns a Nagios::Service::Status object.  Input arguments can be a host_name an
  my $svc_stat = $log->service( "localhost", "SSH" );
  my $svc_stat = $log->service( $localhost_ssh_svc_object );
 
-Nagios::Service::Status has the following accessor methods:
+Nagios::Service::Status has the following accessor methods (For V1):
  host_name
  description
  status 
@@ -273,7 +395,7 @@ Returns an array of services descriptions for a given host.
 
 sub list_services_on_host {
     my( $self, $host ) = @_;
-    if ( ref $host =~ /^Nagios::/ && $host->can('host_name') ) {
+    if ( ref $host && UNIVERSAL::can( $host, 'host_name') ) {
         $host = $host->host_name;
     }
     return keys %{$self->{SERVICE}{$host}};
@@ -286,7 +408,7 @@ Returns a Nagios::Host::Status object.  Input can be a simple host_name, a Nagio
  my $hst_stat = $log->host( $host_object );
  my $hst_stat = $log->host( $svc_object );
 
-Nagios::Host::Status has the following accessor methods:
+Nagios::Host::Status has the following accessor methods (for V1):
  host_name
  status
  last_check
@@ -338,7 +460,7 @@ sub list_hosts { keys %{$_[0]->{HOST}}; }
 Returns a Nagios::Program::Status object. No arguments.
  my $prog_st = $log->program;
 
-Nagios::Program::Status has the following accessor methods:
+Nagios::Program::Status has the following accessor methods (For V1):
  program_start
  nagios_pid
  daemon_mode

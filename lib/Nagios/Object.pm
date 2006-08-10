@@ -62,6 +62,8 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         host_name                     => [['Nagios::Host'],          10 ],
         hostgroup_name                => [['Nagios::HostGroup'],     10 ],
         servicegroup_name             => [['Nagios::ServiceGroup'],  16 ],
+        hostgroups                    => [['Nagios::HostGroup'],     18 ],
+        servicegroups                 => [['Nagios::ServiceGroup'],  18 ],
         is_volatile                   => ['BINARY',                  8  ],
         check_command                 => ['Nagios::Command',         8  ],
         max_check_attempts            => ['INTEGER',                 8  ],
@@ -109,6 +111,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
 	    alias                         => ['STRING',                  8  ],
 	    address                       => ['STRING',                  8  ],
 	    parents                       => [['Nagios::Host'],          8  ],
+        hostgroups                    => [['Nagios::HostGroup'],     18 ],
 	    check_command                 => ['STRING',                  8  ],
 	    max_check_attempts            => ['INTEGER',                 8  ],
 	    checks_enabled                => ['BINARY',                  8  ],
@@ -265,6 +268,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     HostExtInfo => {
         use                           => ['HostExtInfo',             18 ],
         host_name                     => ['Nagios::Host',            18 ],
+        hostgroup_name                => [['Nagios::HostGroup'],     18 ],
         notes                         => ['STRING',                  16 ],
         notes_url                     => ['STRING',                  16 ],
         icon_image                    => ['STRING',                  16 ],
@@ -293,6 +297,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     }
 );
 
+
 # create a package for every key in %nagios_setup
 foreach ( keys(%nagios_setup) ) {
     create_object_and_methods( $_ );
@@ -318,6 +323,9 @@ This module contains the code for creating perl objects to represent any of the 
  Nagios::HostEscalation
  Nagios::HostGroupEscalation
  Nagios::ServiceDependency
+ -- next two are for status.dat in Nagios 2.x
+ Nagios::Info
+ Nagios::Program
 
 =head1 EXAMPLE
 
@@ -884,12 +892,22 @@ GENESIS: {
 
             # create get method
             *{"$pkg\::$method"} = sub {
-                return $_[0]->{$method}->() if defined $_[0]->{$method};
+                return $_[0]->{$method}->() if ref $_[0]->{$method} eq 'CODE';
                 if ( ref($_[0]->{use}) eq 'CODE' ) {
                     my $tmpl = $_[0]->{use}->();
                     return $tmpl->{$method}->() if $tmpl->{$method};
                 }
             };# end of anonymous "get" subroutine
+
+            # create get method with templates recursively applied
+            *{"$pkg\::resolve_$method"} = sub {
+                return $_[0]->$method if defined $_[0]->{$method};
+                if ( $_[0]->use ) {
+                    my $tmpl = $_[0]->use;
+                    my $methodname = "resolve_$method";
+                    return $tmpl->$methodname;
+                }
+            };
         }
     }
 }
