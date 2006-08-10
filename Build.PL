@@ -4,7 +4,7 @@ use Module::Build;
 
 my $build = Module::Build->new(
     dist_name => 'Nagios-Object',
-    dist_version => "0.07b",
+    dist_version => "0.07c",
     license => 'gpl',
     requires => {
         perl => '5.6.0'

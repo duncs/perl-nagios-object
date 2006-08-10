@@ -30,4 +30,5 @@
 0.07b - fixed minor bugs reported via email or rt.cpan.org
        new() named parameter support was missing from StatusLog.pm
        config_status_demo.pl needed it's use of new() constructors updated
+0.07c - added missing hostgroup_name to service dependencies
 

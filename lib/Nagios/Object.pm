@@ -3,7 +3,7 @@
 # Nagios::Object                                                          #
 # Written by Albert Tobey <tobeya@cpan.org>                               #
 # Copyright 2003, Albert P Tobey                                          #
-# CVS Revision $Revision: 1.10 $                                           #
+# CVS Revision $Revision: 1.11 $                                           #
 #                                                                         #
 # This program is free software; you can redistribute it and/or modify it #
 # under the terms of the GNU General Public License as published by the   #
@@ -196,6 +196,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     ServiceEscalation => {
 	    use                           => ['Nagios::ServiceEscalation',8 ],
 		host_name                     => ['Nagios::Host',            8  ],
+        hostgroup_name                => ['Nagios::HostGroup',       8  ],
 		service_description           => ['Nagios::Service',         8  ],
         contact_groups                => [['Nagios::ContactGroup'],  8  ],
         first_notification            => ['INTEGER',                 8  ],
