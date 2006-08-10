@@ -29,3 +29,9 @@ Sending me a test script/offending code will probably get your issue fixed
 fastest and as a bonus, help prevent me from breaking it again in the future.
 
 <tobeya@cpan.org>
+
+ChangeLog:
+
+0.01 - initial release
+0.03 - same as 0.01, but with higher version number to trump Nagios::Config on CPAN.
+

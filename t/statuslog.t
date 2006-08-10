@@ -1,7 +1,6 @@
 #!/usr/local/bin/perl -w
 use strict;
 use Test::More;
-use Test::Exception;
 use lib qw( ../lib ./lib );
 BEGIN { plan tests => 136 }
 
