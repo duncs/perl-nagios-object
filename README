@@ -34,4 +34,5 @@ ChangeLog:
 
 0.01 - initial release
 0.03 - same as 0.01, but with higher version number to trump Nagios::Config on CPAN.
+0.04 - a bunch of internal updates, nothing really new on the API side yet
 

@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: Nagios-Object
-version: 0.03.2
+version: 0.04
 license: gpl
 distribution_type: module
 requires:

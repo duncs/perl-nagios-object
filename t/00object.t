@@ -153,5 +153,5 @@ can_ok( $empty_tp, 'timeperiod_name' );
 can_ok( $empty_tp, 'set_timeperiod_name' );
 ok( $empty_tp->set_timeperiod_name( "foobar" ), "\$object->set_timeperiod_name" );
 is( $empty_tp->timeperiod_name, 'foobar', "\$object->timeperiod_name" );
-is( $empty_tp->timeperiod_name, $empty_tp->name, "\$object->timeperiod_name eq \$object->name" );
+is( $empty_tp->name, 'foobar', "\$object->name" );
 

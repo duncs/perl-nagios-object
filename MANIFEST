@@ -10,12 +10,12 @@ t/testconfig2.cfg
 t/testconfig3.cfg
 t/testconfig.cfg
 t/t
-lib/Nagios/Object.pm
-lib/Nagios/Object/Config.pm
-lib/Nagios/Config.pm
-lib/Nagios/Config/File.pm
-lib/Nagios/StatusLog.pm
 Build.PL
 MANIFEST
 META.yml
 README
+lib/Nagios/Config/File.pm
+lib/Nagios/Object/Config.pm
+lib/Nagios/Object.pm
+lib/Nagios/Config.pm
+lib/Nagios/StatusLog.pm
