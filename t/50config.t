@@ -2,10 +2,11 @@ use strict;
 use Test::More qw(no_plan);
 use lib qw( ./lib ../lib );
 #BEGIN { plan tests => 7; }
+eval { chdir('t') };
 
 use_ok( 'Nagios::Config' );
 
-ok( my $cf = Nagios::Config->new(Filename => "t/nagios.cfg"),
+ok( my $cf = Nagios::Config->new(Filename => "nagios.cfg"),
     "Nagios::Config->new()" );
 
 diag( "run tests to make sure inherited Nagios::Config::File methods work" );

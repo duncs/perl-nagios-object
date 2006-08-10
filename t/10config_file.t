@@ -2,10 +2,11 @@ use strict;
 use Test::More;
 use lib qw( ./lib ../lib );
 BEGIN { plan tests => 7; }
+eval { chdir('t') };
 
 use_ok( 'Nagios::Config::File' );
 
-ok( my $cf = Nagios::Config::File->new("t/nagios.cfg"),
+ok( my $cf = Nagios::Config::File->new("nagios.cfg"),
     "Nagios::Config::File->new()" );
 
 is( $cf->get('command_check_interval'), '15s',

@@ -3,7 +3,7 @@
 # Nagios::Object                                                          #
 # Written by Albert Tobey <tobeya@cpan.org>                               #
 # Copyright 2003, Albert P Tobey                                          #
-# CVS Revision $Revision: 1.11 $                                           #
+# CVS Revision $Revision: 1.12 $                                           #
 #                                                                         #
 # This program is free software; you can redistribute it and/or modify it #
 # under the terms of the GNU General Public License as published by the   #
@@ -33,8 +33,8 @@ sub NAGIOS_NO_INHERIT { 1<<1 } # cannot inherit from template
 sub NAGIOS_PERL_ONLY  { 1<<2 } # perl module only attribute
 sub NAGIOS_V1         { 1<<3 } # nagios v1 attribute
 sub NAGIOS_V2         { 1<<4 } # nagios v2 attribute
-sub NAGIOS_V1_ONLY    { 1<<5 } # not valid for nagios v1
-sub NAGIOS_V2_ONLY    { 1<<6 } # not valid for nagios v2
+sub NAGIOS_V1_ONLY    { 1<<5 } # not valid for nagios v2
+sub NAGIOS_V2_ONLY    { 1<<6 } # not valid for nagios v1
 sub NAGIOS_NO_DISPLAY { 1<<7 } # should not be displayed by gui
 
 # export constants - the :all tag will export them all

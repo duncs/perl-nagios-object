@@ -3,10 +3,11 @@ use strict;
 use Test::More;
 use lib qw( ../lib ./lib );
 BEGIN { plan tests => 136 }
+eval { chdir('t') };
 
 use_ok( 'Nagios::StatusLog' );
 
-my $config = 't/status.log';
+my $config = 'status.log';
 ok( my $log = Nagios::StatusLog->new( $config ), "new()" );
 ok( $log->update(), "update()" );
 

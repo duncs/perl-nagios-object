@@ -31,4 +31,7 @@
        new() named parameter support was missing from StatusLog.pm
        config_status_demo.pl needed it's use of new() constructors updated
 0.07c - added missing hostgroup_name to service dependencies
+0.07d - fixed some bugs reported via email with tests and parsing
+
+0.08 should be coming soon, since I've got a good start on the Nagios::Test:: modules I'm forcing myself to write for it.   Once those modules are functioning, I'll be able to do some real testing on the performance of various pieces and start to replace those pesky linear (or worse) searches.  
 

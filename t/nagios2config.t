@@ -1,13 +1,13 @@
 use strict;
-use Test::More qw(no_plan);
+use Test::More;
 use lib qw( ./lib ../lib );
-#BEGIN { plan tests => 7; }
 
-chdir('t');
+BEGIN { plan tests => 12; }
+eval { chdir('t') };
 
 use_ok( 'Nagios::Config' );
 
-ok( my $cf = Nagios::Config->new(Filename => "t/v2_config/nagios.cfg", Version => 2),
+ok( my $cf = Nagios::Config->new(Filename => "v2_config/nagios.cfg", Version => 2),
     "Nagios::Config->new()" );
 
 diag( "run tests to make sure inherited Nagios::Config::File methods work" );
@@ -32,4 +32,6 @@ ok( $cf->register_objects, "\$parser->register_objects should be ok to call mult
 
 ok( my @hosts = $cf->list_hosts(), "\$parser->list_hosts()" );
 ok( my @services = $cf->list_hosts(), "\$parser->list_services()" );
+
+ok( my @hostgroups = $cf->list_hostgroups(), "\$parser->list_hostgroups()" );
 

@@ -165,7 +165,7 @@ sub parse {
             next;
 	    }
 	    # beginning of object definition
-	    elsif ( $line =~ /define (\w+) ?{(.*)$/ ) {
+	    elsif ( $line =~ /define\s+(\w+) ?{(.*)$/ ) {
 	        $type = $1;
 	        if ( $in_definition ) {
 	            croak "Error: Unexpected start of object definition in file '$filename' on line $line_no.  Make sure you close preceding objects before starting a new one.\n";
@@ -236,6 +236,51 @@ the size of the list to be searched, so it is recommended.
 sub find_object {
     my( $self, $name, $type ) = @_;
     $type = $type->new();    
+}
+
+=item all_objects_for_type()
+
+Obtain a reference to all objects of the specified Nagios object type.
+
+Usage: $objects = all_objects_for_type($object_type)
+
+Parameters:
+    $object_type - A specific Nagios object type, i.e. "Nagios::Contact"..
+
+Returns:
+    A reference to an array of references to all objects of the specified
+    type associated with this configuration.  Objects of this type added
+    to the configuration following the call to this method _will_ be
+    accessible through this reference after the fact.
+
+    Note that the array reference by the return value may be empty.
+
+Example:
+
+    my $contacts = $config->all_objects_for_type("Nagios::Contact");
+    if (scalar(@$contacts) == 0) {
+        print "No contacts have yet been defined\n";
+    } else {
+        foreach $contact (@$contacts) {
+            ...
+        }
+    }
+
+=cut
+
+sub all_objects_for_type {
+    my ($self, $obj_type) = @_;
+
+    my $ret_array = [];
+
+    ($obj_type =~ /^Nagios::(.*)$/) ||
+        confess "must specify Nagios object type to all_objects_for_type()";
+    my $list_type = lc($1) . '_list';
+
+    if (exists($self->{$list_type})) {
+        $ret_array = $self->{$list_type};
+    }
+    return $ret_array;
 }
 
 =item find_attribute()
@@ -329,13 +374,24 @@ sub register {
             if ( $object->attribute_is_list($attribute) ) {
                 my @to_find = split /\s*,\s*|\s+/, $object->$attribute();
                 my @found = ();
-                foreach my $item ( @to_find ) {
-                    my $ref = $self->find_attribute( $attribute, $item, $attr_type );
-                    push( @found, $ref ) if ( $ref );
-                }
 
-                if ( @to_find != @found ) {
-                    confess "Could not link all elements (",$object->$attribute(),") for attribute '$attribute'.  Check your configuration file for referenced objects that are not defined."
+                # handle splat '*' matching of all objects of a type
+                if ( @to_find == 1 && $to_find[0] eq '*' ) {
+                    @found = @{ $self->all_objects_for_type($attr_type); };
+                    if ( !@found ) {
+                        confess "Wildcard matching failed.  Have you defined any $attr_type objects?";
+                    }
+                }
+                # this is the normal case - match each object
+                else {
+                    foreach my $item ( @to_find ) {
+                        my $ref = $self->find_attribute( $attribute, $item, $attr_type );
+                        push( @found, $ref ) if ( $ref );
+                    }
+
+                    if ( @to_find != @found ) {
+                        confess "Could not link all elements (",$object->$attribute(),") for attribute '$attribute'.  Check your configuration file for referenced objects that are not defined.\n"
+                    }
                 }
                 $object->_set( $attribute, \@found );
             }
@@ -466,6 +522,16 @@ sub Nagios::Host::list_services {
 # keep the parser from bombing when I test on my config. (Al Tobey)
 sub Nagios::Host::snmp_community { }
 sub Nagios::Host::set_snmp_community { }
+
+=back
+
+=head1 AUTHOR
+
+Al Tobey <tobeya@cpan.org>
+Contributions From:
+    Lynne Lawrence (API & bugs)
+
+=cut
 
 1;
 

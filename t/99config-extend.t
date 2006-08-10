@@ -2,6 +2,7 @@
 use strict;
 use Test::More qw(no_plan);
 use lib qw( ../lib ./lib );
+eval { chdir('t') };
 
 use_ok( 'Nagios::Object' );
 

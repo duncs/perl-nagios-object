@@ -3,11 +3,13 @@ use strict;
 use Test::More qw(no_plan);
 use lib qw( ../lib ./lib );
 
+eval { chdir('t') };
+
 use_ok( 'Nagios::Object::Config' );
 
 ok( my $parser = Nagios::Object::Config->new(), "\$parser = Nagios::Object::Config->new()" );
 
-ok( $parser->parse( 't/testconfig.cfg' ), "\$parser->parse( 't/testconfig.cfg' )" );
+ok( $parser->parse( 'testconfig.cfg' ), "\$parser->parse( 'testconfig.cfg' )" );
 
 ok( $parser->resolve_objects, "\$parser->resolve_objects" );
 ok( $parser->register_objects, "\$parser->register_objects" );
