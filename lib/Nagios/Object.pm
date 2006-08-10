@@ -647,11 +647,9 @@ sub attribute_type {
         elsif ( @$type > 1 && length($type->[0]) == 1 ) {
             return "char_flag";
         }
-        elsif ( $_[1] eq 'name' ) {
-            return $type;
-        }
+        # elsif ( $_[1] eq 'name' || @$type > 1 ) {
         else {
-            croak "bug tobeya\@cpan.org to fix this ...";
+            return $type;
         }
     }
     else {

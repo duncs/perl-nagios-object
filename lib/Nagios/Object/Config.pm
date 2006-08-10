@@ -510,6 +510,13 @@ sub register {
             $object->_set( $attribute, \@refs );
 
         }
+        # multi-type lists, like Nagios::ServiceGroup
+        elsif ( ref $attr_type && ref($attr_type) eq 'ARRAY' ) {
+            foreach my $type ( @$attr_type ) {
+                my $ref = $self->find_object( $object->$attribute(), $type );
+                $object->_set( $attribute, $ref ) if ( $ref );
+            }
+        }
         else {
             my $ref = $self->find_object( $object->$attribute(), $attr_type );
             $object->_set( $attribute, $ref ) if ( $ref );
