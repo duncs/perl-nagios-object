@@ -3,7 +3,7 @@
 # Nagios::Object                                                          #
 # Written by Albert Tobey <tobeya@cpan.org>                               #
 # Copyright 2003, Albert P Tobey                                          #
-# CVS Revision $Revision: 1.9 $                                               #
+# CVS Revision $Revision: 1.9 $                                           #
 #                                                                         #
 # This program is free software; you can redistribute it and/or modify it #
 # under the terms of the GNU General Public License as published by the   #
@@ -35,9 +35,10 @@ sub NAGIOS_V1         { 1<<3 } # nagios v1 attribute
 sub NAGIOS_V2         { 1<<4 } # nagios v2 attribute
 sub NAGIOS_V1_ONLY    { 1<<5 } # not valid for nagios v1
 sub NAGIOS_V2_ONLY    { 1<<6 } # not valid for nagios v2
+sub NAGIOS_NO_DISPLAY { 1<<7 } # should not be displayed by gui
 
 # export constants - the :all tag will export them all
-our %EXPORT_TAGS = (all => [qw(NAGIOS_NO_INHERIT NAGIOS_PERL_ONLY NAGIOS_V1 NAGIOS_V2 NAGIOS_V1_ONLY NAGIOS_V2_ONLY)] );
+our %EXPORT_TAGS = (all => [qw(NAGIOS_NO_INHERIT NAGIOS_PERL_ONLY NAGIOS_V1 NAGIOS_V2 NAGIOS_V1_ONLY NAGIOS_V2_ONLY NAGIOS_NO_DISPLAY)] );
 Exporter::export_ok_tags('all');
 # we also export %nagios_setup only if it is asked for by name
 push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
@@ -86,7 +87,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         contact_groups                => [['Nagios::ContactGroup'],  8  ],
         notifications_enabled         => ['BINARY',                  8  ],
         stalking_options              => [[qw(o w u c)],             8  ],
-        name                          => ['service_description',     6  ],
+        name                          => ['service_description',     134],
         comment                       => ['comment',                 6  ],
         file                          => ['filename',                6  ]
     },
@@ -771,7 +772,35 @@ sub _validate {
 
     return $value;
 }
+# ---------------------------------------------------------------------------- #
+# ---------------------------------------------------------------------------- #
+sub html_widget {
+    my( $self, $attribute ) = @_;
+    my( $type, $flags ) = @{$nagios_setup{ref $self}->{$attribute}};
+    my $retval = '';
 
+    sub html_widget_for_type {
+        if ( exists $nagios_setup{$_} ) {
+
+        }
+        elsif ( $_ eq 'BINARY' ) {
+        }
+        elsif ( $_ eq 'INTEGER' ) {
+        }
+        elsif ( $_ eq 'TIMEPERIOD' ) {
+
+        }
+    }
+
+    if ( ref $type ) {
+        foreach my $subtype ( @$type ) {
+            # widget_for_type
+        }
+    }
+    else {
+        $retval .= html_widget_for_type();
+    }
+}
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
 # This will create classes with methods defined in %nagios_setup at

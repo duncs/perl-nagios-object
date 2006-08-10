@@ -1,0 +1,26 @@
+0.01 - initial release
+0.03 - same as 0.01, but with higher version number to trump Nagios::Config on CPAN.
+0.04 - a bunch of internal updates, nothing really new on the API side yet
+0.05 - Lots of stuff all over.  A bunch of bugs were fixed and I started looking at performance.
+       I'm actually writing some serious apps using these modules now, so the "dogfood test" is
+       really starting to kick in.
+       Thanks to the following people for patches/bug reports:
+           David J. Mark
+           Akihiro Sagawa
+           Bjornar Bjorgum Larsen
+0.06 - Big reorganization of Nagios/Object.pm which should help towards making
+       extending and overloading easier.
+         - !!!!!!!!!! new() now require named arguments !!!!!!!!!!!!
+         - added prelimary Nagios 2.0 support - this is mostly untested 
+             *** please send me <tobert@gmail.com> tests ***
+         - started putting in support for a "fast mode" to skip parts of
+           object resolution and registration for speed
+             - being an experimental feature, it currently breaks stuff when
+               enabled, but shows where the real performance problems are
+         - the flags for the big hash in Object.pm now use a single integer and
+           bit shifting - there is a mini program in the bin directory of this
+           distribution for encoding/decoding what they mean
+         - also in the bin directory is a mini program for parsing configs
+           for quick testing "perldoc bin/parse.pl"
+0.07 - Fix fatal bugs
+       added a patch from Deomid Ryabkov to fix a couple fatal bugs I missed

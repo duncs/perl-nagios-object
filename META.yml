@@ -1,15 +1,14 @@
 --- #YAML:1.0
 name: Nagios-Object
-version: 0.06
+version: 0.07
+author: ~
+abstract: ~
 license: gpl
-distribution_type: module
 requires:
   perl: 5.6.0
-recommends: {}
 build_requires:
   Test::Exception: 0
   Test::More: 0
-conflicts: {}
 provides:
   Nagios::Config:
     file: lib/Nagios/Config.pm
@@ -28,4 +27,4 @@ provides:
     file: lib/Nagios/StatusLog.pm
   Nagios::StatusLog:
     file: lib/Nagios/StatusLog.pm
-generated_by: Module::Build version 0.21
+generated_by: Module::Build version 0.2606

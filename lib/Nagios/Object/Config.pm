@@ -119,7 +119,7 @@ Parse a nagios object configuration file into memory.  Although Nagios::Objects 
 
 =cut
 
-# TODO: add checks for undefined values where prohibited in GENESIS hash
+# TODO: add checks for undefined values where prohibited in %nagios_setup
 sub parse {
     my( $self, $filename ) = @_;
     croak "cannot read file '$filename': $!" unless ( -r $filename );
@@ -327,10 +327,10 @@ sub register {
         }
         if ( $attr_type =~ /^Nagios::(.*)$/ ) {
             if ( $object->attribute_is_list($attribute) ) {
-                my @to_find = split /\s*,\s*/, $object->$attribute();
+                my @to_find = split /\s*,\s*|\s+/, $object->$attribute();
                 my @found = ();
                 foreach my $item ( @to_find ) {
-                    my $ref = $self->find_attribute( $attribute, $item );
+                    my $ref = $self->find_attribute( $attribute, $item, $attr_type );
                     push( @found, $ref ) if ( $ref );
                 }
 

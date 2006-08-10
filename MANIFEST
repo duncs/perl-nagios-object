@@ -30,6 +30,7 @@ Build.PL
 MANIFEST
 META.yml
 README
+ChangeLog
 bin/config_status_demo.pl
 bin/parse.pl
 bin/decode_flags.pl
