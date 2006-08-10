@@ -146,7 +146,15 @@ sub parse {
 	    }
         # this is an attribute inside an object definition
         elsif ( $in_definition ) {
-	        my( $key, $val ) = split( ' ', $line );
+            $line =~ s/\s*;(.*)$//;
+
+            # the comment stripped off of $line is saved in $1 due to the ()
+            # around .*, so it's saved in the object if supported
+            if ( $1 && $current->can('set_comment') ) {
+                $current->set_comment( $1 );
+            }
+
+            my( $key, $val ) = split( ' ', $line, 2 );
             my $set_method = 'set_'.$key;
 
             # special case for service_description is called 'service' in

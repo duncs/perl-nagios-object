@@ -541,7 +541,7 @@ BEGIN {
             file                          => ['filename',             0, 0, 0]
         },
         Host => {
-		    use                           => ['Nagios::Host',         0, 1, 1],
+		    use                           => ['Nagios::Host',         0, 0, 1],
 		    host_name                     => ['STRING',               0, 0, 1],
 		    alias                         => ['STRING',               0, 0, 1],
 		    address                       => ['STRING',               0, 0, 1],
@@ -576,7 +576,7 @@ BEGIN {
             file                          => ['filename',             0, 0, 0]
         },
         Contact => {
-            use                           => ['Nagios::Contact',      0, 1, 1],
+            use                           => ['Nagios::Contact',      0, 0, 1],
             contact_name                  => ['STRING',               0, 0, 1],
 	        alias                         => ['STRING',               0, 0, 1],
 	        host_notification_period      => ['Nagios::TimePeriod',   0, 0, 1],
@@ -607,7 +607,7 @@ BEGIN {
             file                          => ['filename',             0, 0, 0]
         },
         TimePeriod => {
-            use                           => ['Nagios::TimePeriod',   0, 1, 1],
+            use                           => ['Nagios::TimePeriod',   0, 0, 1],
 			timeperiod_name               => ['STRING',               0, 0, 1],
             alias                         => ['STRING',               0, 0, 1],
             sunday                        => ['TIMERANGE',            0, 0, 1],
@@ -628,6 +628,7 @@ BEGIN {
             first_notification            => ['INTEGER',              0, 0, 1],
 	        last_notification             => ['INTEGER',              0, 0, 1],
 	        notification_interval         => ['INTEGER',              0, 0, 1],
+#### FIXME: should "service" be in this list?
             name                          => [['host_name','service'],1, 0, 0],
             comment                       => ['comment',              0, 0, 0],
             file                          => ['filename',             0, 0, 0]
@@ -639,6 +640,7 @@ BEGIN {
 			service                       => ['Nagios::Service',      0, 0, 1],
 			execution_failure_criteria    => ['LIST',        1, 0, 'owucn', 1],
 			notification_failure_criteria => ['LIST',        1, 0, 'owucn', 1],
+#### FIXME: should "service" be in this list?
             name                          => [[qw(dependent_host
                                                   dependent_service
                                                   host_name)],        0, 0, 0],
@@ -665,7 +667,7 @@ BEGIN {
             file                          => ['filename',             0, 0, 0]
         },
         HostGroupEscalation => {
-			hostgroup_name                => ['Nagios::Host',         0, 0, 1],
+			hostgroup_name                => ['Nagios::HostGroup',    0, 0, 1],
 	        contact_groups                => ['Nagios::ContactGroup', 1, 0, 1],
             first_notification            => ['INTEGER',              0, 0, 1],
 	        last_notification             => ['INTEGER',              0, 0, 1],
