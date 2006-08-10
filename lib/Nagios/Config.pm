@@ -21,9 +21,11 @@ use strict qw( subs vars );
 use Carp;
 use Nagios::Object::Config;
 use Nagios::Config::File;
-use Symbol;
-use Tie::Handle; # for dump
+use Nagios::Object qw(%nagios_setup);
+use Symbol qw(gensym);
 @Nagios::Config::ISA = qw( Nagios::Object::Config Nagios::Config::File );
+
+our $fast_mode = undef;
 
 =head1 NAME
 
@@ -53,14 +55,36 @@ Create a new Nagios::Config object, which will parse a Nagios main
 configuration file and all of it's object configuration files.
 The resource configuration file is not parsed - for that, use Nagios::Config::File.
 
+ my $cf = Nagios::Config->new( Filename => $configfile );
+ my $cf = Nagios::Config->new( Filename => $configfile, Version => 1 );
+ my $cf = Nagios::Config->new( Filename => $configfile, Version => 2 );
+
 =cut
 
 sub new {
     my $class = ref($_[0]) ? ref(shift) : shift;
-    my $filename = shift;
+    my $filename = undef;
+    my $version  = undef;
+
+    if ( @_ % 2 == 0 ) {
+        my %args = ();
+        for ( my $i=0; $i<=@_; $i+=2 ) {
+            $args{lc $_[$i]} = $_[$i+1];
+        }
+        if ( $args{filename} ) {
+            $filename = $args{filename};
+        }
+        if ( $args{version} ) {
+            $version = $args{version};
+        }
+    }
+    else {
+        croak "single argument form of new() no longer supported\n",
+              "try Nagios::Config->new( Filename => \$file );";
+    }
 
     my $main_cfg = Nagios::Config::File->new( $filename );
-    my $obj_cfgs = Nagios::Object::Config->new();
+    my $obj_cfgs = Nagios::Object::Config->new( Version => $version );
 
     # parse all object configuration files
     if ( my $files = $main_cfg->get('cfg_file') ) {
@@ -68,14 +92,12 @@ sub new {
     }
     # parse all files in cfg_dir(s)
     if ( my $dir = $main_cfg->get('cfg_dir') ) {
-        foreach my $dir ( @$dir ) {
-            my $fh = gensym;
-            opendir( $fh, $dir )
-                || die "could not access $dir for parsing cfg_dir: $!";
-            while ( my $file = readdir $fh ) {
-                $obj_cfgs->parse( "$dir/$file" ) if ( $file =~ /\.cfg$/ );
-            }
-            closedir( $fh );
+        my @dir_files = ();
+        foreach my $cfgdir ( @$dir ) {
+            recurse_dir( \@dir_files, $cfgdir );
+        }
+        foreach my $file ( @dir_files ) {
+            $obj_cfgs->parse( $file );
         }
     }
 
@@ -84,23 +106,39 @@ sub new {
     $obj_cfgs->{file_attributes} = $main_cfg->{file_attributes};
 
     # resolve and register Nagios::Object tree
-    $obj_cfgs->resolve_objects();
-    $obj_cfgs->register_objects();
+    if ( !$fast_mode ) {
+        $obj_cfgs->resolve_objects();
+        $obj_cfgs->register_objects();
+    }
+    else {
+        warn "EXPERIMENTAL: possible breakage with fast_mode enabled";
+    }
 
     return bless $obj_cfgs, $class;
 }
 
-sub list_object_types {
-    no warnings;
-    warn "this method is experimental - email tobeya\@cpan.org if you think this is a good idea";
-    @Nagios::Object::object_types;
+sub recurse_dir {
+    my( $file_list, $dir ) = @_;
+    my $fh = gensym;
+    opendir( $fh, $dir );
+    while ( my $file = readdir $fh ) {
+        if ( !-d $file && $file =~ /\.cfg$/ ) {
+            push( @$file_list, "$dir/$file" );
+        }
+        elsif ( -d $file && $file ne '.' && $file ne '..' ) {
+            recurse_dir( $file_list, "$dir/$file" )
+        }
+    }
 }
 
-sub list_nagios_object_types {
-    no warnings;
-    warn "this method is experimental - email tobeya\@cpan.org if you think this is a good idea";
-    @Nagios::Object::Config::valid_object_types;
+sub fast_mode {
+    if ( $_[1] ) { $fast_mode = $_[1] }
+    $Nagios::Object::fast_mode = $fast_mode;
+    $Nagios::Object::Config::fast_mode = $fast_mode;
+    return $fast_mode;
 }
+
+1;
 
 __END__
 
@@ -115,3 +153,4 @@ Al Tobey <tobeya@cpan.org>
 Nagios::Config::File, Nagios::Object::Config, Nagios::Object
 
 =cut
+

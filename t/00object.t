@@ -145,10 +145,10 @@ foreach my $pkg ( qw( Service Host HostGroup Contact ContactGroup Command TimePe
     #foreach my $pkg        
 }
 
-ok( my $empty_cmd = Nagios::Object->new( 'command' ), "Nagios::Object->new( 'command' )" );
+ok( my $empty_cmd = Nagios::Object->new( Type => 'Nagios::Command' ), "Nagios::Object->new( Type => Nagios::Command )" );
 can_ok( $empty_cmd, 'set_command_name' );
 
-ok( my $empty_tp = Nagios::Object->new( 'timeperiod' ), "Nagios::Object->new( 'timeperiod' )" );
+ok( my $empty_tp = Nagios::Object->new( Type => 'Nagios::TimePeriod' ), "Nagios::Object->new( Type => Nagios::TimePeriod )" );
 can_ok( $empty_tp, 'timeperiod_name' );
 can_ok( $empty_tp, 'set_timeperiod_name' );
 ok( $empty_tp->set_timeperiod_name( "foobar" ), "\$object->set_timeperiod_name" );

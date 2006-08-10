@@ -5,7 +5,7 @@ use lib qw( ./lib ../lib );
 
 use_ok( 'Nagios::Config' );
 
-ok( my $cf = Nagios::Config->new("t/nagios.cfg"),
+ok( my $cf = Nagios::Config->new(Filename => "t/nagios.cfg"),
     "Nagios::Config->new()" );
 
 diag( "run tests to make sure inherited Nagios::Config::File methods work" );

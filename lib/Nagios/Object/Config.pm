@@ -18,15 +18,11 @@
 package Nagios::Object::Config;
 use strict;
 use warnings;
-use Nagios::Object;
+use Nagios::Object qw(:all %nagios_setup);
 use Symbol;
 use Carp;
 
-my @valid_object_types = qw(
-    timeperiod        command        contact             contactgroup
-    host              service        hostgroup           serviceescalation
-    hostdependency    hostescalation hotsgroupescalation servicedependency
-);
+our $fast_mode = undef;
 
 =head1 NAME
 
@@ -42,9 +38,13 @@ This is a module for parsing and processing Nagios object configuration files in
 
 =item new()
 
-Create a new configuration object.
+Create a new configuration object.  If Version is not specified, the already weak
+validation will be weakened further to allow mixing of Nagios 1.0 and 2.0 configurations.
+For now, the minor numbers of Version are ignored.  Do not specify any letters as in '2.0a1'.
 
  my $objects = Nagios::Object::Config->new();
+ my $objects = Nagios::Object::Config->new( Version => 1.2 );
+ my $objects = Nagios::Object::Config->new( Version => 2.0 );
 
 =cut
 
@@ -65,7 +65,50 @@ sub new {
         serviceescalation_list   => [],
         hostgroupescalation_list => []
     };
+
+    # parse arguments passed in
+    if ( @_ % 2 == 0 ) {
+        my %args = ();
+        for ( my $i=0; $i<@_; $i+=2 ) {
+            $args{lc $_[$i]} = $_[$i+1];
+        }
+
+        # set up limited Nagios v1/v2 validation
+        if ( !$fast_mode && $args{version} ) {
+            if ( $args{version} >= 2 ) {
+                $self->{nagios_version} = NAGIOS_V2;
+                # remove keys from nagios_setup that are invalid for V2
+                foreach my $key ( keys %nagios_setup ) {
+                    if ( ($nagios_setup{$key}->{use}[1] & NAGIOS_V1_ONLY) == NAGIOS_V1_ONLY ) {
+                        delete $nagios_setup{$key}
+                    }
+                }
+            }
+            elsif ( $args{version} < 2 ) {
+                $self->{nagios_version} = NAGIOS_V1;
+                # remove keys from nagios_setup that are invalid for V1
+                foreach my $key ( keys %nagios_setup ) {
+                    if ( ($nagios_setup{$key}->{use}[1] & NAGIOS_V2) == NAGIOS_V2 ) {
+                        delete $nagios_setup{$key}
+                    }
+                }
+            }
+        }
+        else {
+            $self->{nagios_version} = undef;
+        }
+    }
+    else {
+        croak "Single argument form of this constructor is not supported.\n",
+              "Try: Nagios::Object::Config->new( Version => 2 );";
+    }
+
     return bless( $self, $class );
+}
+
+sub fast_mode {
+    if ( $_[1] ) { $fast_mode = $_[1] }
+    return $fast_mode;
 }
 
 =item parse()
@@ -98,7 +141,6 @@ sub parse {
 	    my $line = readline($_[0]);
 	    $line =~ s/[\r\n\s]+$//; # remove trailing whitespace and CRLF
 	    $line =~ s/^\s+//;       # remove leading whitespace
-	    #$line =~ s/\s+/ /g;      # condense all tabs and spaces to single space
 	    return ' ' if ( $line =~ /^[#;]/ ); # skip/delete comments
 	    return $line || ' '; # empty lines are a single space
 	}
@@ -128,11 +170,11 @@ sub parse {
 	        if ( $in_definition ) {
 	            croak "Error: Unexpected start of object definition in file '$filename' on line $line_no.  Make sure you close preceding objects before starting a new one.\n";
             }
-	        elsif ( ! grep { $_ eq $type } @valid_object_types ) {
+            elsif ( !Nagios::Object->validate_object_type($type) ) {
 	            croak "Error: Invalid object definition type '$type' in file '$filename' on line $line_no.\n";
 	        }
             else {
-		        $current = Nagios::Object->new( $type );
+		        $current = Nagios::Object->new( Type => Nagios::Object->validate_object_type($type) );
                 push( @{$self->{$type.'_list'}}, $current );
 	            $in_definition = 1;
                 $append = $2;
@@ -156,22 +198,14 @@ sub parse {
 
             # the comment stripped off of $line is saved in $1 due to the ()
             # around .*, so it's saved in the object if supported
-            if ( $1 && $current->can('set_comment') ) {
+            if ( !$fast_mode && $1 && $current->can('set_comment') ) {
                 $current->set_comment( $1 );
             }
 
             my( $key, $val ) = split( /\s+/, $line, 2 );
             my $set_method = 'set_'.$key;
-
-            # special case for service_description is called 'service' in
-            # classess other than Nagios::Service
-            #if ( $type ne 'service' && $key eq 'service_description' ) {
-            #    $set_method = 'set_service';
-            #}
-
-            #if ( $current->attribute_is_list($key) ) {
-            #    $val = [split /,/, $val];
-            #}
+            croak "\"$key\" is invalid or module out of date: no such method \"$set_method\""
+                if ( !$current->can( $set_method ) );
 	        $current->$set_method( $val );
 	    }
         else {
@@ -223,7 +257,7 @@ sub find_attribute {
     }
     else {
         # brute-force search through all objects of all types
-        @to_search = @valid_object_types;
+        @to_search = map { lc $_ } keys %nagios_setup;
     }
 
     foreach my $type ( @to_search ) {
@@ -281,7 +315,7 @@ sub register {
         if ( !$object->resolved );
 
     # go through all of the object's attributes and link them to objects
-    # where appropriate (specified in the Big Hash in the BEGIN block)
+    # where appropriate
     foreach my $attribute ( $object->list_attributes ) {
         next if ( $attribute eq 'use' || $attribute eq 'register' );
 
@@ -327,7 +361,7 @@ Resolve all objects currently loaded into memory.  This can be called any number
 sub resolve_objects {
     my $self = shift;
 
-    foreach my $obj_type ( @valid_object_types ) {
+    foreach my $obj_type ( map { lc $_ } keys %nagios_setup ) {
         foreach my $object ( @{$self->{$obj_type.'_list'}} ) {
             $self->resolve( $object );
         }
@@ -346,7 +380,7 @@ Same deal as resolve_objects(), but as you'd guess, it registers all objects cur
 sub register_objects {
     my $self = shift;
 
-    foreach my $obj_type ( @valid_object_types ) {
+    foreach my $obj_type ( map { lc $_ } keys %nagios_setup ) {
         foreach my $object ( @{$self->{$obj_type.'_list'}} ) {
             $self->register( $object );
         }
@@ -395,6 +429,43 @@ sub list_servicedependencies  { shift->_list('servicedependency') }
 sub list_hostescalation       { shift->_list('hostescalation') }
 sub list_hostgroupescalations { shift->_list('hostgroupescalation') }
 sub list_serviceescalations   { shift->_list('serviceescalation') }
+
+# --------------------------------------------------------------------------- #
+# extend Nagios::Host - requires methods provided in this file
+# --------------------------------------------------------------------------- #
+
+# really slow, brute force way of listing services
+sub Nagios::Host::list_services {
+    my $self = shift;
+    my $conf = $self->{object_config_object};
+
+    my @retval = ();
+    foreach my $s ( $conf->list_services ) {
+        next if ( !$s->service_description );
+        if ( $s->host_name ) {
+            foreach my $h ( @{$s->host_name} ) {
+                if ( $h->host_name eq $self->host_name ) {
+                    push( @retval, $s );
+                }
+            }
+        }
+        if ( $s->hostgroup_name ) {
+            foreach my $hg ( @{$s->hostgroup_name} ) {
+                foreach my $h ( @{$hg->members} ) {
+                    if ( $h->host_name eq $self->host_name ) {
+                        push( @retval, $s );
+                    }
+                }
+           }
+        }
+    }
+    return @retval;
+}
+
+# I use a patched version of Nagios right now, so I need these to
+# keep the parser from bombing when I test on my config. (Al Tobey)
+sub Nagios::Host::snmp_community { }
+sub Nagios::Host::set_snmp_community { }
 
 1;
 

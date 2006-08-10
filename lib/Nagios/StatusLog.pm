@@ -19,6 +19,8 @@ package Nagios::StatusLog;
 use Carp;
 use strict qw( subs vars );
 use warnings;
+use Symbol;
+our $Log_Cache_Enabled = 1;
 
 # for an explanation of what happens in this block, look at Nagios::Object
 BEGIN {
@@ -82,7 +84,7 @@ sub new ($ $) {
     if ( !defined($logfile) || !-r $logfile ) {
         die "could not open $logfile for reading: $!";
     }
-    my $self = bless( [$logfile], $type );
+    my $self = bless( { LOGFILE => $logfile }, $type );
     $self->update();
     return $self;
 }
@@ -103,69 +105,67 @@ sub update ($) {
         my @parts = split(/;/, $$line, $no+1);
         # create the hash using the constant array (defined at top
         # of this file) and the split line
-        my %svc = map { $ar->[$_] => $parts[$_] } 0..$no;
-        return \%svc;
+        my %data = map { $ar->[$_] => $parts[$_] } 0..$no;
+        return \%data;
     }
 
-    open( LOG, "<$self->[0]" )
-        || croak "could not open file $self->[0] for reading: $!";
+    my $log_fh = gensym;
+    open( $log_fh, "<$self->{LOGFILE}" )
+        || croak "could not open file $self->{LOGFILE} for reading: $!";
+    my @LOG = <$log_fh>;
+    close( $log_fh );
 
-    # shuffle old data to 4..6 and reinitialize 1..3
-    # this would invalidate existing objects
-    #for ( 1..3 ) { $self->[$_ + 3] = $self->[$_]; $self->[$_] = {}; }
-
-    while ( my $line = <LOG> ) {
-        chomp( $line );
-        $line =~ s/#.*$//;
-        next if ( !defined($line) || !length($line) );
-        $line =~ s/^(\[\d+])\s+([A-Z]+);//;
-        my( $ts, $type ) = ( $1, $2 );
+    for ( my $i=0; $i<@LOG; $i++ ) {
+        chomp( $LOG[$i] );
+        $LOG[$i] =~ s/#.*$//;
+        next if ( !defined($LOG[$i]) || !length($LOG[$i]) );
+        $LOG[$i] =~ m/^(\[\d+])\s+([A-Z]+);(.*)$/;
+        my( $ts, $type, $line ) = ( $1, $2, $3 );
 
         # set some variables to switch between SERVICES|HOST|PROGRAM
         # $no must be the number of elements - 1 (because arrays start on 0)
 
-        my( $svc, $ref ) = ( {}, undef );
+        my( $ldata, $ref ) = ( {}, undef );
         if ( $type eq 'SERVICE' ) {
             # let the hashline() function do the work of creating the hashref
-            $svc = hashline( \$line, 30, Nagios::Service::Status->list_tags() );
+            $ldata = hashline( \$line, 30, Nagios::Service::Status->list_tags() );
 
             # if it already exists, we'll copy data after this if/else tree
-            if ( !exists($self->[1]{$svc->{host_name}}{$svc->{description}}) ) {
-                $self->[1]{$svc->{host_name}}{$svc->{description}} = $svc;
+            if ( !exists($self->{$type}{$ldata->{host_name}}{$ldata->{description}}) ) {
+                $self->{$type}{$ldata->{host_name}}{$ldata->{description}} = $ldata;
             }
 
             # 1st time we've seen this combination, use the new svc hashref
             else {
-                $ref = $self->[1]{$svc->{host_name}}{$svc->{description}};
+                $ref = $self->{$type}{$ldata->{host_name}}{$ldata->{description}};
             }
         }
         elsif ( $type eq 'HOST' ) {
-            $svc = hashline( \$line, 19, Nagios::Host::Status->list_tags() );
-            if ( !exists($self->[2]{$svc->{host_name}}) ) {
-                $self->[2]{$svc->{host_name}} = $svc;
+            $ldata = hashline( \$line, 19, Nagios::Host::Status->list_tags() );
+            if ( !exists($self->{$type}{$ldata->{host_name}}) ) {
+                $self->{$type}{$ldata->{host_name}} = $ldata;
             }
             else {
-                $ref = $self->[2]{$svc->{host_name}};
+                $ref = $self->{$type}{$ldata->{host_name}};
             }
         }
         elsif ( $type eq 'PROGRAM' ) {
-            $svc = hashline( \$line, 12, Nagios::Program::Status->list_tags() );
-            if ( !defined($self->[3]) ) {
-                $self->[3] = $svc;
+            $ldata = hashline( \$line, 12, Nagios::Program::Status->list_tags() );
+            if ( !defined($self->{$type}) ) {
+                $self->{$type} = $ldata;
             }
             else {
-                $ref = $self->[3];
+                $ref = $self->{$type};
             }
         }
         else { croak "unknown tag ($type) in logfile"; }
 
         # update existing data without changing the location the reference points to
         if ( defined($ref) ) {
-            foreach my $key ( keys(%$svc) ) { $ref->{$key} = $svc->{$key}; }
+            foreach my $key ( keys(%$ldata) ) { $ref->{$key} = $ldata->{$key}; }
         }
     }
-
-    close( LOG );
+    1;
 }
 
 sub list_tags {
@@ -230,11 +230,48 @@ sub service {
     }
 
     confess "host \"$host\" does not seem to be valid"
-        if ( !$self->[1]{$host} );
+        if ( !$self->{SERVICE}{$host} );
     confess "service \"$service\" does not seem to be valid on host \"$host\""
-        if ( !$self->[1]{$host}{$service} );
+        if ( !$self->{SERVICE}{$host}{$service} );
 
-    bless( $self->[1]{$host}{$service}, 'Nagios::Service::Status' );
+    bless( $self->{SERVICE}{$host}{$service}, 'Nagios::Service::Status' );
+}
+
+=item list_services()
+
+Returns an array of all service descriptions in the status log.  Services that
+may be listed on more than one host are only listed once here.
+
+ my @all_services = $log->list_services;
+
+=cut
+
+sub list_services {
+    my $self = shift;
+    my %list = ();
+    foreach my $host ( keys %{$self->{SERVICE}} ) {
+        foreach my $service ( keys %{$self->{SERVICE}{$host}} ) {
+            $list{$service} = 1;
+        }
+    }
+    return keys %list;
+}
+
+=item list_services_on_host()
+
+Returns an array of services descriptions for a given host.
+
+ my @host_services = $log->list_services_on_host($hostname);
+ my @host_services = $log->list_services_on_host($nagios_object);
+
+=cut
+
+sub list_services_on_host {
+    my( $self, $host ) = @_;
+    if ( ref $host =~ /^Nagios::/ && $host->can('host_name') ) {
+        $host = $host->host_name;
+    }
+    return keys %{$self->{SERVICE}{$host}};
 }
 
 =item host()
@@ -276,15 +313,25 @@ sub host {
     }
 
     confess "host \"$host\" does not seem to be valid"
-        if ( !$self->[2]{$host} );
+        if ( !$self->{HOST}{$host} );
 
-    bless( $self->[2]{$host}, 'Nagios::Host::Status' );
+    bless( $self->{HOST}{$host}, 'Nagios::Host::Status' );
 }
+
+=item list_hosts()
+
+Returns a simple array of host names (no objects).
+
+ my @hosts = $log->list_hosts;
+
+=cut
+
+sub list_hosts { keys %{$_[0]->{HOST}}; }
 
 =item program()
 
 Returns a Nagios::Program::Status object. No arguments.
- my $prog_st = $log->program();
+ my $prog_st = $log->program;
 
 Nagios::Program::Status has the following accessor methods:
  program_start
@@ -303,7 +350,36 @@ Nagios::Program::Status has the following accessor methods:
 
 =cut
 
-sub program ($) { bless( $_[0]->[3], 'Nagios::Program::Status' ); }
+sub program ($) { bless( $_[0]->{PROGRAM}, 'Nagios::Program::Status' ); }
+
+sub write {
+    my( $self, $filename ) = @_;
+    my $ts = time;
+
+    my $fh = gensym;
+    open( $fh, ">$filename" )
+        || die "could not open file \"$filename\" for writing: $!";
+
+    print $fh, "[$ts] PROGRAM;", Nagios::Program::Status->csvline( $self->{PROGRAM} ), "\n";
+
+    foreach my $host ( keys %{$self->{HOST}} ) {
+        print $fh "[$ts] HOST;", Nagios::Host::Status->csvline( $self->{HOST}{$host} ), "\n";
+    }
+    foreach my $host ( keys %{$self->{SERVICE}} ) {
+        foreach my $svc ( keys %{$self->{SERVICE}{$host}} ) {
+            my $ref = $self->{SERVICE}{$host}{$svc};
+            print $fh "[$ts] SERVICE;", Nagios::Service::Status->csvline( $ref ), "\n";
+        }
+    }
+
+    close( $fh );
+}
+
+sub csvline {
+    my $self = shift;
+    my $data = shift || $self;
+    join( ';', map { $data->{$_} } ($self->list_tags) ); 
+}
 
 =back
 
@@ -326,5 +402,11 @@ Al Tobey <tobeya@tobert.org>
 Nagios::Host Nagios::Service
 
 =cut
+
+package Nagios::Service::Status;
+
+package Nagios::Host::Status;
+
+package Nagios::Program::Status;
 
 1;

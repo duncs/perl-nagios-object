@@ -27,5 +27,7 @@ foreach my $tag ( qw( Service Host Program ) ) {
     }
 }
 
+#$log->write( '/tmp/foo.log' );
+
 exit 0;
 

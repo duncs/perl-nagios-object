@@ -46,6 +46,8 @@ sub new {
 	my $class = shift ;
 	my $file = shift ;
 
+    croak "Missing argument: must specify a configuration file to parse." if ( !$file );
+
 	my $this = {} ;
 	bless($this, $class) ;
 
