@@ -27,3 +27,7 @@
 0.07a - Fix a couple more
        fixed a couple other bugs reported that I found in my Inbox right after
        posting 0.07 to CPAN
+0.07b - fixed minor bugs reported via email or rt.cpan.org
+       new() named parameter support was missing from StatusLog.pm
+       config_status_demo.pl needed it's use of new() constructors updated
+

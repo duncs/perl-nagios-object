@@ -31,10 +31,10 @@ die "Must specify location of Nagios status log with -l option."
     if ( !$opt_l );
 
 my $bench1 = Benchmark->new;
-my $cf = Nagios::Config->new( $opt_c );
+my $cf = Nagios::Config->new( Filename => $opt_c );
 
 my $bench2 = Benchmark->new;
-my $log = Nagios::StatusLog->new( $opt_l );
+my $log = Nagios::StatusLog->new( Filename => $opt_l );
 
 my $bench10 = Benchmark->new;
 foreach my $h ( $cf->list_hosts ) {

@@ -79,8 +79,13 @@ be initialized for you (using $self->update()).
 
 =cut
 
-sub new ($ $) {
-    my( $type, $logfile ) = @_;
+sub new {
+    my $type = shift;
+    my $logfile = $_[0];
+    if ( @_ == 2 && $_[0] =~ /^filename$/i ) {
+       $logfile = $_[1];
+    }
+        
     if ( !defined($logfile) || !-r $logfile ) {
         die "could not open $logfile for reading: $!";
     }

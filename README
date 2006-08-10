@@ -18,6 +18,12 @@ Module::Build is to do "perl -MCPAN -e 'install Module::Build'".
   ./Build
   ./Build test
   ./Build install
+ 
+Testing:
+  If you want to run the tests in the test directory, you'll need to create a
+symlink so the scripts can find their test files.   From the root of the
+Nagios-Objects distribution, cd into the "t" directory then create the symlink
+with "ln -s . t".
 
 Bug Reports:
 
