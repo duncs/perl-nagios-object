@@ -494,16 +494,21 @@ sub dump {
 
     foreach my $attribute ( $self->list_attributes ) {
         my $value = $self->$attribute();
-        next if ( $attribute =~ /(use|register)/ && !$value );
+        next if ( $attribute eq 'register' && !defined $value );
+
 
         my $attrtype = $self->attribute_type( $attribute );
-        if ( $attrtype eq 'TIMERANGE' ) {
+        if ( $attribute eq 'use' ) {
+            next if ( !$value || !$value->use ); # root-level template
+            $value = $value->use->name;
+        }
+        elsif ( $attrtype eq 'TIMERANGE' ) {
             $value = dump_time_range( $value );
         }
         elsif ( !ref($value) && $attrtype =~ /^Nagios::(.*)$/ ) {
             $value = $self->name;
         }
-
+        
         if ( $value ) {
             $retval .= "\t$attribute = $value\n";
         }
@@ -775,10 +780,13 @@ sub _validate {
 }
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
+# incomplete ..
 sub html_widget {
     my( $self, $attribute ) = @_;
     my( $type, $flags ) = @{$nagios_setup{ref $self}->{$attribute}};
     my $retval = '';
+
+croak "not done yet ... bug tobeya at cpan.org";
 
     sub html_widget_for_type {
         if ( exists $nagios_setup{$_} ) {
@@ -806,7 +814,7 @@ sub html_widget {
 # ---------------------------------------------------------------------------- #
 # This will create classes with methods defined in %nagios_setup at
 # compile-time.  In mod_perl, methods will be as fast as hand-written
-# equivalents.  Maybe if some methos prove rarely used (likely) it may make
+# equivalents.  Maybe if some methods prove rarely used (likely) it may make
 # sense to just use AUTOLOAD and have that instantiate the subroutines, so
 # only the first call to a sub is slow
 GENESIS: {

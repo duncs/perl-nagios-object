@@ -10,6 +10,8 @@ t/testconfig2.cfg
 t/testconfig3.cfg
 t/testconfig.cfg
 t/nagios2config.t
+t/nestedtemplates.cfg
+t/nestedtemplates.t
 t/v2_config/cgi.cfg
 t/v2_config/hostextinfo.cfg
 t/v2_config/contacts.cfg
