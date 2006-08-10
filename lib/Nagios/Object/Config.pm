@@ -122,7 +122,7 @@ Parse a nagios object configuration file into memory.  Although Nagios::Objects 
 # TODO: add checks for undefined values where prohibited in %nagios_setup
 sub parse {
     my( $self, $filename ) = @_;
-    croak "cannot read file '$filename': $!" unless ( -r $filename );
+    croak "cannot read file '$filename': $!" unless ( $filename && -r $filename );
 
     $Nagios::Object::pre_link = 1;
 
@@ -235,7 +235,13 @@ the size of the list to be searched, so it is recommended.
 
 sub find_object {
     my( $self, $name, $type ) = @_;
-    $type = $type->new();    
+    my $searchlist = $self->all_objects_for_type( $type );
+    foreach my $obj ( @$searchlist ) {
+        if ( $obj->name eq $name ) {
+            #printf "obj name %s, name searched %s\n", $obj->name, $name;
+            return $obj;
+        }
+    }
 }
 
 =item all_objects_for_type()
@@ -367,9 +373,6 @@ sub register {
         next if ( !defined $object->$attribute() );
 
         my $attr_type = $object->attribute_type($attribute);
-        if ( ref $attr_type eq 'ARRAY' ) {
-            $attr_type = $attr_type->[0];
-        }
         if ( $attr_type =~ /^Nagios::(.*)$/ ) {
             if ( $object->attribute_is_list($attribute) ) {
                 my @to_find = split /\s*,\s*|\s+/, $object->$attribute();

@@ -1,6 +1,6 @@
 ---
 name: Nagios-Object
-version: 0.07f
+version: 0.08
 author: ~
 abstract: ~
 license: gpl
@@ -26,4 +26,4 @@ provides:
     file: lib/Nagios/StatusLog.pm
   Nagios::StatusLog:
     file: lib/Nagios/StatusLog.pm
-generated_by: Module::Build version 0.2611
+generated_by: Module::Build version 0.26

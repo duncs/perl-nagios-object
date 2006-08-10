@@ -12,6 +12,11 @@ t/testconfig.cfg
 t/nagios2config.t
 t/nestedtemplates.cfg
 t/nestedtemplates.t
+t/sample-config-bigger.cfg
+t/sample-config-minimal.cfg
+t/98nagios-sample-config.t
+t/jfrancois.pl
+t/jfrancois.cfg
 t/v2_config/cgi.cfg
 t/v2_config/hostextinfo.cfg
 t/v2_config/contacts.cfg
