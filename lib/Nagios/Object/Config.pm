@@ -98,7 +98,7 @@ sub parse {
 	    my $line = readline($_[0]);
 	    $line =~ s/[\r\n\s]+$//; # remove trailing whitespace and CRLF
 	    $line =~ s/^\s+//;       # remove leading whitespace
-	    $line =~ s/\s+/ /g;      # condense all tabs and spaces to single space
+	    #$line =~ s/\s+/ /g;      # condense all tabs and spaces to single space
 	    return ' ' if ( $line =~ /^[#;]/ ); # skip/delete comments
 	    return $line || ' '; # empty lines are a single space
 	}
@@ -136,6 +136,12 @@ sub parse {
                 push( @{$self->{$type.'_list'}}, $current );
 	            $in_definition = 1;
                 $append = $2;
+
+                # save a reference to this Nagios::Object::Config for later use
+                # outside this module (it's needed for accessing the big linked data
+                # structure)
+                $current->{object_config_object} = $self;
+
                 next;
             }
 	    }
@@ -154,15 +160,18 @@ sub parse {
                 $current->set_comment( $1 );
             }
 
-            my( $key, $val ) = split( ' ', $line, 2 );
+            my( $key, $val ) = split( /\s+/, $line, 2 );
             my $set_method = 'set_'.$key;
 
             # special case for service_description is called 'service' in
             # classess other than Nagios::Service
-            if ( $type ne 'service' && $key eq 'service_description' ) {
-                $set_method = 'set_service';
-            }
+            #if ( $type ne 'service' && $key eq 'service_description' ) {
+            #    $set_method = 'set_service';
+            #}
 
+            #if ( $current->attribute_is_list($key) ) {
+            #    $val = [split /,/, $val];
+            #}
 	        $current->$set_method( $val );
 	    }
         else {
@@ -197,19 +206,19 @@ sub find_object {
 
 =item find_attribute()
 
-Search through the objects parsed thus far, looking for a particular textual name.  When found, return that object.  If called with two arguments, it will search through all objects currently loaded until a match is found.  When called with three arguments, the third argument is used to determine the type of object to search for, so the search can narrow down faster.
+Search through the objects parsed thus far, looking for a particular textual name.  When found, return that object.  If called with two arguments, it will search through all objects currently loaded until a match is found.  A third argument may specify the type of object to search for, which may speed up the search considerably.
 
  my $object = $parser->find_attribute( "command_name", "check_host_alive" );
- my $object = $parser->find_attribute( "command_name", "check_host_alive", $host );
+ my $object = $parser->find_attribute( "command_name", "check_host_alive", 'Nagios::Host' );
 
 =cut
 
 sub find_attribute {
-    my( $self, $attribute, $what, $for ) = @_;
-    confess "must specify what string to find_attribute" if ( !$what );
+    my( $self, $attribute, $what, $type ) = @_;
+    confess "must specify what string to find_attribute" if ( !$what && $what != 0 );
 
     my @to_search = ();
-    if ( $for && $for->attribute_type($attribute) =~ /^Nagios::(.*)$/ ) {
+    if ( defined $type && $type =~ /^Nagios::(.*)$/ ) {
         $to_search[0] = lc($1);
     }
     else {
@@ -242,7 +251,7 @@ sub resolve {
     $object->resolved(1);
 
     if ( $object->has_attribute('use') && $object->use ) {
-        my $template = $self->find_attribute( 'use', $object->use, $object );
+        my $template = $self->find_attribute( 'use', $object->use, ref $object );
         $object->_set( 'use', $template );
     }
 
@@ -278,22 +287,26 @@ sub register {
 
         next if ( !defined $object->$attribute() );
 
-        if ( $object->attribute_type($attribute) =~ /^Nagios::(.*)$/ ) {
+        my $attr_type = $object->attribute_type($attribute);
+        if ( ref $attr_type eq 'ARRAY' ) {
+            $attr_type = $attr_type->[0];
+        }
+        if ( $attr_type =~ /^Nagios::(.*)$/ ) {
             if ( $object->attribute_is_list($attribute) ) {
-                my @to_find = split /,/, $object->$attribute();
+                my @to_find = split /\s*,\s*/, $object->$attribute();
                 my @found = ();
                 foreach my $item ( @to_find ) {
-                    my $ref = $self->find_attribute( $attribute, $item, $object );
+                    my $ref = $self->find_attribute( $attribute, $item );
                     push( @found, $ref ) if ( $ref );
                 }
 
                 if ( @to_find != @found ) {
-                    croak "Could not link all elements (",$object->$attribute(),") for attribute '$attribute'.  Check your configuration file for referenced objects that are not defined."
+                    confess "Could not link all elements (",$object->$attribute(),") for attribute '$attribute'.  Check your configuration file for referenced objects that are not defined."
                 }
                 $object->_set( $attribute, \@found );
             }
             else {
-                my $ref = $self->find_attribute( $attribute, $object->$attribute(), $object );
+                my $ref = $self->find_attribute( $attribute, $object->$attribute(), $attr_type );
                 $object->_set( $attribute, $ref ) if ( $ref );
             }
 

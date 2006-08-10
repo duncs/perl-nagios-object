@@ -9,31 +9,31 @@ use_ok( 'Nagios::Object' );
 package Nagios::Host;
 {
     no warnings; # so use of valid_fields doesn't bug us
-    $Nagios::Host::valid_fields->{snmp_community} = [ 'STRING', 0, 0, 0 ];
+    $Nagios::Host::valid_fields->{foobar} = [ 'STRING', 0, 0, 0 ];
 }
-sub snmp_community { shift->{snmp_community}->() || 'public' }
-sub set_snmp_community {
+sub foobar { shift->{foobar}->() || 'public' }
+sub set_foobar {
     my $self = shift;
-    if ( !exists($self->{snmp_community}) ) {
-        $self->{snmp_community} = 'public';
+    if ( !exists($self->{foobar}) ) {
+        $self->{foobar} = 'public';
     }
-    $self->_set('snmp_community', @_);
+    $self->_set('foobar', @_);
 }
 
-#sub set_snmp_community { $_[0]->{snmp_community} = $_[1] }
+#sub set_foobar { $_[0]->{foobar} = $_[1] }
 
 package main;
 
-can_ok( 'Nagios::Host', 'snmp_community' );
-can_ok( 'Nagios::Host', 'set_snmp_community' );
+can_ok( 'Nagios::Host', 'foobar' );
+can_ok( 'Nagios::Host', 'set_foobar' );
 
 my $host = Nagios::Host->new();
 
-can_ok( $host, 'snmp_community' );
-can_ok( $host, 'set_snmp_community' );
+can_ok( $host, 'foobar' );
+can_ok( $host, 'set_foobar' );
 
-ok( $host->set_snmp_community( "guessme" ),
-    "newly created set_snmp_community method works" );
-is( $host->snmp_community, 'guessme',
+ok( $host->set_foobar( "guessme" ),
+    "newly created set_foobar method works" );
+is( $host->foobar, 'guessme',
     "use getter method to verify previous test" );
 

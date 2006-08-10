@@ -25,6 +25,21 @@ our $pre_link = undef;
 # THE BEGIN BLOCK IS AT THE BOTTOM OF THIS FILE - MOST OF THE CLASSES' BODIES
 # ARE CREATED AT COMPILE-TIME THERE
 
+sub import {
+    my $self = shift;
+    my $package = (caller())[0];
+    my @failed = ();
+    foreach my $module (qw(Host Service)) {
+        my $code = "package $package; require \"Nagios/$module.pm\";";
+        eval( $code );
+        if ( $@ ) {
+            warn $@;
+            push( @failed, "Nagios::$module" );
+        }
+    }
+    @failed and croak "could not require() modules ".join(', ', @failed).".";
+}
+
 =head1 NAME
 
 Nagios::Object
@@ -57,8 +72,8 @@ This module contains the code for creating perl objects to represent any of the 
     checks_enabled               => 1,
     event_handler                => $some_command,
     event_handler_enabled        => 0,
-    low_flap_threshhold          => 0,
-    high_flap_threshhold         => 0,
+    low_flap_threshold          => 0,
+    high_flap_threshold         => 0,
     flap_detection_enabled       => 0,
     process_perf_data            => 1,
     retain_status_information    => 1,
@@ -522,17 +537,17 @@ BEGIN {
 			parallelize_check             => ['BINARY',                  0, 1],
 			obsess_over_service           => ['BINARY',                  0, 1],
 			check_freshness               => ['BINARY',                  0, 1],
-			freshness_threshhold          => ['INTEGER',                 0, 1],
+			freshness_threshold           => ['INTEGER',                 0, 1],
 			event_handler                 => ['Nagios::Command',         0, 1],
 			event_handler_enabled         => ['BINARY',                  0, 1],
-			low_flap_threshhold           => ['INTEGER',                 0, 1],
-			high_flap_threshhold          => ['INTEGER',                 0, 1],
+			low_flap_threshold            => ['INTEGER',                 0, 1],
+			high_flap_threshold           => ['INTEGER',                 0, 1],
 			flap_detection_enabled        => ['BINARY',                  0, 1],
 			process_perf_data             => ['BINARY',                  0, 1],
 			retain_status_information     => ['BINARY',                  0, 1],
 			retain_nonstatus_information  => ['BINARY',                  0, 1],
 			notification_period           => ['Nagios::TimePeriod',      1, 1],
-			notification_interval         => ['Nagios::TimePeriod',      1, 1],
+			notification_interval         => ['INTEGER',                 1, 1],
             notification_options          => [[qw(u w c r)],             0, 1],
             contact_groups                => [['Nagios::ContactGroup'],  0, 1],
             notifications_enabled         => ['BINARY',                  0, 1],
@@ -552,14 +567,14 @@ BEGIN {
 		    checks_enabled                => ['BINARY',                  0, 1],
 		    event_handler                 => ['STRING',                  0, 1],
 		    event_handler_enabled         => ['BINARY',                  0, 1],
-		    low_flap_threshhold           => ['INTEGER',                 0, 1],
-		    high_flap_threshhold          => ['INTEGER',                 0, 1],
+		    low_flap_threshold            => ['INTEGER',                 0, 1],
+		    high_flap_threshold           => ['INTEGER',                 0, 1],
 		    flap_detection_enabled        => ['BINARY',                  0, 1],
 		    process_perf_data             => ['BINARY',                  0, 1],
 		    retain_status_information     => ['BINARY',                  0, 1],
 		    retain_nonstatus_information  => ['BINARY',                  0, 1],
 		    notification_period           => [['Nagios::TimePeriod'],    0, 1],
-		    notification_interval         => [['Nagios::TimePeriod'],    0, 1],
+		    notification_interval         => ['INTEGER',                 0, 1],
 		    notification_options          => [[qw(d u r)],               0, 1],
 		    notifications_enabled         => ['BINARY',                  0, 1],
 		    stalking_options              => [[qw(o d u)],               0, 1],
@@ -628,27 +643,28 @@ BEGIN {
         ServiceEscalation => {
 		    use                           => ['Nagios::ServiceEscalation',0,1],
 			host_name                     => ['Nagios::Host',            0, 1],
-			service                       => ['Nagios::Service',         0, 1],
+			service_description           => ['Nagios::Service',         0, 1],
 	        contact_groups                => [['Nagios::ContactGroup'],  0, 1],
             first_notification            => ['INTEGER',                 0, 1],
 	        last_notification             => ['INTEGER',                 0, 1],
 	        notification_interval         => ['INTEGER',                 0, 1],
-            name                          => [['host_name','service'],   0, 0],
+            name                          => [['host_name',
+                                               'service_description'],   0, 0],
             comment                       => ['comment',                 0, 0],
             file                          => ['filename',                0, 0]
         },
         ServiceDependency => {
 		    use                           => ['Nagios::ServiceDependency',0,1],
-            dependent_host                => ['Nagios::Host',            0, 1],
+            dependent_host_name           => ['Nagios::Host',            0, 1],
 	        dependent_service             => ['Nagios::Service',         0, 1],
 			host_name                     => ['Nagios::Host',            0, 1],
-			service                       => ['Nagios::Service',         0, 1],
+			service_description           => ['Nagios::Service',         0, 1],
 			execution_failure_criteria    => [[qw(o w u c n)],           0, 1],
 			notification_failure_criteria => [[qw(o w u c n)],           0, 1],
-            name                          => [[qw(dependent_host
+            name                          => [[qw(dependent_host_name
                                                   dependent_service
                                                   host_name
-                                                  service)],             0, 0],
+                                                  service_description)], 0, 0],
             comment                       => ['comment',                 0, 0],
             file                          => ['filename',                0, 0]
         },
@@ -665,11 +681,11 @@ BEGIN {
         },
         HostDependency => {
 		    use                           => ['Nagios::HostDependency',  0, 1],
-            dependent_host                => ['Nagios::Host',            0, 1],
+            dependent_host_name           => ['Nagios::Host',            0, 1],
 			host_name                     => ['Nagios::Host',            0, 1],
 			notification_failure_criteria => [[qw(o w u c n)],           0, 1],
-            name                          => [['host_name','dependent_host'],
-                                                                         0, 0],
+            name                          => [['host_name',
+                                               'dependent_host_name'],   0, 0],
             comment                       => ['comment',                 0, 0],
             file                          => ['filename',                0, 0]
         },

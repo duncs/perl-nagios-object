@@ -21,7 +21,7 @@ use strict qw( subs vars );
 use Carp;
 use Nagios::Object::Config;
 use Nagios::Config::File;
-use Symbol;      # for dump
+use Symbol;
 use Tie::Handle; # for dump
 @Nagios::Config::ISA = qw( Nagios::Object::Config Nagios::Config::File );
 
@@ -63,8 +63,20 @@ sub new {
     my $obj_cfgs = Nagios::Object::Config->new();
 
     # parse all object configuration files
-    for ( @{$main_cfg->get('cfg_file')} ) {
-        $obj_cfgs->parse( $_ );
+    if ( my $files = $main_cfg->get('cfg_file') ) {
+        foreach ( @$files ) { $obj_cfgs->parse( $_ ); }
+    }
+    # parse all files in cfg_dir(s)
+    if ( my $dir = $main_cfg->get('cfg_dir') ) {
+        foreach my $dir ( @$dir ) {
+            my $fh = gensym;
+            opendir( $fh, $dir )
+                || die "could not access $dir for parsing cfg_dir: $!";
+            while ( my $file = readdir $fh ) {
+                $obj_cfgs->parse( "$dir/$file" ) if ( $file =~ /\.cfg$/ );
+            }
+            closedir( $fh );
+        }
     }
 
     # set up the important parts of the Nagios::Config::File instance

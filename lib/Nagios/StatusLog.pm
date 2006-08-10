@@ -215,11 +215,26 @@ Nagios::Service::Status has the following accessor methods:
 =cut
 
 sub service {
-    my $type = 'Nagios::Service::Status';
-    if ( defined($_[1]) && ref($_[1]) eq 'Nagios::Service' ) {
-        return bless( $_[0]->[1]{$_[1]->host_name()}{$_[1]->service_description()}, $type );
+    my( $self, $host, $service ) = @_;
+
+    if ( ref $host eq 'Nagios::Host' ) {
+        $host = $host->host_name;
     }
-    bless( $_[0]->[1]{$_[1]}{$_[2]}, $type );
+    # allow just a service to be passed in
+    if ( ref $host eq 'Nagios::Service' ) {
+        $service = $host;
+        $host = $service->host_name;
+    }
+    if ( ref $service eq 'Nagios::Service' ) {
+        $service = $service->service_description;
+    }
+
+    confess "host \"$host\" does not seem to be valid"
+        if ( !$self->[1]{$host} );
+    confess "service \"$service\" does not seem to be valid on host \"$host\""
+        if ( !$self->[1]{$host}{$service} );
+
+    bless( $self->[1]{$host}{$service}, 'Nagios::Service::Status' );
 }
 
 =item host()
@@ -253,12 +268,17 @@ Nagios::Host::Status has the following accessor methods:
 
 =cut
 
-sub host ($ $) {
-    my $type = 'Nagios::Host::Status';
-    if ( defined($_[1]) && ref($_[1]) =~ /^Nagios::(Host|Service)$/ ) {
-        return bless( $_[0]->[1]{$_[1]->host_name()}, $type );
+sub host {
+    my( $self, $host ) = @_;
+
+    if ( ref $host =~ /^Nagios::(Host|Service)$/ ) {
+        $host = $host->host_name;
     }
-    bless( $_[0]->[2]{$_[1]}, $type );
+
+    confess "host \"$host\" does not seem to be valid"
+        if ( !$self->[2]{$host} );
+
+    bless( $self->[2]{$host}, 'Nagios::Host::Status' );
 }
 
 =item program()

@@ -19,3 +19,6 @@ lib/Nagios/Object/Config.pm
 lib/Nagios/Object.pm
 lib/Nagios/Config.pm
 lib/Nagios/StatusLog.pm
+lib/Nagios/Host.pm
+lib/Nagios/Service.pm
+bin/config_status_demo.pl
