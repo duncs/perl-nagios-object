@@ -1,5 +1,6 @@
 use strict;
 use Test::More qw(no_plan);
+use Test::Exception;
 use lib qw( ./lib ../lib );
 #BEGIN { plan tests => 7; }
 eval { chdir('t') };
@@ -30,4 +31,11 @@ ok( $cf->resolve_objects, "\$parser->resolve_objects should be ok to call multip
 ok( $cf->register_objects, "\$parser->register_objects should be ok to call multiple times" );
 
 ok( my @hosts = $cf->list_hosts(), "\$parser->list_hosts()" );
+
+lives_ok( sub {
+    my $mf_cf = Nagios::Config->new(
+        Filename => 'nagios-missing-file.cfg',
+        allow_missing_files => 1
+    );
+}, "parameter allow_missing_files lets new() live through missing files" );
 

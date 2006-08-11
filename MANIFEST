@@ -5,6 +5,7 @@ t/50config.t
 t/51config-wildcards.t
 t/99config-extend.t
 t/nagios.cfg
+t/nagios-missing-file.cfg
 t/status.log
 t/statuslog.t
 t/testconfig2.cfg

@@ -65,6 +65,7 @@ sub new {
     my $class = ref($_[0]) ? ref(shift) : shift;
     my $filename = undef;
     my $version  = undef;
+    my $allow_missing_files = undef;
 
     if ( @_ % 2 == 0 ) {
         my %args = ();
@@ -77,6 +78,9 @@ sub new {
         if ( $args{version} ) {
             $version = $args{version};
         }
+        if ( $args{allow_missing_files} ) {
+            $allow_missing_files = 1;
+        }
     }
     else {
         croak "single argument form of new() no longer supported\n",
@@ -88,7 +92,10 @@ sub new {
 
     # parse all object configuration files
     if ( my $files = $main_cfg->get('cfg_file') ) {
-        foreach ( @$files ) { $obj_cfgs->parse( $_ ); }
+        foreach my $file ( @$files ) {
+            next if ( $allow_missing_files && !-e $file );
+            $obj_cfgs->parse( $file );
+        }
     }
     # parse all files in cfg_dir(s)
     if ( my $dir = $main_cfg->get('cfg_dir') ) {
@@ -97,6 +104,7 @@ sub new {
             recurse_dir( \@dir_files, $cfgdir );
         }
         foreach my $file ( @dir_files ) {
+            next if ( $allow_missing_files && !-e $file );
             $obj_cfgs->parse( $file );
         }
     }

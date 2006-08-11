@@ -1,8 +1,36 @@
---- #YAML:1.0
+---
 name: Nagios-Object
-version: 0.09
+version: 0.10
 author:
-
-abstract: 
+  - 'Albert P Tobey <tobert@gmail.com>'
+abstract: 'Nagios::Object - Nagios object configuration parsing.'
 license: gpl
-generated_by: Module::Build version 0.2612, without YAML.pm
+resources:
+  license: http://www.opensource.org/licenses/gpl-license.php
+requires:
+  perl: 5.6.0
+build_requires:
+  Test::Exception: 0.01
+  Test::More: 0.01
+provides:
+  Nagios::Config:
+    file: lib/Nagios/Config.pm
+  Nagios::Config::File:
+    file: lib/Nagios/Config/File.pm
+  Nagios::Host::Status:
+    file: lib/Nagios/StatusLog.pm
+  Nagios::Object:
+    file: lib/Nagios/Object.pm
+    version: 0.06
+  Nagios::Object::Config:
+    file: lib/Nagios/Object/Config.pm
+  Nagios::Program::Status:
+    file: lib/Nagios/StatusLog.pm
+  Nagios::Service::Status:
+    file: lib/Nagios/StatusLog.pm
+  Nagios::StatusLog:
+    file: lib/Nagios/StatusLog.pm
+generated_by: Module::Build version 0.2805
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2

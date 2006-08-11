@@ -43,3 +43,6 @@
 0.09 (final) - fixed remaining bug with servicegroups
 	- reported by Jörg Stelzle (who helped a ton with testing this release)
 
+0.10 - added 'allow_missing_files' option to Nagios::Config to skip files
+	specified in the nagios.cfg that don't exist (fixes RT #20924)
+	- requested by Andrew Ruthven
