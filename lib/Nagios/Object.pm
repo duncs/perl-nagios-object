@@ -23,7 +23,7 @@ use Carp;
 use Exporter;
 use Data::Dumper;
 @Nagios::Object::ISA = qw( Exporter );
-$Nagios::Object::VERSION = 0.06;
+$Nagios::Object::VERSION = 0.11;
 
 our $pre_link = undef;
 our $fast_mode = undef;
@@ -115,6 +115,9 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
 	    check_command                 => ['STRING',                  8  ],
 	    max_check_attempts            => ['INTEGER',                 8  ],
 	    checks_enabled                => ['BINARY',                  8  ],
+        check_freshness               => ['BINARY',                  8  ],
+        check_interval                => ['INTEGER',                 8  ],
+        freshness_threshold           => ['INTEGER',                 8  ],
 	    event_handler                 => ['STRING',                  8  ],
 	    event_handler_enabled         => ['BINARY',                  8  ],
 	    low_flap_threshold            => ['INTEGER',                 8  ],
