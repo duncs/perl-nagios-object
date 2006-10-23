@@ -120,6 +120,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         freshness_threshold           => ['INTEGER',                 8  ],
 	    event_handler                 => ['STRING',                  8  ],
 	    event_handler_enabled         => ['BINARY',                  8  ],
+        check_period                  => ['Nagios::TimePeriod',      8  ],
 	    low_flap_threshold            => ['INTEGER',                 8  ],
 	    high_flap_threshold           => ['INTEGER',                 8  ],
 	    flap_detection_enabled        => ['BINARY',                  8  ],
