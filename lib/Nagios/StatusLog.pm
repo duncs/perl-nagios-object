@@ -39,7 +39,6 @@ BEGIN {
             program_start nagios_pid daemon_mode last_command_check last_log_rotation enable_notifications execute_service_checks accept_passive_service_checks enable_event_handlers obsess_over_services enable_flap_detection enable_failure_prediction process_performance_data
             modified_host_attributes modified_service_attributes active_service_checks_enabled passive_service_checks_enabled active_host_checks_enabled passive_host_checks_enabled obsess_over_hosts check_service_freshness check_host_freshness global_host_event_handler global_service_event_handler
         )],
-
         Info => [qw( created version )]
     );
 
@@ -57,7 +56,9 @@ BEGIN {
             push( @$isa, 'Nagios::StatusLog' );
 	
 	        foreach my $method ( @{$_tags{$key}} ) {
-	            *{$pkg.$method} = sub { $_[0]->{$method} };
+                # the manually implemented status method is described below
+	            *{"$pkg$method"} = sub { $_[0]->{$method} }
+                    unless $method eq 'status';
 	        }
         }
     }
@@ -108,10 +109,10 @@ sub new {
     if ( @_ % 2 == 0 ) {
         my %args = @_;
         while ( my($param,$value) = each %args ) {
-            if ( $param =~ /^filename$/i ) {
+            if ( lc $param eq 'filename' ) {
                 $logfile = $value;
             }
-            elsif ( $param =~ /^version$/i ) {
+            elsif ( lc $param eq 'version' ) {
                 $version = $value;
             }
         }
@@ -121,7 +122,15 @@ sub new {
         die "could not open $logfile for reading: $!";
     }
 
-    my $self = bless( { LOGFILE => $logfile, VERSION => $version }, $type );
+    my $self = bless( {
+        LOGFILE => $logfile,
+        VERSION => $version,
+        INFO    => {},
+        PROGRAM => {},
+        HOST    => {},
+        SERVICE => {}
+    }, $type );
+
     $self->update();
     return $self;
 }
@@ -246,15 +255,9 @@ sub update_v2 ($) {
             _copy( $item, $self->{SERVICE}{$host}{$svc} );
         },
         info => sub {
-            if ( !exists $self->{INFO} ) {
-                $self->{INFO} = {};
-            }
             _copy( shift, $self->{INFO} );
         },
         program => sub { 
-            if ( !exists $self->{PROGRAM} ) {
-                $self->{PROGRAM} = {};
-            }
             _copy( shift, $self->{PROGRAM} );
         }
 
@@ -361,6 +364,7 @@ sub service {
     confess "service \"$service\" does not seem to be valid on host \"$host\""
         if ( !$self->{SERVICE}{$host}{$service} );
 
+    $self->{SERVICE}{$host}{$service}{__parent} = $self;
     bless( $self->{SERVICE}{$host}{$service}, 'Nagios::Service::Status' );
 }
 
@@ -442,6 +446,7 @@ sub host {
     confess "host \"$host\" does not seem to be valid"
         if ( !$self->{HOST}{$host} );
 
+    $self->{HOST}{$host}{__parent} = $self;
     bless( $self->{HOST}{$host}, 'Nagios::Host::Status' );
 }
 
@@ -452,6 +457,24 @@ Returns a simple array of host names (no objects).
  my @hosts = $log->list_hosts;
 
 =cut
+
+=item info() [Nagios v2 logs only]
+
+Returns a Nagios::Info::Status object.   It only has two methods, created()
+and version().
+
+ my $i = $log->info;
+ printf "Logfile created at %s unix epoch time for Nagios verion %s\n",
+    $i->created,
+    $i->version;
+
+=cut
+
+sub info {
+    my $self = shift;
+    return bless $self->{INFO}, 'Nagios::Info::Status';
+}
+
 
 sub list_hosts { keys %{$_[0]->{HOST}}; }
 
@@ -532,8 +555,69 @@ Nagios::Host Nagios::Service
 
 package Nagios::Service::Status;
 
+# Nagios 2.x has current_state instead of status, but since anybody
+# using this module is probably using status and does not want to
+# mess around with converting the integer, this method wraps it up
+# to return like Nagios 1.x did.
+sub status {
+    my $self = shift;
+    if ( $self->{__parent}{VERSION} > 1.9999999 ) {
+        if ( $self->{current_state} == 1 
+          or $self->{current_state} == 0 ) {
+            return 'PENDING';
+        }
+        elsif ( $self->{current_state} == 2 ) {
+            return 'OK';
+        }
+        elsif ( $self->{current_state} == 4 ) {
+            return 'WARNING';
+        }
+        elsif ( $self->{current_state} == 8 ) {
+            return 'UNKNOWN';
+        }
+        elsif ( $self->{current_state} == 16 ) {
+            return 'CRITICAL';
+        }
+        else {
+            return "Unknown Status '$self->{current_state}'";
+        }
+    }
+    else {
+        return $self->{status};
+    }
+}
+
 package Nagios::Host::Status;
+
+# same deal as Nagios::Service::Status::status()
+sub status {
+    my $self = shift;
+    if ( $self->{__parent}{VERSION} > 1.9999999 ) {
+        if ( $self->{current_state} == 1 
+          or $self->{current_state} == 0 ) {
+            return 'PENDING';
+        }
+        elsif ( $self->{current_state} == 2 ) {
+            return 'UP';
+        }
+        elsif ( $self->{current_state} == 4 ) {
+            return 'DOWN';
+        }
+        elsif ( $self->{current_state} == 8 ) {
+            return 'UNREACHABLE';
+        }
+        else {
+            return "Unknown Status '$self->{current_state}'";
+        }
+    }
+    else {
+        return $self->{status};
+    }
+}
 
 package Nagios::Program::Status;
 
+package Nagios::Info::Status;
+
 1;
+

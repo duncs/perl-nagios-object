@@ -8,6 +8,7 @@ t/nagios.cfg
 t/nagios-missing-file.cfg
 t/status.log
 t/statuslog.t
+t/v2log.dat
 t/testconfig2.cfg
 t/testconfig3.cfg
 t/testconfig.cfg

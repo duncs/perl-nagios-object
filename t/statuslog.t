@@ -2,7 +2,7 @@
 use strict;
 use Test::More;
 use lib qw( ../lib ./lib );
-BEGIN { plan tests => 8 }
+BEGIN { plan tests => 18 }
 eval { chdir('t') };
 
 use_ok( 'Nagios::StatusLog' );
@@ -18,19 +18,21 @@ ok( my $pgm  = $log->program(), "->program()" );
 is( $host->host_name(), 'spaceghost', "\$host->host_name() returns correct value" );
 is( $svc->description(), 'SSH', "\$svc->description() returns correct value" );
 
-my %hndls = ( Host => $host, Service => $svc, Program => $pgm );
+my $v2logfile = 'v2log.dat';
 
-# broken by current hackery to support Nagios 2.0 status.dat in StatusLog.pm
-# subsequent rewrite to AUTOLOAD instead of create at BEGIN should fix this
-#foreach my $tag ( qw( Service Host Program ) ) {
-#    my $class = "Nagios::${tag}::Status";
-#    foreach my $method ( $class->list_tags() ) {
-#        can_ok( $hndls{$tag}, $method );
-#        ok( length($hndls{$tag}->$method()), "$method non-zero-length output" );
-#    }
-#}
+ok( my $v2log = Nagios::StatusLog->new( Filename => $v2logfile, Version => '2.4' ), "new()" );
+can_ok( $v2log, qw(host service program info) );
 
-#$log->write( '/tmp/foo.log' );
+ok( my $i = $v2log->info, "info()" );
+ok( my @services = $v2log->list_services(), "list_services()" );
+ok( @services > 0, "More then 0 services." );
+ok( my $h = $v2log->host( 'localhost' ), "host()" );
+ok( my $s = $v2log->service('localhost', $services[0]), "service()" );
+
+# spot check
+can_ok( $h, qw( host_name status check_command ) );
+ok( $h->status, "status returns a non-null value" );
+can_ok( $s, qw( host_name service_description last_time_ok ) );
 
 exit 0;
 
