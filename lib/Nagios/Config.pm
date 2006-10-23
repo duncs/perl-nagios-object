@@ -130,10 +130,10 @@ sub recurse_dir {
     my $fh = gensym;
     opendir( $fh, $dir );
     while ( my $file = readdir $fh ) {
-        if ( !-d $file && $file =~ /\.cfg$/ ) {
+        if ( !-d "$dir/$file" && $file =~ /\.cfg$/ ) {
             push( @$file_list, "$dir/$file" );
         }
-        elsif ( -d $file && $file ne '.' && $file ne '..' ) {
+        elsif ( -d "$dir/$file" && $file !~ /^\./ && $file ne 'CVS' ) {
             recurse_dir( $file_list, "$dir/$file" )
         }
     }
