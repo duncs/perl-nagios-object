@@ -48,4 +48,11 @@
 	- requested by Andrew Ruthven
 0.11 - add check_freshness/freshness_threshold to Nagios::Host
 0.12 - added check_interval to Nagios::Host (pointed out by Nenad Noveljic)
+0.13 - Added status() method for Nagios 2.x logs in StatusLog.pm
+	* added more tests for StatusLog.pm
+	* added test v2 logfile for statuslog.t
+0.14 - added some missing fields
+0.15 - fixed hostgroup/hostgroups methods
+	* put in first attempt at actually fixing multi-fields (takes two types of
+	objects to create them)
 
