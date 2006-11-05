@@ -37,6 +37,10 @@ t/v2_config/minimal.cfg
 t/v2_config/misccommands.cfg
 t/v2_config/services.cfg
 t/v2_config/timeperiods.cfg
+t/multi_type_entries.cfg
+t/hostgroup_hostgroups.cfg
+t/multi_type_entries.t
+t/hostgroup_hostgroups.t
 Build.PL
 MANIFEST
 META.yml

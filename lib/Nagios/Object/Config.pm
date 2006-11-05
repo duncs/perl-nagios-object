@@ -61,20 +61,13 @@ sub new {
     my $self = {
         regexp_matching      => undef,
         true_regexp_matching => undef,
-        config_files    => [],
-        host_list       => [],
-        contact_list    => [],
-        command_list    => [],
-        service_list    => [],
-        hostgroup_list  => [],
-        timeperiod_list => [],
-        contactgroup_list        => [],
-        hostdependency_list      => [],
-        hostescalation_list      => [],
-        servicedependency_list   => [],
-        serviceescalation_list   => [],
-        hostgroupescalation_list => []
+        config_files    => []
     };
+
+    # initialize lists e.g. host_list, command_list, etc.
+    foreach my $class ( keys %nagios_setup ) {
+        $self->{lc($class).'_list'} = [];
+    }
 
     # parse arguments passed in
     if ( @_ % 2 == 0 ) {
@@ -288,8 +281,8 @@ sub parse {
 
             my( $key, $val ) = split( /\s+/, $line, 2 );
             my $set_method = 'set_'.$key;
-            croak "\"$key\" is invalid or module out of date: no such method \"$set_method\""
-                if ( !$current->can( $set_method ) );
+            confess "\"$key\" is invalid or module out of date: no such method \"$set_method\""
+                unless ( $current->can( $set_method ) );
 	        $current->$set_method( $val );
 	    }
         else {
@@ -319,7 +312,15 @@ the size of the list to be searched, so it is recommended.
 
 sub find_object {
     my( $self, $name, $type ) = @_;
-    my $searchlist = $self->all_objects_for_type( $type );
+
+    my $searchlist;
+    if ( $type && $type =~ /^Nagios::/ ) {
+        $searchlist = $self->all_objects_for_type( $type );
+    }
+    elsif ( !$type ) {
+        $searchlist = $self->all_objects;
+    }
+
     foreach my $obj ( @$searchlist ) {
         if ( $obj->name && $obj->name eq $name ) {
             #printf "obj name %s, name searched %s\n", $obj->name, $name;
@@ -346,7 +347,15 @@ and use_true_regexp_matching and does full RE matching all the time.
 sub find_objects_by_regex {
     my( $self, $re, $type ) = @_;
     my @retval;
-    my $searchlist = $self->all_objects_for_type( $type );
+    
+    my $searchlist;
+    if ( !$type ) {
+        $searchlist = $self->all_objects;
+    }
+    else {
+        $searchlist = $self->all_objects_for_type( $type );
+    }
+
     foreach my $obj ( @$searchlist ) {
         my $objname = $obj->name;
         if ( $objname && $objname =~ /$re/ ) {
@@ -391,14 +400,35 @@ sub all_objects_for_type {
 
     my $ret_array = [];
 
-    ($obj_type =~ /^Nagios::(.*)$/) ||
-        confess "must specify Nagios object type to all_objects_for_type()";
-    my $list_type = lc($1) . '_list';
+    confess "must specify Nagios object type to all_objects_for_type('$obj_type')"
+        unless  ($obj_type =~ /^Nagios::(.*)$/);
 
-    if (exists($self->{$list_type})) {
+    # e.g. service_list is an arrayref in $self - just return it
+    my $list_type = lc($1) . '_list';
+    if ( exists $self->{$list_type} ) {
         $ret_array = $self->{$list_type};
     }
     return $ret_array;
+}
+
+=item all_objects()
+
+Returns an arrayref with all objects parsed from the config in it.
+
+ my $everything = $config->all_objects;
+
+=cut
+
+sub all_objects {
+    my $self = shift;
+    my @ret_array;
+
+    # a little cheesy, but less maintenance goofups
+    foreach my $key ( keys %$self ) {
+        next unless $key =~ /_list$/ && ref $self->{$key} eq 'ARRAY';
+        push @ret_array, @{ $self->{$key} };
+    }
+    return \@ret_array;
 }
 
 =item find_attribute()
@@ -496,22 +526,22 @@ sub register {
     foreach my $attribute ( $object->list_attributes ) {
         next if ( $attribute eq 'use' || $attribute eq 'register' );
 
-        next if ( !defined $object->$attribute() );
+        next unless defined $object->$attribute();
 
         my $attr_type = $object->attribute_type($attribute);
         
         # all done unless the attribute is supposed to point to another object
-        next unless $attr_type =~ /^Nagios::.*$/;
+        next unless $attr_type =~ /^Nagios::.*$/ or ref $attr_type eq 'ARRAY';
 
         # deal with lists types
-        if ( $object->attribute_is_list($attribute) ) {
+        if ( !ref $attr_type && $object->attribute_is_list($attribute) ) {
             # pushed out to subroutine to keep things readable
             my @refs = $self->register_object_list( $object, $attribute, $attr_type );
             $object->_set( $attribute, \@refs );
 
         }
         # multi-type lists, like Nagios::ServiceGroup
-        elsif ( ref $attr_type && ref($attr_type) eq 'ARRAY' ) {
+        elsif ( ref $attr_type eq 'ARRAY' ) {
             foreach my $type ( @$attr_type ) {
                 my $ref = $self->find_object( $object->$attribute(), $type );
                 $object->_set( $attribute, $ref ) if ( $ref );
@@ -653,18 +683,21 @@ sub disable_true_regexp_matching { shift->{_true_regexp_matching_enabled} = unde
 
 Returns an array/arrayref of objects of the given type.
 
- ->list_hosts;
- ->list_hostroups;
- ->list_services;
- ->list_timeperiods;
- ->list_commands;
- ->list_contacts;
- ->list_contactgroups;
- ->list_hostdependencies;
- ->list_servicedependencies;
- ->list_hostescalation;
- ->list_hostgroupescalation;
- ->list_serviceescalation;
+ $config->list_hosts
+ $config->list_hostgroups
+ $config->list_services
+ $config->list_timeperiods
+ $config->list_commands
+ $config->list_contacts
+ $config->list_contactgroups
+ $config->list_hostdependencies
+ $config->list_servicedependencies
+ $config->list_hostescalations
+ $config->list_hostgroupescalations
+ $config->list_serviceescalations
+ $config->list_servicegroup
+ $config->list_hostextinfo
+ $config->list_serviceextinfo
 
 =cut
 
@@ -681,13 +714,16 @@ sub list_hostgroups           { shift->_list('hostgroup') }
 sub list_services             { shift->_list('service') }
 sub list_timeperiods          { shift->_list('timeperiod') }
 sub list_commands             { shift->_list('command') }
-sub list_contacts             { shift->_list('contacts') }
+sub list_contacts             { shift->_list('contact') }
 sub list_contactgroups        { shift->_list('contactgroup') }
 sub list_hostdependencies     { shift->_list('hostdependency') }
 sub list_servicedependencies  { shift->_list('servicedependency') }
-sub list_hostescalation       { shift->_list('hostescalation') }
+sub list_hostescalations      { shift->_list('hostescalation') }
 sub list_hostgroupescalations { shift->_list('hostgroupescalation') }
 sub list_serviceescalations   { shift->_list('serviceescalation') }
+sub list_servicegroups        { shift->_list('servicegroup') }
+sub list_hostextinfo          { shift->_list('hostextinfo') }
+sub list_serviceextinfo       { shift->_list('serviceextinfo') }
 
 # --------------------------------------------------------------------------- #
 # extend Nagios::Host - requires methods provided in this file

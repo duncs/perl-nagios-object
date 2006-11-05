@@ -2,8 +2,7 @@
 #                                                                         #
 # Nagios::Object                                                          #
 # Written by Albert Tobey <tobeya@cpan.org>                               #
-# Copyright 2003, Albert P Tobey                                          #
-# CVS Revision $Revision: 1.12 $                                           #
+# Copyright 2003-2006, Albert P Tobey                                     #
 #                                                                         #
 # This program is free software; you can redistribute it and/or modify it #
 # under the terms of the GNU General Public License as published by the   #
@@ -212,8 +211,9 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         first_notification            => ['INTEGER',                 8  ],
         last_notification             => ['INTEGER',                 8  ],
         notification_interval         => ['INTEGER',                 8  ],
-        name                          => [['host_name',
-                                           'service_description'],   6  ],
+        escalation_period             => ['Nagios::TimePeriod',      16 ],
+        escalation_options            => [[qw(w u c r)],             16 ],
+        name                          => ['generated',               6  ],
         comment                       => ['comment',                 6  ],
         file                          => ['filename',                6  ]
     },
@@ -225,10 +225,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
 		service_description           => ['Nagios::Service',         8  ],
 		execution_failure_criteria    => [[qw(o w u c n)],           8  ],
 		notification_failure_criteria => [[qw(o w u c n)],           8  ],
-        name                          => [[qw(dependent_host_name
-                                              dependent_service_description
-                                              host_name
-                                              service_description)], 6  ],
+        name                          => ['generated',               6  ],
         comment                       => ['comment',                 6  ],
         file                          => ['filename',                6  ]
     },
@@ -251,8 +248,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         inherits_parent               => ['INTEGER',                 16 ],
 		notification_failure_criteria => [[qw(o w u c n)],           8  ],
 		execution_failure_criteria    => [[qw(o w u c n)],           16 ],
-        name                          => [['host_name',
-                                           'dependent_host_name'],   6  ],
+        name                          => ['generated',               6  ],
         comment                       => ['comment',                 6  ],
         file                          => ['filename',                6  ]
     },
@@ -294,8 +290,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         notes_url                     => ['STRING',                  16 ],
         icon_image                    => ['STRING',                  16 ],
         icon_image_alt                => ['STRING',                  16 ],
-        name                          => [['host_name',
-                                           'service_description'],   20 ],
+        name                          => ['generated',               20 ],
         comment                       => ['comment',                 20 ],
         file                          => ['filename',                20 ]
     }
@@ -560,7 +555,11 @@ Which is just short for:
 sub name {
     my $self = shift;
     my $name_method = $self->_name_attribute;
-    if ( !$self->register ) {
+
+    if ( $name_method eq 'generated' ) {
+        return "$self";
+    }
+    elsif ( !$self->register ) {
         return $self->{name}->();
     }
     elsif ( ref $name_method eq 'ARRAY' ) {
@@ -651,7 +650,7 @@ sub attribute_type {
         elsif ( @$type > 1 && length($type->[0]) == 1 ) {
             return "char_flag";
         }
-        # elsif ( $_[1] eq 'name' || @$type > 1 ) {
+        #elsif ( $_[1] eq 'name' || @$type > 1 ) {
         else {
             return $type;
         }
@@ -821,38 +820,29 @@ sub _validate {
 
     return $value;
 }
-# ---------------------------------------------------------------------------- #
-# ---------------------------------------------------------------------------- #
-# incomplete ..
-sub html_widget {
-    my( $self, $attribute ) = @_;
-    my( $type, $flags ) = @{$nagios_setup{ref $self}->{$attribute}};
-    my $retval = '';
 
-croak "not done yet ... bug tobeya at cpan.org";
-
-    sub html_widget_for_type {
-        if ( exists $nagios_setup{$_} ) {
-
-        }
-        elsif ( $_ eq 'BINARY' ) {
-        }
-        elsif ( $_ eq 'INTEGER' ) {
-        }
-        elsif ( $_ eq 'TIMEPERIOD' ) {
-
-        }
-    }
-
-    if ( ref $type ) {
-        foreach my $subtype ( @$type ) {
-            # widget_for_type
-        }
+# support "hostgroup" alongside "hostgroups" by piggybacking it
+sub hostgroup {
+    my $self = shift;
+    if ( $self->can('hostgroups') ) {
+        return $self->hostgroups( @_ );
     }
     else {
-        $retval .= html_widget_for_type();
+        confess "Called hostgroup() on an object that doesn't support it.";
     }
 }
+
+sub set_hostgroup {
+    my $self = shift;
+    if ( $self->can('hostgroups') ) {
+        my @existing = $self->hostgroups;
+        return $self->hostgroups( [@existing, shift] );
+    }
+    else {
+        confess "Called set_hostgroup() on an object that doesn't support it.";
+    }
+}
+
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
 # This will create classes with methods defined in %nagios_setup at

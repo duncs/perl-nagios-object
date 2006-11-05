@@ -1,14 +1,12 @@
 ---
 name: Nagios-Object
-version: 0.14
+version: 0.15
 author:
   - 'Albert P Tobey <tobert@gmail.com>'
 abstract: 'Nagios::Object - Nagios object configuration parsing.'
 license: gpl
-resources:
-  license: http://www.opensource.org/licenses/gpl-license.php
 requires:
-  perl: 5.6.0
+  perl: 5.6.1
 build_requires:
   Test::Exception: 0.01
   Test::More: 0.01
@@ -32,7 +30,4 @@ provides:
     file: lib/Nagios/StatusLog.pm
   Nagios::StatusLog:
     file: lib/Nagios/StatusLog.pm
-generated_by: Module::Build version 0.2805
-meta-spec:
-  url: http://module-build.sourceforge.net/META-spec-v1.2.html
-  version: 1.2
+generated_by: Module::Build version 0.26

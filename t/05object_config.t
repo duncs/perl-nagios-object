@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 use Test::More qw(no_plan);
+use Data::Dumper;
 use lib qw( ../lib ./lib );
 
 eval { chdir('t') };
@@ -18,4 +19,6 @@ ok( $parser->resolve_objects, "\$parser->resolve_objects should be ok to call mu
 ok( $parser->register_objects, "\$parser->register_objects should be ok to call multiple times" );
 
 ok( my @hosts = $parser->list_hosts(), "\$parser->list_hosts()" );
+ok( my @contacts = $parser->list_contacts(), "\$parser->list_contacts()" );
+warn Dumper(\@contacts);
 
