@@ -9,6 +9,8 @@ use Test::Exception;
 use Nagios::Object::Config;
 use Nagios::Object;
 
+eval { chdir('t'); };
+
 my $cfile = 'hostgroup_hostgroups.cfg';
 
 my $c;

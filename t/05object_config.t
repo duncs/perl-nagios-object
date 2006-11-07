@@ -20,5 +20,6 @@ ok( $parser->register_objects, "\$parser->register_objects should be ok to call 
 
 ok( my @hosts = $parser->list_hosts(), "\$parser->list_hosts()" );
 ok( my @contacts = $parser->list_contacts(), "\$parser->list_contacts()" );
-warn Dumper(\@contacts);
+#warn Dumper(\@contacts);
+#
 

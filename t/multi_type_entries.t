@@ -8,6 +8,8 @@ use Data::Dumper;
 use Nagios::Object::Config;
 use Nagios::Object;
 
+eval { chdir('t'); };
+
 my $cfile = 'multi_type_entries.cfg';
 my $c = Nagios::Object::Config->new( Version => 2.5 );
 ok( $c->parse($cfile), "Config parse() succeeded for '$cfile'" );

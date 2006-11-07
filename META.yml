@@ -10,6 +10,7 @@ requires:
 build_requires:
   Test::Exception: 0.01
   Test::More: 0.01
+  Module::Build: 0.01
 provides:
   Nagios::Config:
     file: lib/Nagios/Config.pm

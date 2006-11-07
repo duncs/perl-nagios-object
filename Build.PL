@@ -4,7 +4,7 @@ use Module::Build;
 
 my $build = Module::Build->new(
     dist_name => 'Nagios-Object',
-    dist_version => "0.15",
+    dist_version => "0.16",
     dist_author => 'Albert P Tobey <tobert@gmail.com>',
     dist_abstract => 'Nagios::Object - Nagios object configuration parsing.',
     license => 'gpl',
@@ -13,7 +13,8 @@ my $build = Module::Build->new(
     },
     build_requires => {
         'Test::More' => 0.01,
-        'Test::Exception' => 0.01
+        'Test::Exception' => 0.01,
+        'Module::Build' => 0.01
     }
 );
 

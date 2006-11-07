@@ -55,4 +55,4 @@
 0.15 - fixed hostgroup/hostgroups methods
 	* put in first attempt at actually fixing multi-fields (takes two types of
 	objects to create them)
-
+0.16 - fix tests that failed when not run inside the 't' directory
