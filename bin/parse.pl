@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 use strict;
-use lib qw( ./lib ../lib /home/tobeya/work/lib );
+use lib qw( ./lib ../lib);
 use Nagios::Config;
 use Nagios::Object::Config;
 use Getopt::Std;

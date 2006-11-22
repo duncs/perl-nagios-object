@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-use lib qw(./lib ../lib /home/tobeya/work/lib);
+use lib qw(./lib ../lib);
 
 use Nagios::Object qw(:all);
 

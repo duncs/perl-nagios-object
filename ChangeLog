@@ -56,3 +56,8 @@
 	* put in first attempt at actually fixing multi-fields (takes two types of
 	objects to create them)
 0.16 - fix tests that failed when not run inside the 't' directory
+0.17 - fix up dump() and the mess I made of hostgroups
+	* thanks to Drex Evans for loaning me a config
+	* 0.18 will have better code for handling hostgroups/servicegroups
+	  which are currently a hack
+

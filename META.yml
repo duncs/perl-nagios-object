@@ -1,6 +1,6 @@
 ---
 name: Nagios-Object
-version: 0.15
+version: 0.17
 author:
   - 'Albert P Tobey <tobert@gmail.com>'
 abstract: 'Nagios::Object - Nagios object configuration parsing.'
@@ -8,16 +8,24 @@ license: gpl
 requires:
   perl: 5.6.1
 build_requires:
+  Data::Dumper: 0.01
+  Module::Build: 0.26
+  Scalar::Util: 0.01
   Test::Exception: 0.01
   Test::More: 0.01
-  Module::Build: 0.01
 provides:
   Nagios::Config:
     file: lib/Nagios/Config.pm
   Nagios::Config::File:
     file: lib/Nagios/Config/File.pm
+  Nagios::Host:
+    file: lib/Nagios/Object.pm
+    version: 0.11
   Nagios::Host::Status:
     file: lib/Nagios/StatusLog.pm
+  Nagios::HostGroup:
+    file: lib/Nagios/Object.pm
+    version: 0.11
   Nagios::Info::Status:
     file: lib/Nagios/StatusLog.pm
   Nagios::Object:
@@ -27,8 +35,14 @@ provides:
     file: lib/Nagios/Object/Config.pm
   Nagios::Program::Status:
     file: lib/Nagios/StatusLog.pm
+  Nagios::Service:
+    file: lib/Nagios/Object.pm
+    version: 0.11
   Nagios::Service::Status:
     file: lib/Nagios/StatusLog.pm
+  Nagios::ServiceGroup:
+    file: lib/Nagios/Object.pm
+    version: 0.11
   Nagios::StatusLog:
     file: lib/Nagios/StatusLog.pm
 generated_by: Module::Build version 0.26

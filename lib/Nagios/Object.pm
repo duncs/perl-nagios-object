@@ -59,10 +59,8 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         use                           => ['Nagios::Service',         10 ],
         service_description           => ['STRING',                  10 ],
         host_name                     => [['Nagios::Host'],          10 ],
-        hostgroup_name                => [['Nagios::HostGroup'],     10 ],
-        servicegroup_name             => [['Nagios::ServiceGroup'],  16 ],
-        hostgroups                    => [['Nagios::HostGroup'],     18 ],
         servicegroups                 => [['Nagios::ServiceGroup'],  18 ],
+        hostgroup                     => [['Nagios::HostGroup'],     18 ],
         is_volatile                   => ['BINARY',                  8  ],
         check_command                 => ['Nagios::Command',         8  ],
         max_check_attempts            => ['INTEGER',                 8  ],
@@ -110,7 +108,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
 	    alias                         => ['STRING',                  8  ],
 	    address                       => ['STRING',                  8  ],
 	    parents                       => [['Nagios::Host'],          8  ],
-        hostgroups                    => [['Nagios::HostGroup'],     18 ],
+        hostgroup                     => [['Nagios::HostGroup'],     18 ],
 	    check_command                 => ['STRING',                  8  ],
 	    max_check_attempts            => ['INTEGER',                 8  ],
 	    checks_enabled                => ['BINARY',                  8  ],
@@ -143,7 +141,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         alias                         => ['STRING',                  8  ],
         contact_groups                => [['Nagios::ContactGroup'],  40 ],
         members	                      => [['Nagios::Host'],          8  ],
-        name                          => ['hostgroup_name',          6  ],
+        name                          => ['hostgroup',               6  ],
         comment                       => ['comment',                 6  ],
         file                          => ['filename',                6  ]
     },
@@ -175,7 +173,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         contactgroup_name             => ['STRING',                  8  ],
         alias                         => ['STRING',                  8  ],
         members	                      => [['Nagios::Contact'],       8  ],
-        name                          => ['contactgroup_name',          ],
+        name                          => ['contactgroup_name',       6  ],
         comment                       => ['comment',                 6  ],
         file                          => ['filename',                6  ]
     },
@@ -183,7 +181,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
 	    use                           => ['Nagios::Command',         8  ],
         command_name                  => ['STRING',                  8  ],
         command_line                  => ['STRING',                  8  ],
-        name                          => ['command_name',               ],
+        name                          => ['command_name',            6  ],
         comment                       => ['comment',                 6  ],
         file                          => ['filename',                6  ]
     },
@@ -205,7 +203,6 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     ServiceEscalation => {
 	    use                           => ['Nagios::ServiceEscalation',8 ],
 		host_name                     => ['Nagios::Host',            8  ],
-        hostgroup_name                => ['Nagios::HostGroup',       8  ],
 		service_description           => ['Nagios::Service',         8  ],
         contact_groups                => [['Nagios::ContactGroup'],  8  ],
         first_notification            => ['INTEGER',                 8  ],
@@ -232,7 +229,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     HostEscalation => {
 	    use                           => ['Nagios::HostEscalation',  8  ],
 		host_name                     => ['Nagios::Host',            8  ],
-		hostgroup_name                => ['Nagios::HostGroup',       16 ],
+		hostgroup                     => ['Nagios::HostGroup',       16 ],
         contact_groups                => [['Nagios::ContactGroup'],  8  ],
         first_notification            => ['INTEGER',                 8  ],
         last_notification             => ['INTEGER',                 8  ],
@@ -255,12 +252,12 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     # Nagios 1.0 only
     HostGroupEscalation => {
 	    use                           => ['Nagios::HostGroupEscalation', 40 ],
-		hostgroup_name                => ['Nagios::HostGroup',       40 ],
+		hostgroup                     => ['Nagios::HostGroup',       40 ],
         contact_groups                => [['Nagios::ContactGroup'],  40 ],
         first_notification            => ['INTEGER',                 40 ],
         last_notification             => ['INTEGER',                 40 ],
         notification_interval         => ['INTEGER',                 40 ],
-        name                          => ['hostgroup_name',          44 ],
+        name                          => ['hostgroup',               44 ],
         comment                       => ['comment',                 44 ],
         file                          => ['filename',                44 ]
     },
@@ -268,7 +265,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     HostExtInfo => {
         use                           => ['HostExtInfo',             18 ],
         host_name                     => ['Nagios::Host',            18 ],
-        hostgroup_name                => [['Nagios::HostGroup'],     18 ],
+        hostgroup                     => [['Nagios::HostGroup'],     18 ],
         notes                         => ['STRING',                  16 ],
         notes_url                     => ['STRING',                  16 ],
         icon_image                    => ['STRING',                  16 ],
@@ -284,7 +281,8 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     # Nagios 2.0 only
     ServiceExtInfo => {
         use                           => ['ServiceExtInfo',          18 ],
-        host_name                     => ['Nagios::Host',            18 ],
+        host_name                     => [['Nagios::Host'],          18 ],
+        hostgroup                     => [['Nagios::HostGroup'],     18 ],
         service_description           => ['Nagios::Service',         18 ],
         notes                         => ['STRING',                  16 ],
         notes_url                     => ['STRING',                  16 ],
@@ -502,30 +500,27 @@ sub dump {
 
     $retval .= lc((split /::/, ref($self))[1]) . " {\n";
 
-    foreach my $attribute ( $self->list_attributes ) {
+    foreach my $attribute ( $self->list_valid_attributes ) {
         my $value = $self->$attribute();
         next if ( $attribute eq 'register' && !defined $value );
 
-
         my $attrtype = $self->attribute_type( $attribute );
 
-        if ( $attribute eq 'use' ) {
+        if ( ref $value && UNIVERSAL::can($value, 'name') ) {
+            # maybe add an additional check against %nagios_setup
+            $value = $value->name;
+        }
+        elsif ( $attribute eq 'use' ) {
             next if ( !$value || !$value->use ); # root-level template
             $value = $value->use->name;
         }
         elsif ( $attrtype eq 'TIMERANGE' ) {
             $value = dump_time_range( $value );
         }
-        # not sure if this is ever used ... might delete it after testing
-        # -- tobeya 01/11/2006
-        elsif ( $value && !ref($value) && $attrtype =~ /^Nagios::(.*)$/ ) {
-            $value = $self->name;
-        }
-
-
-        if ( ref($value) eq 'ARRAY' ) {
+        elsif ( ref($value) eq 'ARRAY' ) {
             $value = join ', ', map { $_->name } @$value;
         }
+
         if ( $value ) {
             $retval .= "\t$attribute = $value\n";
         }
@@ -552,26 +547,30 @@ Which is just short for:
 =cut
 
 # ---------------------------------------------------------------------------- #
+my $_name_hack;
 sub name {
     my $self = shift;
     my $name_method = $self->_name_attribute;
 
     if ( $name_method eq 'generated' ) {
-        return "$self";
+        $_name_hack++;
+        return ref($self).'-'.$_name_hack; # FIXME: this should work but feels wrong
     }
-    elsif ( !$self->register ) {
+
+    if ( !$self->register ) {
         return $self->{name}->();
     }
-    elsif ( ref $name_method eq 'ARRAY' ) {
-        my @retval = ();
-        for my $idx ( 0..@$name_method-1 ) {
-            my $method = $name_method->[$idx];
-            $retval[$idx] = $self->$method();
-        }
-        return \@retval;
-    }
     else {
-        return $self->$name_method();
+        my $name = $self->$name_method();
+
+        # recurse down on references to get the names, then generate something
+        # more sensible
+        if ( ref($name) && UNIVERSAL::can($name, 'name') ) {
+            $name = lc(ref($self)) .'-'. $name->name;
+            $name =~ s/^nagios:://;
+            $name =~ s/::/_/g;
+        }
+        return $name;
     }
 }
 
@@ -626,6 +625,19 @@ Returns a list of valid attributes for the calling object.
 =cut
 
 sub list_attributes { keys( %{$nagios_setup{$_[0]->setup_key}} ) }
+sub list_valid_attributes {
+    my $self = shift;
+    my $package = $nagios_setup{$self->setup_key};
+
+    my @valid;
+    foreach my $key ( keys %$package ) {
+        if ( ($package->{$key}[1] & NAGIOS_PERL_ONLY) == 0 ) {
+            push @valid, $key;
+        }
+    }
+
+    return sort @valid;
+}
 
 =item attribute_type()
 
@@ -822,21 +834,21 @@ sub _validate {
 }
 
 # support "hostgroup" alongside "hostgroups" by piggybacking it
-sub hostgroup {
+sub hostgroup_name {
     my $self = shift;
-    if ( $self->can('hostgroups') ) {
-        return $self->hostgroups( @_ );
+    if ( $self->can('hostgroup') ) {
+        return $self->hostgroup( @_ );
     }
     else {
         confess "Called hostgroup() on an object that doesn't support it.";
     }
 }
 
-sub set_hostgroup {
+sub set_hostgroup_name {
     my $self = shift;
-    if ( $self->can('hostgroups') ) {
-        my @existing = $self->hostgroups;
-        return $self->hostgroups( [@existing, shift] );
+    if ( $self->can('hostgroup') ) {
+        my @existing = $self->hostgroup;
+        return $self->set_hostgroup( [@existing, shift] );
     }
     else {
         confess "Called set_hostgroup() on an object that doesn't support it.";
@@ -879,6 +891,7 @@ GENESIS: {
         # create methods for each entry in $nagios_setup{$object}
         foreach my $method ( keys(%{$nagios_setup{$object}}) ) {
             next if ( $method eq 'name' );
+            next if ( $pkg eq 'Nagios::ServiceGroup' && $method eq 'members' );
             # create set_ method
             *{"$pkg\::set_$method"} = sub { shift->_set( $method, @_ ); };
 
@@ -906,6 +919,79 @@ GENESIS: {
 
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
+# special-case methods coded straight into their packages
+# these are usually proxies to the autogenerated methods for alternate names
+
+package Nagios::Host;
+
+sub hostgroups { shift->hostgroup(@_); }
+sub set_hostgroups { shift->set_hostgroup(@_); }
+
+package Nagios::HostGroup;
+
+sub hostgroup { shift->hostgroup_name(@_); }
+sub set_hostgroup { shift->set_hostgroup_name(@_); }
+
+# members() just isn't worth supporting in the generic code right now
+package Nagios::ServiceGroup;
+use Carp;
+
+sub members {
+    my $self = shift;
+    if ( $self->{members} ) {
+        my @copy = @{ $self->{members} };
+        return \@copy;
+    }
+    else {
+        return [];
+    }
+}
+
+sub set_members {
+    my $self = shift;
+    my( @objects, @members );
+
+    # @members will be an arrayref of [ host_name => service_description ]
+    # or Service objects, depending on whether Nagios::Object::Config
+    # has resolved yet
+    if ( $self->resolved ) {
+        foreach my $item ( @_ ) {
+            confess "set_members() arguments must be objects after resolve_objects() has been called."
+                unless ( ref($item) );
+            push @members, $item;
+        }
+    }
+    # also, before resolution, append to the list rather than replace it
+    else {
+        @members = @{ $self->{members} };
+        foreach my $item ( @_ ) {
+            if ( ref($item) eq 'ARRAY' && @$item == 2 ) {
+                push @members, $item;
+            }
+            elsif ( defined($item) && length($item) ) {
+                push @members, $self->_split_members($item);
+            }
+            else {
+                confess "Don't know what to do with a $item!";
+            }
+        }
+    }
+
+    $self->{members} = \@members;
+}
+
+sub _split_members {
+    my( $self, $string ) = @_;
+    my @out;
+    my @pieces = split /\s*,\s*/, $string;
+    for ( my $i=0; $i<@pieces; $i+=2 ) {
+        push @out, [ $pieces[$i] => $pieces[$i+1] ];
+    }
+    warn Data::Dumper::Dumper(\@out);
+    return @out;
+}
+
+package Nagios::Service;
 
 1;
 

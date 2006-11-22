@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-use lib qw( /home/tobeya/work/CPAN/Nagios-Objects/lib );
+use lib qw(./lib ../lib);
 use Nagios::StatusLog;
 use Benchmark ':hireswallclock';
 use Getopt::Std;

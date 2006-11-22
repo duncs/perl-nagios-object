@@ -2,7 +2,7 @@
 #                                                                         #
 # Nagios::Object::Config                                                  #
 # Written by Albert Tobey <tobeya@cpan.org>                               #
-# Copyright 2003, Albert P Tobey                                          #
+# Copyright 2003-2006, Albert P Tobey                                     #
 #                                                                         #
 # This program is free software; you can redistribute it and/or modify it #
 # under the terms of the GNU General Public License as published by the   #
@@ -542,10 +542,22 @@ sub register {
         }
         # multi-type lists, like Nagios::ServiceGroup
         elsif ( ref $attr_type eq 'ARRAY' ) {
-            foreach my $type ( @$attr_type ) {
-                my $ref = $self->find_object( $object->$attribute(), $type );
-                $object->_set( $attribute, $ref ) if ( $ref );
+            my $values = $object->$attribute();            
+            confess "invalid element in attribute \"$attribute\" ($values)"
+                unless ref($values) eq 'ARRAY';
+
+            my @new_list;
+            foreach my $value ( @$values ) {
+                my @mapped;
+                for ( my $i=0; $i<@$attr_type; $i++ ) {
+                    push @mapped,
+                        $self->find_object( $value->[$i], $attr_type->[$i] );
+                }
+                push @new_list, \@mapped;
             }
+
+            my $set = 'set_' . $attribute;
+            $object->$set( @new_list );
         }
         else {
             my $ref = $self->find_object( $object->$attribute(), $attr_type );

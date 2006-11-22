@@ -23,6 +23,7 @@ use Nagios::Object::Config;
 use Nagios::Config::File;
 use Nagios::Object qw(%nagios_setup);
 use Symbol qw(gensym);
+use File::Basename;
 @Nagios::Config::ISA = qw( Nagios::Object::Config Nagios::Config::File );
 
 our $fast_mode = undef;
@@ -66,6 +67,7 @@ sub new {
     my $filename = undef;
     my $version  = undef;
     my $allow_missing_files = undef;
+    my $force_relative_files = undef;
 
     if ( @_ % 2 == 0 ) {
         my %args = ();
@@ -81,6 +83,9 @@ sub new {
         if ( $args{allow_missing_files} ) {
             $allow_missing_files = 1;
         }
+        if ( $args{force_relative_files} ) {
+            $force_relative_files = 1;
+        }
     }
     else {
         croak "single argument form of new() no longer supported\n",
@@ -93,6 +98,9 @@ sub new {
     # parse all object configuration files
     if ( my $files = $main_cfg->get('cfg_file') ) {
         foreach my $file ( @$files ) {
+            if ( $force_relative_files ) {
+                $file = _modpath( $filename, $file );
+            }
             next if ( $allow_missing_files && !-e $file );
             $obj_cfgs->parse( $file );
         }
@@ -104,6 +112,9 @@ sub new {
             recurse_dir( \@dir_files, $cfgdir );
         }
         foreach my $file ( @dir_files ) {
+            if ( $force_relative_files ) {
+                $file = _modpath( $filename, $file );
+            }
             next if ( $allow_missing_files && !-e $file );
             $obj_cfgs->parse( $file );
         }
@@ -137,6 +148,13 @@ sub recurse_dir {
             recurse_dir( $file_list, "$dir/$file" )
         }
     }
+}
+
+sub _modpath {
+    my( $main_cfg, $sub_cfg ) = @_;
+    my $cfgfile = File::Basename::basename($sub_cfg);
+    my $subdir  = File::Basename::dirname($main_cfg);
+    return $subdir .'/' . $cfgfile;
 }
 
 sub fast_mode {
