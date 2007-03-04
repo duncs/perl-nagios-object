@@ -3,6 +3,7 @@ t/05object_config.t
 t/10config_file.t
 t/50config.t
 t/51config-wildcards.t
+t/54dump.t
 t/99config-extend.t
 t/nagios.cfg
 t/nagios-missing-file.cfg

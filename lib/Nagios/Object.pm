@@ -21,6 +21,7 @@ use strict qw( subs vars );
 use Carp;
 use Exporter;
 use Data::Dumper;
+use Scalar::Util qw(blessed);
 @Nagios::Object::ISA = qw( Exporter );
 $Nagios::Object::VERSION = 0.11;
 
@@ -59,8 +60,8 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         use                           => ['Nagios::Service',         10 ],
         service_description           => ['STRING',                  10 ],
         host_name                     => [['Nagios::Host'],          10 ],
-        servicegroups                 => [['Nagios::ServiceGroup'],  18 ],
-        hostgroup                     => [['Nagios::HostGroup'],     18 ],
+        servicegroups                 => [['Nagios::ServiceGroup'],  8  ],
+        hostgroup                     => [['Nagios::HostGroup'],     8  ],
         is_volatile                   => ['BINARY',                  8  ],
         check_command                 => ['Nagios::Command',         8  ],
         max_check_attempts            => ['INTEGER',                 8  ],
@@ -108,7 +109,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
 	    alias                         => ['STRING',                  8  ],
 	    address                       => ['STRING',                  8  ],
 	    parents                       => [['Nagios::Host'],          8  ],
-        hostgroup                     => [['Nagios::HostGroup'],     18 ],
+        hostgroup                     => [['Nagios::HostGroup'],     8  ],
 	    check_command                 => ['STRING',                  8  ],
 	    max_check_attempts            => ['INTEGER',                 8  ],
 	    checks_enabled                => ['BINARY',                  8  ],
@@ -229,7 +230,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     HostEscalation => {
 	    use                           => ['Nagios::HostEscalation',  8  ],
 		host_name                     => ['Nagios::Host',            8  ],
-		hostgroup                     => ['Nagios::HostGroup',       16 ],
+		hostgroup                     => ['Nagios::HostGroup',       8  ],
         contact_groups                => [['Nagios::ContactGroup'],  8  ],
         first_notification            => ['INTEGER',                 8  ],
         last_notification             => ['INTEGER',                 8  ],
@@ -511,18 +512,19 @@ sub dump {
             $value = $value->name;
         }
         elsif ( $attribute eq 'use' ) {
-            next if ( !$value || !$value->use ); # root-level template
-            $value = $value->use->name;
+            if ( ref $value ) {
+                $value = $value->use->name;
+            }
         }
         elsif ( $attrtype eq 'TIMERANGE' ) {
             $value = dump_time_range( $value );
         }
         elsif ( ref($value) eq 'ARRAY' ) {
-            $value = join ', ', map { $_->name } @$value;
+            $value = join ',', map { blessed $_ ? $_->name : $_ } @$value;
         }
 
-        if ( $value ) {
-            $retval .= "\t$attribute = $value\n";
+        if ( defined $value && length $value ) {
+            $retval .= "\t$attribute $value\n";
         }
         elsif ( !$self->attribute_allows_undef($attribute) ) {
             croak "a required value is undefined";
@@ -530,6 +532,40 @@ sub dump {
     }
 
     $retval .= "}\n";
+}
+
+=item use()
+
+=cut
+
+sub use {
+    my $self = shift;
+    my $tmpl = $self->{use};
+
+    # run through the code reference
+    if ( ref $tmpl eq 'CODE' ) {
+        $tmpl = $tmpl->();
+    }
+
+    return $tmpl; # may be undef if this is not a child object
+}
+sub set_use { shift->_set( 'use', @_ ); }
+
+sub template {
+    my $self = shift;
+    my $tmpl = $self->use;
+
+    # when objects are built by Nagios::Object::Config, it's necessary
+    # to run another step after parsing to link up all of the objects
+    # this method does it on-demand 
+    unless ( blessed $tmpl ) {
+        if ( my $parser = $self->{object_config_object} ) {
+            $parser->resolve($self);
+            $tmpl = $self->use; # update after resolution
+        }
+    }
+
+    return $tmpl;
 }
 
 =item name()
@@ -747,6 +783,10 @@ sub _set ($ $ $) {
         $self->_validate( $key, $value, @{$vf->{$key}} );
     }
 
+    if ( ref $vf->{$key}[0] eq 'ARRAY' && $value =~ /,/ ) {
+        $value = [ split /\s*,\s*/, $value ];
+    }
+
     # set the value (which is an anonymous subroutine)
     if ( defined($value) ) {
         $self->{$key} = sub { $value };
@@ -855,6 +895,28 @@ sub set_hostgroup_name {
     }
 }
 
+# support shorthand "host" for "host_name" ... this is really annoying and
+# can probably also be automated, but for now it just needs to be fixed
+sub host {
+    my $self = shift;
+    if ( $self->can('host_name') ) {
+        return $self->host_name( @_ );
+    }
+    else {
+        confess "Called host() on an object that doesn't support it.";
+    }
+}
+
+sub set_host {
+    my $self = shift;
+    if ( $self->can('set_host_name') ) {
+        return $self->set_host_name( @_ );
+    }
+    else {
+        confess "Called set_host() on an object that doesn't support it.";
+    }
+}
+
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
 # This will create classes with methods defined in %nagios_setup at
@@ -890,17 +952,28 @@ GENESIS: {
 
         # create methods for each entry in $nagios_setup{$object}
         foreach my $method ( keys(%{$nagios_setup{$object}}) ) {
-            next if ( $method eq 'name' );
+            # name() is a special case and is implemented by hand
+            # use() has some cases where it doesn't work well as generic code
+            next if ( $method eq 'name' || $method eq 'use' );
+
+            # the members() method in ServiceGroup is implemented manually (below)
             next if ( $pkg eq 'Nagios::ServiceGroup' && $method eq 'members' );
+
             # create set_ method
             *{"$pkg\::set_$method"} = sub { shift->_set( $method, @_ ); };
 
             # create get method
             *{"$pkg\::$method"} = sub {
-                return $_[0]->{$method}->() if ref $_[0]->{$method} eq 'CODE';
-                if ( ref($_[0]->{use}) eq 'CODE' ) {
-                    my $tmpl = $_[0]->{use}->();
-                    return $tmpl->{$method}->() if $tmpl->{$method};
+                my $self = shift;
+                my $value = $self->{$method};
+                if ( defined $value && ref $value eq 'CODE' ) {
+                    return $value->();
+                }
+                elsif ( ref $self->template ) {
+                    return $self->template->$method;
+                }
+                else {
+                    #confess "BUG: Unhandled condition in get-method '$method'.";
                 }
             };# end of anonymous "get" subroutine
 
@@ -920,19 +993,19 @@ GENESIS: {
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
 # special-case methods coded straight into their packages
-# these are usually proxies to the autogenerated methods for alternate names
 
 package Nagios::Host;
 
+# aliases
 sub hostgroups { shift->hostgroup(@_); }
 sub set_hostgroups { shift->set_hostgroup(@_); }
 
 package Nagios::HostGroup;
 
+# aliases
 sub hostgroup { shift->hostgroup_name(@_); }
 sub set_hostgroup { shift->set_hostgroup_name(@_); }
 
-# members() just isn't worth supporting in the generic code right now
 package Nagios::ServiceGroup;
 use Carp;
 
@@ -987,7 +1060,7 @@ sub _split_members {
     for ( my $i=0; $i<@pieces; $i+=2 ) {
         push @out, [ $pieces[$i] => $pieces[$i+1] ];
     }
-    warn Data::Dumper::Dumper(\@out);
+    #warn Data::Dumper::Dumper(\@out);
     return @out;
 }
 

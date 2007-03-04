@@ -19,6 +19,7 @@ package Nagios::Object::Config;
 use strict;
 use warnings;
 use Nagios::Object qw(:all %nagios_setup);
+use Scalar::Util qw(blessed);
 use Symbol;
 use Carp;
 
@@ -130,82 +131,16 @@ Parse a nagios object configuration file into memory.  Although Nagios::Objects 
 
 =cut
 
-=item COMMENTED OUT NEW PARSER WORK IN PROGRESS
-
-# this is the new one I'm working on to improve speed and flexibility
-sub parse2 {
-    my( $self, $filename ) = @_;
-    croak "cannot read file '$filename': $!" unless ( $filename && -r $filename );
-
-    my $object_re = qr/
-        # the type gets captured into $1
-        define \s* (\w+) \s*
-        # capture all of the text between the brackets into $2
-        {( .*?
-        # match the last bracket only if followed by another definition
-        )} (?= \s* define \s+ \w+ \s* {)
-        # capture extra text into $3 for further processing
-        (.*)$
-    /sx;
-
-    my $attr_line_re = qr/
-        # attribute name => $1
-        ^\s* (\w+) \s+
-        # non-capture grouping
-        (?:
-            # capture value into $2
-            # |        make sure semicolon is not escaped
-            # |        |            capture comment into $3
-            (.+?) \s* (?<!\\)(; \s* .+?)
-            |
-            # capture value into $4 when there is no comment on the same line
-            (.+)
-        )$ # EOL
-    /x;
-
-    $Nagios::Object::pre_link = 1;
-
-    # $file_idx is for tracking source files so modified
-    # configurations can be written out to the same files
-    my $file_idx = push( @{$self->{config_files}}, $filename ) - 1;
-
-	my $fh = gensym();
-	open( $fh, "<$filename" )
-	    || croak "could not open $filename for reading: $!";
-
-    my( $entry, $type, $data ) = ( '', '', '' );
-    while ( my $line = <$fh> ) {
-        $entry .= $line;
-        if ( $entry =~ /$entry_re/ ) {
-            ($type, $data, $entry) = ($1, $2, $3);
-
-            my( %object, %comments, $key ) = ();
-            foreach ( split /[\r\n]+/, $data ) {
-                if ( $line =~ /$line_re/ ) {
-                    $key = $1;
-                    # see the definition of $line_re above to understand this
-                    $object{$1} = defined($2) ? $2 : $4;
-                    $comments{$1} = $3 if defined($3);
-                }
-                elsif ( $line =~ /^\s*;\s*(.*)$/ ) {
-                    $comments{$key} = $1;
-                }
-            }
-        }
-    }
-}
-
-=cut
-
 # TODO: add checks for undefined values where prohibited in %nagios_setup
+# Note: many things that look a little inefficient or weird can probably
+# be traced back to the C source for Nagios, since the original parser
+# was a perl-ized version of that code.   I'm (tobeya) working on a new
+# one that should be faster and more tolerant of broken configs, but it
+# needs a lot of testing before going to CPAN.
 sub parse {
     my( $self, $filename ) = @_;
 
     $Nagios::Object::pre_link = 1;
-
-    # $file_idx is for tracking source files so modified
-    # configurations can be written out to the same files
-    my $file_idx = push( @{$self->{config_files}}, $filename ) - 1;
 
 	my $fh = gensym();
 	open( $fh, "<$filename" )
@@ -245,7 +180,9 @@ sub parse {
 	    elsif ( $line =~ /define\s+(\w+)\s*{?(.*)$/ ) {
 	        $type = $1;
 	        if ( $in_definition ) {
-	            croak "Error: Unexpected start of object definition in file '$filename' on line $line_no.  Make sure you close preceding objects before starting a new one.\n";
+	            croak "Error: Unexpected start of object definition in file ".
+                      "'$filename' on line $line_no.  Make sure you close ".
+                      "preceding objects before starting a new one.\n";
             }
             elsif ( !Nagios::Object->validate_object_type($type) ) {
 	            croak "Error: Invalid object definition type '$type' in file '$filename' on line $line_no.\n";
@@ -322,8 +259,8 @@ sub find_object {
     }
 
     foreach my $obj ( @$searchlist ) {
+        #printf STDERR "obj name '%s', name searched '%s'\n", $obj->name, $name;
         if ( $obj->name && $obj->name eq $name ) {
-            #printf "obj name %s, name searched %s\n", $obj->name, $name;
             return $obj;
         }
     }
@@ -490,9 +427,12 @@ sub resolve {
     # set the resolved flag
     $object->resolved(1);
 
-    if ( $object->has_attribute('use') && $object->use ) {
+    if ( $object->has_attribute('use') ) {
+        my $use = $object->use;
+
+        return 1 if ( !$use || blessed $use );
+
         my $template = $self->find_object( $object->use, ref $object );
-        #my $template = $self->find_attribute( 'use', $object->use, ref $object );
         $object->_set( 'use', $template );
     }
 
