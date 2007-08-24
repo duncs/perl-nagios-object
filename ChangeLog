@@ -71,4 +71,4 @@
 0.19 - updated fix for last status in the statuslog file
 	* added $VERSION to all modules
 	* added tags to test and bin files
-
+0.20 - mostly cosmetic bugfixes
