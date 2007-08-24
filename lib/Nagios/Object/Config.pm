@@ -648,7 +648,7 @@ Returns an array/arrayref of objects of the given type.
  $config->list_hostescalations
  $config->list_hostgroupescalations
  $config->list_serviceescalations
- $config->list_servicegroup
+ $config->list_servicegroups
  $config->list_hostextinfo
  $config->list_serviceextinfo
 
