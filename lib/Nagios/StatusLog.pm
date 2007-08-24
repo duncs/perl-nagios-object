@@ -21,6 +21,8 @@ use strict qw( subs vars );
 use warnings;
 use Symbol;
 
+our $VERSION = '$Rev$';
+
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
     # first block of items is from Nagios v1, second is new stuff in Nagios v2
@@ -275,6 +277,8 @@ sub update_v2 ($) {
         (\w+) \s*
         # capture all of the text between the brackets into $2
         {( .*? )}
+        # match the last bracket only if followed by another definition
+        (?=(?: \s* (?:info|program|host|service) \s* { | \Z) )
         # capture remaining text (1-2 lines) into $3 for re-processing
         (.*)$
     /xs;
