@@ -560,21 +560,22 @@ package Nagios::Service::Status;
 sub status {
     my $self = shift;
     if ( $self->{__parent}{VERSION} > 1.9999999 ) {
-        if ( $self->{current_state} == 1 
-          or $self->{current_state} == 0 ) {
-            return 'PENDING';
+        if ( $self->{current_state} == 0 ) {
+            if ($self->{has_been_checked} == 0) {
+                return 'PENDING';
+            }
+            else {
+                return 'OK';
+            }
         }
-        elsif ( $self->{current_state} == 2 ) {
-            return 'OK';
-        }
-        elsif ( $self->{current_state} == 4 ) {
+        elsif ( $self->{current_state} == 1 ) {
             return 'WARNING';
         }
-        elsif ( $self->{current_state} == 8 ) {
-            return 'UNKNOWN';
-        }
-        elsif ( $self->{current_state} == 16 ) {
+        elsif ( $self->{current_state} == 2 ) {
             return 'CRITICAL';
+        }
+        elsif ( $self->{current_state} == 3 ) {
+            return 'UNKNOWN';
         }
         else {
             return "Unknown Status '$self->{current_state}'";
@@ -591,17 +592,18 @@ package Nagios::Host::Status;
 sub status {
     my $self = shift;
     if ( $self->{__parent}{VERSION} > 1.9999999 ) {
-        if ( $self->{current_state} == 1 
-          or $self->{current_state} == 0 ) {
-            return 'PENDING';
+        if ( $self->{current_state} == 0 ) {
+            if ($self->{has_been_checked} == 0) {
+                return 'PENDING';
+            }
+            else {
+                return 'OK';
+            }
         }
-        elsif ( $self->{current_state} == 2 ) {
-            return 'UP';
-        }
-        elsif ( $self->{current_state} == 4 ) {
+        elsif ( $self->{current_state} == 1 ) {
             return 'DOWN';
         }
-        elsif ( $self->{current_state} == 8 ) {
+        elsif ( $self->{current_state} == 2 ) {
             return 'UNREACHABLE';
         }
         else {
