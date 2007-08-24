@@ -1,5 +1,9 @@
 #!/usr/local/bin/perl
 
+# File ID: $Id$
+# Last Change: $LastChangedDate$
+# Revision: $Rev$
+
 use Nagios::Config;
 use Nagios::StatusLog;
 use Benchmark ':hireswallclock';

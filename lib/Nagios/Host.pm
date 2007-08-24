@@ -1,6 +1,8 @@
 package Nagios::Host;
 use base qw( Nagios::Object Nagios::Object::Config );
 
+our $VERSION = '$Rev$';
+
 =pod
 
 No documentation here yet.  This module may not even survive on it's own.

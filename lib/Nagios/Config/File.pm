@@ -5,6 +5,8 @@ use warnings ;
 use Carp ; 
 use Symbol ;
 
+our $VERSION = '$Rev$';
+
 my %DUPLICATES_ALLOWED = (
 	cfg_file => 1,
 	cfg_dir => 1,

@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl -w
 
 # File ID: $Id$
-# Last Change: $LastChanged$
+# Last Change: $LastChangedDate$
 # Revision: $Rev$
 
 use strict;

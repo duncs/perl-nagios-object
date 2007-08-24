@@ -1,4 +1,9 @@
 #!/usr/bin/perl -w
+
+# File ID: $Id$
+# Last Change: $LastChangedDate$
+# Revision: $Rev$
+
 use lib qw( ../lib ./lib );
 use Test::More qw(no_plan);
 

@@ -1,5 +1,9 @@
 #!/usr/bin/perl
 
+# File ID: $Id$
+# Last Change: $LastChangedDate$
+# Revision: $Rev$
+
 use strict;
 use warnings;
 use Test::More 'no_plan';

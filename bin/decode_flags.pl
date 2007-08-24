@@ -1,4 +1,9 @@
 #!/usr/bin/perl
+
+# File ID: $Id$
+# Last Change: $LastChangedDate$
+# Revision: $Rev$
+
 use lib qw(./lib ../lib);
 
 use Nagios::Object qw(:all);

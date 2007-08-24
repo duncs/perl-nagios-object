@@ -23,6 +23,7 @@ use Scalar::Util qw(blessed);
 use Symbol;
 use Carp;
 
+our $VERSION = '$Rev$';
 our $fast_mode = undef;
 
 =head1 NAME

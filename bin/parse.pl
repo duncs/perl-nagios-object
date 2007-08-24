@@ -1,4 +1,9 @@
 #!/usr/bin/perl -w
+
+# File ID: $Id$
+# Last Change: $LastChangedDate$
+# Revision: $Rev$
+
 use strict;
 use lib qw( ./lib ../lib);
 use Nagios::Config;

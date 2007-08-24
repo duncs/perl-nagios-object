@@ -2,7 +2,7 @@
 #                                                                         #
 # Nagios::StatusLog, Nagios::(Service|Host|Program)::Status               #
 # Written by Albert Tobey <tobeya@cpan.org>                               #
-# Copyright 2003, Albert P Tobey                                          #
+# Copyright 2003-2007, Albert P Tobey                                     #
 #                                                                         #
 # This program is free software; you can redistribute it and/or modify it #
 # under the terms of the GNU General Public License as published by the   #

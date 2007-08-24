@@ -23,7 +23,7 @@ use Exporter;
 use Data::Dumper;
 use Scalar::Util qw(blessed);
 @Nagios::Object::ISA = qw( Exporter );
-$Nagios::Object::VERSION = 0.11;
+our $VERSION = '$Rev$';
 
 our $pre_link = undef;
 our $fast_mode = undef;
