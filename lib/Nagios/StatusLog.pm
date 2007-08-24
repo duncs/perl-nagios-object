@@ -21,7 +21,7 @@ use strict qw( subs vars );
 use warnings;
 use Symbol;
 
-our $VERSION = '$Rev$';
+our $VERSION = sprintf("2.%06d", q$Rev$ =~ /(\d+)/o);
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {

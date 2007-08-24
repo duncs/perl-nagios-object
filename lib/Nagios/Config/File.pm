@@ -5,7 +5,7 @@ use warnings ;
 use Carp ; 
 use Symbol ;
 
-our $VERSION = '$Rev$';
+our $VERSION = sprintf("2.%06d", q$Rev$ =~ /(\d+)/o);
 
 my %DUPLICATES_ALLOWED = (
 	cfg_file => 1,

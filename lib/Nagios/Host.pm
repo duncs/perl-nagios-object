@@ -1,7 +1,7 @@
 package Nagios::Host;
 use base qw( Nagios::Object Nagios::Object::Config );
 
-our $VERSION = '$Rev$';
+our $VERSION = sprintf("2.%06d", q$Rev$ =~ /(\d+)/o);
 
 =pod
 
