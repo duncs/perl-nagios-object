@@ -1,12 +1,31 @@
 #!/usr/bin/perl
 
-# File ID: $Id$
-# Last Change: $LastChangedDate$
-# Revision: $Rev$
+# $Id$
+# $LastChangedDate$
+# $Rev$
 
 use lib qw(./lib ../lib);
 
 use Nagios::Object qw(:all);
+
+=head1 NAME
+
+decode_flags.pl - decode the flags in Nagios/Object.pm
+
+=head1 DESCRIPTION
+
+The flags in Nagios/Object.pm are currently encoded into a single integer
+by setting its individual bits.    Usually, I'd just use individual flags
+for each of them, but it was getting to be too many to manage.   This is
+actually pretty easy to handle once you get used to it and very common
+in C programming.
+
+=head1 SYNOPSIS
+
+ decode_flags.pl 42
+ decode_flags.pl NAGIOS_V2 NO_INHERIT
+
+=cut
 
 if ( @ARGV == 0 || !$ARGV[0] || $ARGV eq '-h' || $ARGV eq '--help' ) {
     print STDERR "Usage:\n\t$0 42\n\t$0 PERL_ONLY V1\n";
