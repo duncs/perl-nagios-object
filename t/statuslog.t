@@ -2,7 +2,7 @@
 use strict;
 use Test::More;
 use lib qw( ../lib ./lib );
-BEGIN { plan tests => 18 }
+BEGIN { plan tests => 19 }
 eval { chdir('t') };
 
 use_ok( 'Nagios::StatusLog' );
@@ -28,6 +28,7 @@ ok( my @services = $v2log->list_services(), "list_services()" );
 ok( @services > 0, "More then 0 services." );
 ok( my $h = $v2log->host( 'localhost' ), "host()" );
 ok( my $s = $v2log->service('localhost', $services[0]), "service()" );
+ok( grep {/The Last Service/} @services, "Got the last service in the file" );
 
 # spot check
 can_ok( $h, qw( host_name status check_command ) );

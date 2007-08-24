@@ -460,7 +460,7 @@ service {
 
 service {
        host_name=localhost
-       service_description=EOIWF HWEOI H
+       service_description=The Last Service
        modified_attributes=0
        check_command=reset_alarm
        event_handler=

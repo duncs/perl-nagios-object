@@ -273,10 +273,8 @@ sub update_v2 ($) {
     my $entry_re = qr/
         # capture the type into $1
         (\w+) \s*
-            # capture all of the text between the brackets into $2
-            {( .*? )}
-            # match the last bracket only if followed by another definition
-            (?= \s* (?:info|program|host|service) \s* { )
+        # capture all of the text between the brackets into $2
+        {( .*? )}
         # capture remaining text (1-2 lines) into $3 for re-processing
         (.*)$
     /xs;
