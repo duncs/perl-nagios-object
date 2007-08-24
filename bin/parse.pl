@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 
-# File ID: $Id$
-# Last Change: $LastChangedDate$
-# Revision: $Rev$
+# $Id$
+# $LastChangedDate$
+# $Rev$
 
 use strict;
 use lib qw( ./lib ../lib);
