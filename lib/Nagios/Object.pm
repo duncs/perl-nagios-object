@@ -2,7 +2,7 @@
 #                                                                         #
 # Nagios::Object                                                          #
 # Written by Albert Tobey <tobeya@cpan.org>                               #
-# Copyright 2003-2006, Albert P Tobey                                     #
+# Copyright 2003-2007, Albert P Tobey                                     #
 #                                                                         #
 # This program is free software; you can redistribute it and/or modify it #
 # under the terms of the GNU General Public License as published by the   #
@@ -23,7 +23,7 @@ use Exporter;
 use Data::Dumper;
 use Scalar::Util qw(blessed);
 @Nagios::Object::ISA = qw( Exporter );
-our $VERSION = sprintf("2.%06d", q$Rev$ =~ /(\d+)/o);
+our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
 
 our $pre_link = undef;
 our $fast_mode = undef;
