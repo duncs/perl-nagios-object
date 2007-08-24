@@ -557,6 +557,8 @@ Nagios::Host Nagios::Service
 
 package Nagios::Service::Status;
 
+our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
+
 # Nagios 2.x has current_state instead of status, but since anybody
 # using this module is probably using status and does not want to
 # mess around with converting the integer, this method wraps it up
@@ -591,6 +593,7 @@ sub status {
 }
 
 package Nagios::Host::Status;
+our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
 
 # same deal as Nagios::Service::Status::status()
 sub status {
@@ -620,8 +623,10 @@ sub status {
 }
 
 package Nagios::Program::Status;
+our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
 
 package Nagios::Info::Status;
+our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
 
 1;
 

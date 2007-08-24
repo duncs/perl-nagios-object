@@ -995,12 +995,14 @@ GENESIS: {
 # special-case methods coded straight into their packages
 
 package Nagios::Host;
+our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
 
 # aliases
 sub hostgroups { shift->hostgroup(@_); }
 sub set_hostgroups { shift->set_hostgroup(@_); }
 
 package Nagios::HostGroup;
+our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
 
 # aliases
 sub hostgroup { shift->hostgroup_name(@_); }
@@ -1008,6 +1010,7 @@ sub set_hostgroup { shift->set_hostgroup_name(@_); }
 
 package Nagios::ServiceGroup;
 use Carp;
+our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
 
 sub members {
     my $self = shift;
@@ -1065,6 +1068,7 @@ sub _split_members {
 }
 
 package Nagios::Service;
+our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
 
 1;
 

@@ -1,6 +1,6 @@
 ---
 name: Nagios-Object
-version: 0.19
+version: 0.20
 author:
   - 'Albert P Tobey <tobert@gmail.com>'
 abstract: 'Nagios::Object - Nagios object configuration parsing.'
