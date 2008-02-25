@@ -1,6 +1,6 @@
 ---
 name: Nagios-Object
-version: 0.20
+version: 0.21
 author:
   - 'Albert P Tobey <tobert@gmail.com>'
 abstract: 'Nagios::Object - Nagios object configuration parsing.'
@@ -18,35 +18,43 @@ build_requires:
 provides:
   Nagios::Config:
     file: lib/Nagios/Config.pm
-    version: 000034
+    version: 0.21
   Nagios::Config::File:
     file: lib/Nagios/Config/File.pm
-    version: 000034
+    version: 0.21
   Nagios::Host:
     file: lib/Nagios/Object.pm
+    version: 0
   Nagios::Host::Status:
     file: lib/Nagios/StatusLog.pm
+    version: 000000
   Nagios::HostGroup:
     file: lib/Nagios/Object.pm
+    version: 0
   Nagios::Info::Status:
     file: lib/Nagios/StatusLog.pm
+    version: 000000
   Nagios::Object:
     file: lib/Nagios/Object.pm
-    version: 000034
+    version: 0.21
   Nagios::Object::Config:
     file: lib/Nagios/Object/Config.pm
-    version: 000034
+    version: 0.21
   Nagios::Program::Status:
     file: lib/Nagios/StatusLog.pm
+    version: 000000
   Nagios::Service:
     file: lib/Nagios/Object.pm
+    version: 0
   Nagios::Service::Status:
     file: lib/Nagios/StatusLog.pm
+    version: 000000
   Nagios::ServiceGroup:
     file: lib/Nagios/Object.pm
+    version: 0
   Nagios::StatusLog:
     file: lib/Nagios/StatusLog.pm
-    version: 000034
+    version: 0.21
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

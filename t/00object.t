@@ -1,9 +1,5 @@
 #!/usr/bin/perl -w
 
-# File ID: $Id$
-# Last Change: $LastChangedDate$
-# Revision: $Rev$
-
 use lib qw( ../lib ./lib );
 use Test::More qw(no_plan);
 
@@ -142,7 +138,7 @@ foreach my $pkg ( qw( Service Host HostGroup Contact ContactGroup Command TimePe
     }
 
     # make sure all objects can call the "regular" methods
-    foreach my $method ( qw( list_attributes attribute_type attribute_is_list attribute_allows_undef name ) ) {
+    foreach my $method ( qw( list_attributes attribute_type attribute_is_list name ) ) {
         can_ok( $object, $method );
     }
 

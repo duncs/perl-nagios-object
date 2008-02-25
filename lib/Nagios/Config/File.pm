@@ -4,7 +4,7 @@ use strict ;
 use warnings ;
 use Carp ; 
 use Symbol ;
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 my %DUPLICATES_ALLOWED = (
 	cfg_file => 1,

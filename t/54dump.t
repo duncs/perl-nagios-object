@@ -1,10 +1,5 @@
 #!/usr/bin/perl
 
-# File ID: $Id$
-# Last Change: $LastChangedDate$
-# Revision: $Rev$
-
-
 use strict;
 use Test::More qw(no_plan);
 use File::Temp qw(tempfile);

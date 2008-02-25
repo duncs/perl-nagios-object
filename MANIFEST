@@ -57,3 +57,8 @@ lib/Nagios/Object/Config.pm
 lib/Nagios/Object.pm
 lib/Nagios/Config.pm
 lib/Nagios/StatusLog.pm
+t/60flexible-attributes.t
+t/60flexible-attributes1.cfg
+t/60flexible-attributes2.cfg
+t/sample-config-v3.cfg
+

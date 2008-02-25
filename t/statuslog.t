@@ -1,9 +1,5 @@
 #!/usr/local/bin/perl -w
 
-# File ID: $Id$
-# Last Change: $LastChangedDate$
-# Revision: $Rev$
-
 use strict;
 use Test::More;
 use lib qw( ../lib ./lib );

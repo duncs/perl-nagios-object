@@ -23,8 +23,9 @@ use Scalar::Util qw(blessed);
 use Symbol;
 use Carp;
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 our $fast_mode = undef;
+our $strict_mode = undef;
 
 =head1 NAME
 
@@ -124,6 +125,11 @@ sub fast_mode {
     return $fast_mode;
 }
 
+sub strict_mode {
+    if ( $_[1] ) { $strict_mode = $_[1] }
+    return $strict_mode;
+}
+
 =item parse()
 
 Parse a nagios object configuration file into memory.  Although Nagios::Objects will be created, they are not really usable until the register() method is called.
@@ -219,9 +225,20 @@ sub parse {
 
             my( $key, $val ) = split( /\s+/, $line, 2 );
             my $set_method = 'set_'.$key;
-            confess "\"$key\" is invalid or module out of date: no such method \"$set_method\""
-                unless ( $current->can( $set_method ) );
-	        $current->$set_method( $val );
+            if ( $current->can( $set_method ) ) {
+	            $current->$set_method( $val );
+            }
+            elsif ( $strict_mode ) {
+                confess "Invalid attribute: \"$key\".  Could not find ".ref($current)."::$set_method.   Try disabling strict_mode? (see: perldoc Nagios::Object::Config)";
+            }
+            # fall back to simple scalar storage with even less verification
+            # - this is the bit that lets me slack off between Nagios releases
+            # because it'll let new options "just work" for most cases - the
+            # rest can send in bug reports, rather than the majority
+            else {
+                $nagios_setup{$current->setup_key}->{$key} = [ 'STRING', 0 ];
+                $current->{$key} = $val;
+            }
 	    }
         else {
             croak "Error: Unexpected token in file '$filename' on line $line_no.\n";
@@ -428,13 +445,9 @@ sub resolve {
     # set the resolved flag
     $object->resolved(1);
 
-    if ( $object->has_attribute('use') ) {
-        my $use = $object->use;
-
-        return 1 if ( !$use || blessed $use );
-
+    if ( exists $object->{use} && defined $object->{use} && !exists $object->{_use} ) {
         my $template = $self->find_object( $object->use, ref $object );
-        $object->_set( 'use', $template );
+        $object->{_use} = $template;
     }
 
     1;

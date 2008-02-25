@@ -72,3 +72,17 @@
 	* added $VERSION to all modules
 	* added tags to test and bin files
 0.20 - mostly cosmetic bugfixes
+0.21 - Nagios v3 support and AUTOLOAD support for unrecognized object attributes
+    * internally dropped attribute indirection through subref's - it was silly and confusing and is now gone
+    * v3 support, added v3 example configs to the test suite
+        - support for the new timeperiod stuff is still incomplete
+        - statuslog still needs work - might just switch to the AUTOLOAD model completely for that
+    * unrecognized attributes are accepted by default now - see Nagios::Object::Config for how to enable strict_mode
+    * support disabling strict_mode in parse.pl and test_configuration.pl
+    * cleanups for switching to git for revision control
+    * updated flags on the setup hash
+    * deleted attribute_allows_undef() method
+    * improved dump() - it takes an optional true/false argument to tell it to flatten out
+      inheritance - the default is to preserve inheritance, calling $obj->dump(1) will flatten
+    * light test cleaning
+

@@ -2,7 +2,7 @@
 #                                                                         #
 # Nagios::Object                                                          #
 # Written by Albert Tobey <tobeya@cpan.org>                               #
-# Copyright 2003-2007, Albert P Tobey                                     #
+# Copyright 2003-2008, Albert P Tobey                                     #
 #                                                                         #
 # This program is free software; you can redistribute it and/or modify it #
 # under the terms of the GNU General Public License as published by the   #
@@ -24,12 +24,13 @@ use Data::Dumper;
 use Scalar::Util qw(blessed);
 @Nagios::Object::ISA = qw( Exporter );
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 our $pre_link = undef;
 our $fast_mode = undef;
 our %nagios_setup;
 
 # constants for flags in %nagios_setup
+# note: might ditch version stuff soon (atobey, 2008-02-24)
 sub NAGIOS_NO_INHERIT { 1<<1 } # cannot inherit from template
 sub NAGIOS_PERL_ONLY  { 1<<2 } # perl module only attribute
 sub NAGIOS_V1         { 1<<3 } # nagios v1 attribute
@@ -37,9 +38,11 @@ sub NAGIOS_V2         { 1<<4 } # nagios v2 attribute
 sub NAGIOS_V1_ONLY    { 1<<5 } # not valid for nagios v2
 sub NAGIOS_V2_ONLY    { 1<<6 } # not valid for nagios v1
 sub NAGIOS_NO_DISPLAY { 1<<7 } # should not be displayed by gui
+sub NAGIOS_V3         { 1<<8 } # nagios v3 attribute
+sub NAGIOS_V3_ONLY    { 1<<9 } # not valid for nagios v1 or v2
 
 # export constants - the :all tag will export them all
-our %EXPORT_TAGS = (all => [qw(NAGIOS_NO_INHERIT NAGIOS_PERL_ONLY NAGIOS_V1 NAGIOS_V2 NAGIOS_V1_ONLY NAGIOS_V2_ONLY NAGIOS_NO_DISPLAY)] );
+our %EXPORT_TAGS = (all => [qw(NAGIOS_NO_INHERIT NAGIOS_PERL_ONLY NAGIOS_V1 NAGIOS_V2 NAGIOS_V3 NAGIOS_V1_ONLY NAGIOS_V2_ONLY NAGIOS_V3_ONLY NAGIOS_NO_DISPLAY)] );
 Exporter::export_ok_tags('all');
 # we also export %nagios_setup only if it is asked for by name
 push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
@@ -60,38 +63,38 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         use                           => ['Nagios::Service',         10 ],
         service_description           => ['STRING',                  10 ],
         host_name                     => [['Nagios::Host'],          10 ],
-        servicegroups                 => [['Nagios::ServiceGroup'],  8  ],
-        hostgroup                     => [['Nagios::HostGroup'],     8  ],
-        is_volatile                   => ['BINARY',                  8  ],
-        check_command                 => ['Nagios::Command',         8  ],
-        max_check_attempts            => ['INTEGER',                 8  ],
-        normal_check_interval         => ['INTEGER',                 8  ],
-        retry_check_interval          => ['INTEGER',                 8  ],
-        active_checks_enabled         => ['BINARY',                  8  ],
-        passive_checks_enabled        => ['BINARY',                  8  ],
-        check_period                  => ['Nagios::TimePeriod',      8  ],
-        parallelize_check             => ['BINARY',                  8  ],
-        obsess_over_service           => ['BINARY',                  8  ],
-        check_freshness               => ['BINARY',                  8  ],
-        freshness_threshold           => ['INTEGER',                 8  ],
-        event_handler                 => ['Nagios::Command',         8  ],
-        event_handler_enabled         => ['BINARY',                  8  ],
-        low_flap_threshold            => ['INTEGER',                 8  ],
-        high_flap_threshold           => ['INTEGER',                 8  ],
-        flap_detection_enabled        => ['BINARY',                  8  ],
-        process_perf_data             => ['BINARY',                  8  ],
-        retain_status_information     => ['BINARY',                  8  ],
-        retain_nonstatus_information  => ['BINARY',                  8  ],
-        notification_period           => ['Nagios::TimePeriod',      8  ],
-        notification_interval         => ['INTEGER',                 8  ],
-        notification_options          => [[qw(u w c r)],             8  ],
-        contact_groups                => [['Nagios::ContactGroup'],  8  ],
-        notifications_enabled         => ['BINARY',                  8  ],
-        stalking_options              => [[qw(o w u c)],             8  ],
+        servicegroups                 => [['Nagios::ServiceGroup'],  280],
+        hostgroup                     => [['Nagios::HostGroup'],     280],
+        is_volatile                   => ['BINARY',                  280],
+        check_command                 => ['Nagios::Command',         280],
+        max_check_attempts            => ['INTEGER',                 280],
+        normal_check_interval         => ['INTEGER',                 280],
+        retry_check_interval          => ['INTEGER',                 280],
+        active_checks_enabled         => ['BINARY',                  280],
+        passive_checks_enabled        => ['BINARY',                  280],
+        check_period                  => ['Nagios::TimePeriod',      280],
+        parallelize_check             => ['BINARY',                  280],
+        obsess_over_service           => ['BINARY',                  280],
+        check_freshness               => ['BINARY',                  280],
+        freshness_threshold           => ['INTEGER',                 280],
+        event_handler                 => ['Nagios::Command',         280],
+        event_handler_enabled         => ['BINARY',                  280],
+        low_flap_threshold            => ['INTEGER',                 280],
+        high_flap_threshold           => ['INTEGER',                 280],
+        flap_detection_enabled        => ['BINARY',                  280],
+        process_perf_data             => ['BINARY',                  280],
+        retain_status_information     => ['BINARY',                  280],
+        retain_nonstatus_information  => ['BINARY',                  280],
+        notification_period           => ['Nagios::TimePeriod',      280],
+        notification_interval         => ['INTEGER',                 280],
+        notification_options          => [[qw(u w c r)],             280],
+        contact_groups                => [['Nagios::ContactGroup'],  280],
+        notifications_enabled         => ['BINARY',                  280],
+        stalking_options              => [[qw(o w u c)],             280],
         failure_prediction_enabled    => ['BINARY',                  16 ],
         name                          => ['service_description',     134],
-        comment                       => ['comment',                 6  ],
-        file                          => ['filename',                6  ]
+        comment                       => ['comment',                 280],
+        file                          => ['filename',                280]
     },
     ServiceGroup => {
         use                           => ['Nagios::ServiceGroup',    18 ],
@@ -106,58 +109,59 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     Host => {
         use                           => ['Nagios::Host',            10 ],
         host_name                     => ['STRING',                  10 ],
-	    alias                         => ['STRING',                  8  ],
-	    address                       => ['STRING',                  8  ],
-	    parents                       => [['Nagios::Host'],          8  ],
-        hostgroup                     => [['Nagios::HostGroup'],     8  ],
-	    check_command                 => ['STRING',                  8  ],
-	    max_check_attempts            => ['INTEGER',                 8  ],
-	    checks_enabled                => ['BINARY',                  8  ],
-        check_freshness               => ['BINARY',                  8  ],
-        check_interval                => ['INTEGER',                 8  ],
-        freshness_threshold           => ['INTEGER',                 8  ],
-	    event_handler                 => ['STRING',                  8  ],
-	    event_handler_enabled         => ['BINARY',                  8  ],
-        check_period                  => ['Nagios::TimePeriod',      8  ],
-	    low_flap_threshold            => ['INTEGER',                 8  ],
-	    high_flap_threshold           => ['INTEGER',                 8  ],
-	    flap_detection_enabled        => ['BINARY',                  8  ],
-	    process_perf_data             => ['BINARY',                  8  ],
-	    retain_status_information     => ['BINARY',                  8  ],
-	    retain_nonstatus_information  => ['BINARY',                  8  ],
-	    notification_period           => [['Nagios::TimePeriod'],    8  ],
-	    notification_interval         => ['INTEGER',                 8  ],
-	    notification_options          => [[qw(d u r)],               8  ],
-	    notifications_enabled         => ['BINARY',                  8  ],
-	    stalking_options              => [[qw(o d u)],               8  ],
+	    alias                         => ['STRING',                  280],
+	    address                       => ['STRING',                  280],
+	    parents                       => [['Nagios::Host'],          280],
+        hostgroup                     => [['Nagios::HostGroup'],     280],
+	    check_command                 => ['STRING',                  280],
+	    max_check_attempts            => ['INTEGER',                 280],
+	    checks_enabled                => ['BINARY',                  280],
+        check_freshness               => ['BINARY',                  280],
+        check_interval                => ['INTEGER',                 280],
+        retry_interval                => ['INTEGER',                 768],
+        freshness_threshold           => ['INTEGER',                 280],
+	    event_handler                 => ['STRING',                  280],
+	    event_handler_enabled         => ['BINARY',                  280],
+        check_period                  => ['Nagios::TimePeriod',      280],
+	    low_flap_threshold            => ['INTEGER',                 280],
+	    high_flap_threshold           => ['INTEGER',                 280],
+	    flap_detection_enabled        => ['BINARY',                  280],
+	    process_perf_data             => ['BINARY',                  280],
+	    retain_status_information     => ['BINARY',                  280],
+	    retain_nonstatus_information  => ['BINARY',                  280],
+	    notification_period           => [['Nagios::TimePeriod'],    280],
+	    notification_interval         => ['INTEGER',                 280],
+	    notification_options          => [[qw(d u r)],               280],
+	    notifications_enabled         => ['BINARY',                  280],
+	    stalking_options              => [[qw(o d u)],               280],
 	    contact_groups                => [['Nagios::ContactGroup'],  16 ],
         failure_prediction_enabled    => ['BINARY',                  16 ],
-	    name                          => ['host_name',               6  ],
-	    comment                       => ['comment',                 6  ],
-	    file                          => ['filename',                6  ]
+	    name                          => ['host_name',               280],
+	    comment                       => ['comment',                 280],
+	    file                          => ['filename',                280]
     },
     HostGroup => {
-	    use                           => ['Nagios::HostGroup',       8  ],
-        hostgroup_name                => ['STRING',                  8  ],
-        alias                         => ['STRING',                  8  ],
+	    use                           => ['Nagios::HostGroup',       280],
+        hostgroup_name                => ['STRING',                  280],
+        alias                         => ['STRING',                  280],
         contact_groups                => [['Nagios::ContactGroup'],  40 ],
-        members	                      => [['Nagios::Host'],          8  ],
-        name                          => ['hostgroup',               6  ],
-        comment                       => ['comment',                 6  ],
-        file                          => ['filename',                6  ]
+        members	                      => [['Nagios::Host'],          280],
+        name                          => ['hostgroup',               280],
+        comment                       => ['comment',                 280],
+        file                          => ['filename',                280]
     },
     Contact => {
-        use                           => ['Nagios::Contact',         8  ],
-        contact_name                  => ['STRING',                  8  ],
-        alias                         => ['STRING',                  8  ],
-        host_notification_period      => ['Nagios::TimePeriod',      8  ],
-		service_notification_period   => ['Nagios::TimePeriod',      8  ],
-        host_notification_options     => [[qw(d u r n)],             8  ],
-		service_notification_options  => [[qw(w u c r n)],           8  ],
-		host_notification_commands    => [['Nagios::Command'],       8  ],
-		service_notification_commands => [['Nagios::Command'],       8  ],
-		email                         => ['STRING',                  8  ],
-		pager                         => ['STRING',                  8  ],
+        use                           => ['Nagios::Contact',         280],
+        contact_name                  => ['STRING',                  280],
+        alias                         => ['STRING',                  280],
+        host_notification_period      => ['Nagios::TimePeriod',      280],
+		service_notification_period   => ['Nagios::TimePeriod',      280],
+        host_notification_options     => [[qw(d u r n)],             280],
+		service_notification_options  => [[qw(w u c r n)],           280],
+		host_notification_commands    => [['Nagios::Command'],       280],
+		service_notification_commands => [['Nagios::Command'],       280],
+		email                         => ['STRING',                  280],
+		pager                         => ['STRING',                  280],
         address1                      => ['STRING',                  16 ],
         address2                      => ['STRING',                  16 ],
         address3                      => ['STRING',                  16 ],
@@ -165,90 +169,102 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         address5                      => ['STRING',                  16 ],
         address6                      => ['STRING',                  16 ],
         contactgroups                 => [['Nagios::ContactGroup'],  16 ],
-        name                          => ['contact_name',            6  ],
-        comment                       => ['comment',                 6  ],
-        file                          => ['filename',                6  ]
+        name                          => ['contact_name',            280],
+        comment                       => ['comment',                 280],
+        file                          => ['filename',                280]
     },
     ContactGroup => {
-	    use                           => ['Nagios::ContactGroup',    8  ],
-        contactgroup_name             => ['STRING',                  8  ],
-        alias                         => ['STRING',                  8  ],
-        members	                      => [['Nagios::Contact'],       8  ],
-        name                          => ['contactgroup_name',       6  ],
-        comment                       => ['comment',                 6  ],
-        file                          => ['filename',                6  ]
+	    use                           => ['Nagios::ContactGroup',    280],
+        contactgroup_name             => ['STRING',                  280],
+        alias                         => ['STRING',                  280],
+        members	                      => [['Nagios::Contact'],       280],
+        name                          => ['contactgroup_name',       280],
+        comment                       => ['comment',                 280],
+        file                          => ['filename',                280]
     },
     Command => {
-	    use                           => ['Nagios::Command',         8  ],
-        command_name                  => ['STRING',                  8  ],
-        command_line                  => ['STRING',                  8  ],
-        name                          => ['command_name',            6  ],
-        comment                       => ['comment',                 6  ],
-        file                          => ['filename',                6  ]
+	    use                           => ['Nagios::Command',         280],
+        command_name                  => ['STRING',                  280],
+        command_line                  => ['STRING',                  280],
+        name                          => ['command_name',            280],
+        comment                       => ['comment',                 280],
+        file                          => ['filename',                280]
     },
     TimePeriod => {
-        use                           => ['Nagios::TimePeriod',      8  ],
-		timeperiod_name               => ['STRING',                  8  ],
-        alias                         => ['STRING',                  8  ],
-        sunday                        => ['TIMERANGE',               8  ],
-        monday                        => ['TIMERANGE',               8  ],
-        tuesday                       => ['TIMERANGE',               8  ],
-        wednesday                     => ['TIMERANGE',               8  ],
-        thursday                      => ['TIMERANGE',               8  ],
-        friday                        => ['TIMERANGE',               8  ],
-        saturday                      => ['TIMERANGE',               8  ],
-        name                          => ['timeperiod_name',         6  ],
-        comment                       => ['comment',                 6  ],
-        file                          => ['filename',                6  ]
+        use                           => ['Nagios::TimePeriod',      280],
+		timeperiod_name               => ['STRING',                  280],
+        alias                         => ['STRING',                  280],
+        sunday                        => ['TIMERANGE',               280],
+        monday                        => ['TIMERANGE',               280],
+        tuesday                       => ['TIMERANGE',               280],
+        wednesday                     => ['TIMERANGE',               280],
+        thursday                      => ['TIMERANGE',               280],
+        friday                        => ['TIMERANGE',               280],
+        saturday                      => ['TIMERANGE',               280],
+        january                       => ['TIMERANGE',               768],
+        february                      => ['TIMERANGE',               768],
+        march                         => ['TIMERANGE',               768],
+        april                         => ['TIMERANGE',               768],
+        may                           => ['TIMERANGE',               768],
+        june                          => ['TIMERANGE',               768],
+        july                          => ['TIMERANGE',               768],
+        august                        => ['TIMERANGE',               768],
+        september                     => ['TIMERANGE',               768],
+        october                       => ['TIMERANGE',               768],
+        november                      => ['TIMERANGE',               768],
+        december                      => ['TIMERANGE',               768],
+        name                          => ['timeperiod_name',         280],
+        comment                       => ['comment',                 280],
+        file                          => ['filename',                280]
     }, 
     ServiceEscalation => {
-	    use                           => ['Nagios::ServiceEscalation',8 ],
-		host_name                     => ['Nagios::Host',            8  ],
-		service_description           => ['Nagios::Service',         8  ],
-        contact_groups                => [['Nagios::ContactGroup'],  8  ],
-        first_notification            => ['INTEGER',                 8  ],
-        last_notification             => ['INTEGER',                 8  ],
-        notification_interval         => ['INTEGER',                 8  ],
+	    use                           => ['Nagios::ServiceEscalation',280],
+		host_name                     => ['Nagios::Host',            280],
+		service_description           => ['Nagios::Service',         280],
+        contact_groups                => [['Nagios::ContactGroup'],  280],
+        first_notification            => ['INTEGER',                 280],
+        last_notification             => ['INTEGER',                 280],
+        notification_interval         => ['INTEGER',                 280],
         escalation_period             => ['Nagios::TimePeriod',      16 ],
         escalation_options            => [[qw(w u c r)],             16 ],
-        name                          => ['generated',               6  ],
-        comment                       => ['comment',                 6  ],
-        file                          => ['filename',                6  ]
+        name                          => ['generated',               280],
+        comment                       => ['comment',                 280],
+        file                          => ['filename',                280]
     },
     ServiceDependency => {
-	    use                           => ['Nagios::ServiceDependency',8 ],
-        dependent_host_name           => ['Nagios::Host',            8  ],
-        dependent_service_description => ['Nagios::Service',         8  ],
-		host_name                     => ['Nagios::Host',            8  ],
-		service_description           => ['Nagios::Service',         8  ],
-		execution_failure_criteria    => [[qw(o w u c n)],           8  ],
-		notification_failure_criteria => [[qw(o w u c n)],           8  ],
-        name                          => ['generated',               6  ],
-        comment                       => ['comment',                 6  ],
-        file                          => ['filename',                6  ]
+	    use                           => ['Nagios::ServiceDependency',280],
+        dependent_host_name           => ['Nagios::Host',            280],
+        dependent_service_description => ['Nagios::Service',         280],
+		host_name                     => ['Nagios::Host',            280],
+		service_description           => ['Nagios::Service',         280],
+		execution_failure_criteria    => [[qw(o w u c n)],           280],
+		notification_failure_criteria => [[qw(o w u c n)],           280],
+        name                          => ['generated',               280],
+        comment                       => ['comment',                 280],
+        file                          => ['filename',                280]
     },
     HostEscalation => {
-	    use                           => ['Nagios::HostEscalation',  8  ],
-		host_name                     => ['Nagios::Host',            8  ],
-		hostgroup                     => ['Nagios::HostGroup',       8  ],
-        contact_groups                => [['Nagios::ContactGroup'],  8  ],
-        first_notification            => ['INTEGER',                 8  ],
-        last_notification             => ['INTEGER',                 8  ],
-        notification_interval         => ['INTEGER',                 8  ],
-        name                          => ['host_name',               6  ],
-        comment                       => ['comment',                 6  ],
-        file                          => ['filename',                6  ]
+	    use                           => ['Nagios::HostEscalation',  280],
+		host_name                     => ['Nagios::Host',            280],
+		hostgroup                     => ['Nagios::HostGroup',       280],
+        contact_groups                => [['Nagios::ContactGroup'],  280],
+        first_notification            => ['INTEGER',                 280],
+        last_notification             => ['INTEGER',                 280],
+        notification_interval         => ['INTEGER',                 280],
+        name                          => ['host_name',               280],
+        comment                       => ['comment',                 280],
+        file                          => ['filename',                280]
     },
     HostDependency => {
-	    use                           => ['Nagios::HostDependency',  8  ],
-        dependent_host_name           => ['Nagios::Host',            8  ],
-		host_name                     => ['Nagios::Host',            8  ],
+	    use                           => ['Nagios::HostDependency',  280],
+        dependent_host_name           => ['Nagios::Host',            280],
+		host_name                     => ['Nagios::Host',            280],
         inherits_parent               => ['INTEGER',                 16 ],
-		notification_failure_criteria => [[qw(o w u c n)],           8  ],
+		notification_failure_criteria => [[qw(o w u c n)],           280],
 		execution_failure_criteria    => [[qw(o w u c n)],           16 ],
-        name                          => ['generated',               6  ],
-        comment                       => ['comment',                 6  ],
-        file                          => ['filename',                6  ]
+        name                          => ['generated',               280],
+        comment                       => ['comment',                 280],
+        file                          => ['filename',                280]
     },
     # Nagios 1.0 only
     HostGroupEscalation => {
@@ -348,8 +364,8 @@ This module contains the code for creating perl objects to represent any of the 
     stalking_options             => [qw(o d u)]
  );
 
- my $localhost = Nagios::Host->new(
-    use       => $generic_host,
+ # this will automatically 'use' $generic_host
+ my $localhost = $generic_host->new(
     host_name => "localhost",
     alias     => "Loopback",
     address   => "127.0.0.1"
@@ -373,13 +389,19 @@ This module contains the code for creating perl objects to represent any of the 
 =item new()
 
 Create a new object of one of the types listed above.
+
+Calling new() on an existing object will use the LHS object as the template for
+the object being created.   This is mainly useful for creating objects without
+involving Nagios::Object::Config (like in the test suite).
+
  Nagios::Host->new( ... );
 
 =cut
 
 # ---------------------------------------------------------------------------- #
 sub new {
-    my $type = ref($_[0]) ? ref(shift) : shift;
+    my $parent = shift;
+    my $type = ref($parent) ? ref($parent) : $parent;
     croak "single argument form of new() no longer supported" if ( @_ % 2 == 1 );
     my %args = @_; # passed-in arguments hash
     
@@ -423,9 +445,16 @@ sub new {
             if ( $nagios_setup{$nagios_setup_key}->{$key}[0] eq 'TIMERANGE' ) {
                 $args{$key} = parse_time_range( $args{$key} );
             }
-            # now, use the _set instead of directly setting for consistency
-            $self->_set( $key, $args{$key} );
+            $default{$key} = $args{$key};
         }
+    }
+
+    # this lets Nagios::Object sanely build heirarchies without Object::Config
+    # by letting the caller say $parent->new() rather than, e.g.
+    # Nagios::TimePeriod->new( use => 'parent name' )
+    if ( ref($parent) ) {
+        $self->{_use} = $parent;
+        $self->{use} = $parent->name;
     }
 
     return $self;
@@ -488,15 +517,17 @@ sub dump_time_range ($) {
 =item dump()
 
 Output a Nagios define { } block from an object.  This is still EXPERIMENTAL,
-but may eventually be robust enough to use for a configuration GUI.
+but may eventually be robust enough to use for a configuration GUI.   Passing
+in a single true argument will tell it to flatten the object inheritance on dump.
 
  print $object->dump();
+ print $object->dump(1); # flatten
 
 =cut
 
 # ---------------------------------------------------------------------------- #
 sub dump {
-    my $self = shift;
+    my( $self, $flatten ) = @_;
     my $retval = 'define ';
 
     $retval .= lc((split /::/, ref($self))[1]) . " {\n";
@@ -507,14 +538,9 @@ sub dump {
 
         my $attrtype = $self->attribute_type( $attribute );
 
-        if ( ref $value && UNIVERSAL::can($value, 'name') ) {
+        if ( blessed $value && UNIVERSAL::can($value, 'name') ) {
             # maybe add an additional check against %nagios_setup
             $value = $value->name;
-        }
-        elsif ( $attribute eq 'use' ) {
-            if ( ref $value ) {
-                $value = $value->use->name;
-            }
         }
         elsif ( $attrtype eq 'TIMERANGE' ) {
             $value = dump_time_range( $value );
@@ -523,49 +549,35 @@ sub dump {
             $value = join ',', map { blessed $_ ? $_->name : $_ } @$value;
         }
 
-        if ( defined $value && length $value ) {
+        if ( exists $self->{$attribute} && defined $self->{$attribute} ) {
             $retval .= "\t$attribute $value\n";
         }
-        elsif ( !$self->attribute_allows_undef($attribute) ) {
-            croak "a required value is undefined";
+        elsif ( $flatten ) {
+            $retval .= "\t$attribute " . $value . "\n";
         }
     }
 
     $retval .= "}\n";
 }
 
-=item use()
-
-=cut
-
-sub use {
-    my $self = shift;
-    my $tmpl = $self->{use};
-
-    # run through the code reference
-    if ( ref $tmpl eq 'CODE' ) {
-        $tmpl = $tmpl->();
-    }
-
-    return $tmpl; # may be undef if this is not a child object
-}
-sub set_use { shift->_set( 'use', @_ ); }
-
 sub template {
     my $self = shift;
-    my $tmpl = $self->use;
 
+    if ( exists $self->{_use} && blessed $self->{_use} ) {
+        return $self->{_use};
+    }
     # when objects are built by Nagios::Object::Config, it's necessary
     # to run another step after parsing to link up all of the objects
     # this method does it on-demand 
-    unless ( blessed $tmpl ) {
+    elsif ( $self->{use} ) {
         if ( my $parser = $self->{object_config_object} ) {
             $parser->resolve($self);
-            $tmpl = $self->use; # update after resolution
+            return $self->{_use};
+        }
+        else {
+            confess "Unable to walk object heirarchy without object configuration.";
         }
     }
-
-    return $tmpl;
 }
 
 =item name()
@@ -594,7 +606,7 @@ sub name {
     }
 
     if ( !$self->register ) {
-        return $self->{name}->();
+        return $self->{name};
     }
     else {
         my $name = $self->$name_method();
@@ -616,7 +628,7 @@ sub set_name {
     my( $self, $val ) = @_;
     confess "cannot set name of objects with multi-key identity"
         if ( ref $self->{name} eq 'ARRAY' );
-    $self->{name} = sub { $val };
+    $self->{name} = $val;
 }
 
 =item register()
@@ -630,14 +642,14 @@ Returns true/undef to indicate whether the calling object is registerable or not
 # ---------------------------------------------------------------------------- #
 sub register {
     my $self = shift;
-    return undef if ( defined $self->{register} && $self->{register}->() == 0 );
+    return undef if ( defined $self->{register} && $self->{register} == 0 );
     return 1;
 }
 
 # not autogenerated, but needs to exist
 sub set_register {
     my( $self, $value ) = @_;
-    $self->{register} = sub { $value };
+    $self->{register} = $value;
 }
 # ---------------------------------------------------------------------------- #
 
@@ -726,22 +738,6 @@ sub attribute_is_list {
     undef;
 }
 
-=item attribute_allows_undef()
-
-Returns true if the attribute provided is allowed to have a value of undef.  Setting an attribute to undef will cause the templates to be searched until a non-undef answer is found.
-
-NOTE: this may go away, since I'm not sure if it's really useful at all.
-
- my $answer = $object->attribute_allows_undef("command_line");
-
-=cut
-
-sub attribute_allows_undef {
-    my $type = ref($_[0]) ? ref($_[0]) : $_[0];
-    return 1 if ( ${"$type\::valid_fields"}->{$_[1]}[1] != 0 );
-    undef;
-}
-
 # ---------------------------------------------------------------------------- #
 # mostly these are only for use by other Nagios::Modules
 sub resolved   {
@@ -778,7 +774,7 @@ sub _set ($ $ $) {
 
     my $vf = $nagios_setup{$self->setup_key};
 
-    if ( !$pre_link ) {
+    if ( !$pre_link && !$fast_mode && exists $vf->{$key} ) {
         # validate passed in arugments against arrayref in $vf (\%valid_fields)
         $self->_validate( $key, $value, @{$vf->{$key}} );
     }
@@ -789,7 +785,7 @@ sub _set ($ $ $) {
 
     # set the value (which is an anonymous subroutine)
     if ( defined($value) ) {
-        $self->{$key} = sub { $value };
+        $self->{$key} = $value;
     }
     else {
         $self->{$key} = undef;
@@ -801,9 +797,6 @@ sub _set ($ $ $) {
 # in the hash in BEGIN
 sub _validate {
     my( $self, $key, $value, $type, $flags ) = @_;
-    #print "--------\@_: ", join(', ', @_), "\n";
-
-    return $value if ( $fast_mode );
 
     croak "$key is required but is ($value) undefined"
         if ( !defined $value && ($flags & NAGIOS_NO_INHERIT) == NAGIOS_NO_INHERIT );
@@ -919,11 +912,8 @@ sub set_host {
 
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
-# This will create classes with methods defined in %nagios_setup at
-# compile-time.  In mod_perl, methods will be as fast as hand-written
-# equivalents.  Maybe if some methods prove rarely used (likely) it may make
-# sense to just use AUTOLOAD and have that instantiate the subroutines, so
-# only the first call to a sub is slow
+
+# use %nagios_setup to create all of the known methods at compile time
 GENESIS: {
     no warnings;
 
@@ -938,9 +928,6 @@ GENESIS: {
         # create a package name
         my $pkg = 'Nagios::'.$object;
 
-        # hack $valid_fields into each class
-        do { ${$pkg.'::valid_fields'} = $nagios_setup{$object}; };
-
         # fill in @ISA for each class
         my $isa = do { \@{$pkg.'::ISA'} };
         push( @$isa, 'Nagios::Object' );
@@ -953,41 +940,67 @@ GENESIS: {
         # create methods for each entry in $nagios_setup{$object}
         foreach my $method ( keys(%{$nagios_setup{$object}}) ) {
             # name() is a special case and is implemented by hand
-            # use() has some cases where it doesn't work well as generic code
-            next if ( $method eq 'name' || $method eq 'use' );
+            next if ( $method eq 'name' );
 
             # the members() method in ServiceGroup is implemented manually (below)
             next if ( $pkg eq 'Nagios::ServiceGroup' && $method eq 'members' );
 
-            # create set_ method
-            *{"$pkg\::set_$method"} = sub { shift->_set( $method, @_ ); };
-
-            # create get method
-            *{"$pkg\::$method"} = sub {
-                my $self = shift;
-                my $value = $self->{$method};
-                if ( defined $value && ref $value eq 'CODE' ) {
-                    return $value->();
-                }
-                elsif ( ref $self->template ) {
-                    return $self->template->$method;
-                }
-                else {
-                    #confess "BUG: Unhandled condition in get-method '$method'.";
-                }
-            };# end of anonymous "get" subroutine
-
-            # create get method with templates recursively applied
-            *{"$pkg\::resolve_$method"} = sub {
-                return $_[0]->$method if defined $_[0]->{$method};
-                if ( $_[0]->use ) {
-                    my $tmpl = $_[0]->use;
-                    my $methodname = "resolve_$method";
-                    return $tmpl->$methodname;
-                }
-            };
+            $pkg->_make_method( $method );
         }
+
+        *{"$pkg\::AUTOLOAD"} = \&Nagios::Object::AUTOLOAD;
+        *{"$pkg\::DESTROY"} = sub { };
     }
+
+    # create methods on-the-fly
+    sub _make_method {
+        my( $pkg, $method ) = @_;
+
+        # create set_ method
+        *{"$pkg\::set_$method"} = sub { shift->_set( $method, @_ ); };
+    
+        # create get method
+        *{"$pkg\::$method"} = sub {
+            my $self = shift;
+            my $value = $self->{$method};
+    
+            if ( defined $value || $method eq 'use' ) {
+                return $value;
+            }
+            else {
+                my $template = $self->template;
+                if ( $template && $template->can($method) ) {
+                    return $template->$method;
+                }
+            }
+            return undef;
+        };# end of anonymous "get" subroutine
+    }
+}
+
+sub DESTROY {}
+
+sub AUTOLOAD {
+    our $AUTOLOAD;
+
+    # this will break if there are ever more than 3 parts to a package name
+    my( $top, $setup_key, $method ) = split /::/, $AUTOLOAD;
+    my $pkg = $top .'::'. $setup_key;
+
+    my $setup_field = $method;
+    if ( $method =~ /^set_(.*)$/ ) {
+        $setup_field = $1;
+    }
+
+
+    if ( exists $nagios_setup{$setup_key}->{$setup_field} ) {
+        $pkg->_make_method( $setup_field );
+    }
+    else {
+        confess "Invalid method call.   $pkg does not know about method $method.";
+    }
+
+    goto \&{$AUTOLOAD};
 }
 
 # ---------------------------------------------------------------------------- #
@@ -995,14 +1008,14 @@ GENESIS: {
 # special-case methods coded straight into their packages
 
 package Nagios::Host;
-our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
+our $VERSION = $Nagios::Object::VERSION;
 
 # aliases
 sub hostgroups { shift->hostgroup(@_); }
 sub set_hostgroups { shift->set_hostgroup(@_); }
 
 package Nagios::HostGroup;
-our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
+our $VERSION = $Nagios::Object::VERSION;
 
 # aliases
 sub hostgroup { shift->hostgroup_name(@_); }
@@ -1010,7 +1023,7 @@ sub set_hostgroup { shift->set_hostgroup_name(@_); }
 
 package Nagios::ServiceGroup;
 use Carp;
-our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
+our $VERSION = $Nagios::Object::VERSION;
 
 sub members {
     my $self = shift;
@@ -1068,7 +1081,7 @@ sub _split_members {
 }
 
 package Nagios::Service;
-our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
+our $VERSION = $Nagios::Object::VERSION;
 
 1;
 

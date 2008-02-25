@@ -26,7 +26,7 @@ use Symbol qw(gensym);
 use File::Basename;
 @Nagios::Config::ISA = qw( Nagios::Object::Config Nagios::Config::File );
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 our $fast_mode = undef;
 
 =head1 NAME

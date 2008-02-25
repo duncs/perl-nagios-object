@@ -20,7 +20,7 @@ use Carp;
 use strict qw( subs vars );
 use warnings;
 use Symbol;
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {

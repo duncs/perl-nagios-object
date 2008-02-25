@@ -1,11 +1,8 @@
 #!/usr/bin/perl
 
-# File ID: $Id$
-# Last Change: $LastChangedDate$
-# Revision: $Rev$
-
 use strict;
 use warnings;
+use lib qw( ./lib ../lib );
 use Test::More 'no_plan';
 use Data::Dumper;
 use Test::Exception;
