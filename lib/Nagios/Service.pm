@@ -1,6 +1,6 @@
 package Nagios::Service;
 
-our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
+our $VERSION = '0.20';
 
 =pod
 

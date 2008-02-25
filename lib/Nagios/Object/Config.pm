@@ -23,7 +23,7 @@ use Scalar::Util qw(blessed);
 use Symbol;
 use Carp;
 
-our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
+our $VERSION = '0.20';
 our $fast_mode = undef;
 
 =head1 NAME

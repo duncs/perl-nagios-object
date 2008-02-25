@@ -4,8 +4,7 @@ use strict ;
 use warnings ;
 use Carp ; 
 use Symbol ;
-
-our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
+our $VERSION = '0.20';
 
 my %DUPLICATES_ALLOWED = (
 	cfg_file => 1,
