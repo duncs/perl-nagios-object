@@ -20,8 +20,8 @@ perl statusdat_demo.pl -l /var/opt/nagios/status.dat
 
 =head1 NOTES
 
-Please send the benchmark outputs to tobeya@cpan.org so I can see how the performance
-is on boxes and configs other than my own.
+Please send the benchmark outputs to duncs@cpan.org so I can see how the 
+performance is on boxes and configs other than my own.
 
 =cut
 

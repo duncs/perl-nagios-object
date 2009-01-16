@@ -21,12 +21,12 @@ Module::Build is to do "perl -MCPAN -e 'install Module::Build'".
  
 Bug Reports:
 
-  Send all bug reports to myself <tobeya@cpan.org>.  In any bug report,
+  Send all bug reports to myself <duncs@cpan.org>.  In any bug report,
 include a short description of your problem, and a copy of the output
 from "Build test."  The more diagnostic information you send, the better.
 
 Sending me a test script/offending code will probably get your issue fixed
 fastest and as a bonus, help prevent me from breaking it again in the future.
 
-<tobeya@cpan.org>
+<duncs@cpan.org>
 

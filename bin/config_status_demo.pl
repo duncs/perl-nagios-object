@@ -19,8 +19,8 @@ perl config_status_demo.pl -c /etc/opt/nagios/nagios.cfg -l /var/opt/nagios/stat
 
 =head1 NOTES
 
-Please send the benchmark outputs to tobeya@cpan.org so I can see how the performance
-is on boxes and configs other than my own.
+Please send the benchmark outputs to duncs@cpan.org so I can see how the 
+performance is on boxes and configs other than my own.
 
 This setup is very sensitive to mistmatches between the configuration and the status log.
 
