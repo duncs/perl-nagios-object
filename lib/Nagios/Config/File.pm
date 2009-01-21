@@ -4,7 +4,10 @@ use strict ;
 use warnings ;
 use Carp ; 
 use Symbol ;
-our $VERSION = '0.21';
+
+# NOTE: due to CPAN version checks this cannot currently be changed to a
+# standard version string, i.e. '0.21'
+our $VERSION = '35';
 
 my %DUPLICATES_ALLOWED = (
 	cfg_file => 1,

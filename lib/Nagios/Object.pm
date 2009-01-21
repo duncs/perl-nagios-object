@@ -26,7 +26,9 @@ use Data::Dumper;
 use Scalar::Util qw(blessed);
 @Nagios::Object::ISA = qw( Exporter );
 
-our $VERSION = '0.21';
+# NOTE: due to CPAN version checks this cannot currently be changed to a
+# standard version string, i.e. '0.21'
+our $VERSION = '35';
 our $pre_link = undef;
 our $fast_mode = undef;
 our %nagios_setup;

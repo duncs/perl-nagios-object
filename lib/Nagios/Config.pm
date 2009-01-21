@@ -28,7 +28,9 @@ use Symbol qw(gensym);
 use File::Basename;
 @Nagios::Config::ISA = qw( Nagios::Object::Config Nagios::Config::File );
 
-our $VERSION = '0.21';
+# NOTE: due to CPAN version checks this cannot currently be changed to a
+# standard version string, i.e. '0.21'
+our $VERSION = '35';
 our $fast_mode = undef;
 
 =head1 NAME

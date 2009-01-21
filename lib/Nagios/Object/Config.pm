@@ -25,7 +25,9 @@ use Scalar::Util qw(blessed);
 use Symbol;
 use Carp;
 
-our $VERSION = '0.21';
+# NOTE: due to CPAN version checks this cannot currently be changed to a
+# standard version string, i.e. '0.21'
+our $VERSION = '35';
 our $fast_mode = undef;
 our $strict_mode = undef;
 

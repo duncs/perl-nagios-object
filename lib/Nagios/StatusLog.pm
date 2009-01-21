@@ -22,7 +22,10 @@ use Carp;
 use strict qw( subs vars );
 use warnings;
 use Symbol;
-our $VERSION = '0.21';
+
+# NOTE: due to CPAN version checks this cannot currently be changed to a
+# standard version string, i.e. '0.21'
+our $VERSION = '35';
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
