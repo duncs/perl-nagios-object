@@ -86,3 +86,4 @@
       inheritance - the default is to preserve inheritance, calling $obj->dump(1) will flatten
     * light test cleaning
 
+0.21.1 - slight amendment of version numbers to allow uploading to CPAN
