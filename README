@@ -32,7 +32,12 @@ fastest and as a bonus, help prevent me from breaking it again in the future.
 
 Notes:
 
-Module maintenance was taken over by <duncs@cpan.org> in January 2009
+Module maintenance was taken over by <duncs@cpan.org> in January 2009.  The
+source has been placed into a git repository at:
+    git://github.com/duncs/perl-nagios-object.git
+
+See also:
+    http://github.com/duncs/perl-nagios-object/
 
 <duncs@cpan.org>
 
