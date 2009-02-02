@@ -1,6 +1,6 @@
 ---
 name: Nagios-Object
-version: 0.21.1
+version: 0.21.2
 author:
   - 'Duncan Ferguson <duncs@cpan.org>'
 abstract: Nagios::Object - Nagios object configuration parsing.
@@ -29,13 +29,13 @@ provides:
     version: 0
   Nagios::Host::Status:
     file: lib/Nagios/StatusLog.pm
-    version: 000000
+    version: 0.1
   Nagios::HostGroup:
     file: lib/Nagios/Object.pm
     version: 0
   Nagios::Info::Status:
     file: lib/Nagios/StatusLog.pm
-    version: 000000
+    version: 0.1
   Nagios::Object:
     file: lib/Nagios/Object.pm
     version: 35
@@ -44,18 +44,18 @@ provides:
     version: 35
   Nagios::Program::Status:
     file: lib/Nagios/StatusLog.pm
-    version: 000000
+    version: 0.1
   Nagios::Service:
     file: lib/Nagios/Object.pm
     version: 0
   Nagios::Service::Status:
     file: lib/Nagios/StatusLog.pm
-    version: 000000
+    version: 0.1
   Nagios::ServiceGroup:
     file: lib/Nagios/Object.pm
     version: 0
   Nagios::StatusLog:
     file: lib/Nagios/StatusLog.pm
-    version: 35
+    version: 36
 resources:
   license: http://www.opensource.org/licenses/gpl-license.php

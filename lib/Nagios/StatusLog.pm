@@ -561,7 +561,7 @@ Nagios::Host Nagios::Service
 
 package Nagios::Service::Status;
 
-our $VERSION = '36';
+our $VERSION = '0.1';
 
 # Nagios 2.x has current_state instead of status, but since anybody
 # using this module is probably using status and does not want to
@@ -597,7 +597,7 @@ sub status {
 }
 
 package Nagios::Host::Status;
-our $VERSION = '36';
+our $VERSION = '0.1';
 
 # same deal as Nagios::Service::Status::status()
 sub status {
@@ -627,10 +627,10 @@ sub status {
 }
 
 package Nagios::Program::Status;
-our $VERSION = '36';
+our $VERSION = '0.1';
 
 package Nagios::Info::Status;
-our $VERSION = '36';
+our $VERSION = '0.1';
 
 1;
 
