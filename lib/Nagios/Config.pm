@@ -35,7 +35,7 @@ our $fast_mode = undef;
 
 =head1 NAME
 
-Nagios::Config
+Nagios::Config - Parser for the Nagios::Object set of perl modules
 
 =head1 DESCRIPTION
 

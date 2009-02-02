@@ -323,7 +323,7 @@ foreach ( keys(%nagios_setup) ) {
 
 =head1 NAME
 
-Nagios::Object
+Nagios::Object - Creates perl objects to represent Nagios objects
 
 =head1 DESCRIPTION
 

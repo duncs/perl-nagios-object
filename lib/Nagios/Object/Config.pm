@@ -33,7 +33,7 @@ our $strict_mode = undef;
 
 =head1 NAME
 
-Nagios::Object::Config
+Nagios::Object::Config - Perl objects to represent Nagios configuration
 
 =head1 DESCRIPTION
 

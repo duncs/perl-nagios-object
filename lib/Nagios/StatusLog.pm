@@ -72,7 +72,7 @@ BEGIN {
 
 =head1 NAME
 
-Nagios::StatusLog, Nagios::(Service|Host|Program)::Status
+Nagios::StatusLog, Nagios::(Service|Host|Program)::Status - Perl objects to represent the Nagios status file
 
 =head1 DESCRIPTION
 
