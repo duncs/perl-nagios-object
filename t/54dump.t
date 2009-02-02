@@ -62,3 +62,31 @@ foreach my $key ( sort keys %test_host ) {
     is_deeply( $host->$key, $file_host->$key, "$key matches" );
 }
 
+
+# test for rt#17945
+my $some_command = "foo";
+my $timeperiod = 5;
+
+my $generic_host = Nagios::Host->new(
+register => 0,
+parents => undef,
+check_command => $some_command,
+max_check_attempts => 3,
+checks_enabled => 1,
+event_handler => $some_command,
+event_handler_enabled => 0,
+low_flap_threshold => 0,
+high_flap_threshold => 0,
+flap_detection_enabled => 0,
+process_perf_data => 1,
+retain_status_information => 1,
+retain_nonstatus_information => 1,
+notification_interval => $timeperiod,
+notification_options => [qw(d u r)],
+notifications_enabled => 1,
+stalking_options => [qw(o d u)]
+);
+isa_ok($generic_host, 'Nagios::Host');
+
+ok( $generic_host->dump(), "rt#17945 - dump ok");;
+
