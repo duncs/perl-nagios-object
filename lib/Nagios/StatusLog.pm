@@ -25,7 +25,7 @@ use Symbol;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '35';
+our $VERSION = '36';
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
@@ -561,7 +561,7 @@ Nagios::Host Nagios::Service
 
 package Nagios::Service::Status;
 
-our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
+our $VERSION = '36';
 
 # Nagios 2.x has current_state instead of status, but since anybody
 # using this module is probably using status and does not want to
@@ -597,7 +597,7 @@ sub status {
 }
 
 package Nagios::Host::Status;
-our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
+our $VERSION = '36';
 
 # same deal as Nagios::Service::Status::status()
 sub status {
@@ -627,10 +627,10 @@ sub status {
 }
 
 package Nagios::Program::Status;
-our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
+our $VERSION = '36';
 
 package Nagios::Info::Status;
-our $VERSION = sprintf('%06d', '$Rev$' =~ /(\d+)/o);
+our $VERSION = '36';
 
 1;
 
