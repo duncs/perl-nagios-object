@@ -90,3 +90,4 @@
 0.21.2 - Fix version numbers missed from 0.21.1 and reinitialise them where
         possible
 0.21.3 - Apply 'whatis' patch from Ryan52
+0.21.4 - Cope with Nagios 3 status.dat file better

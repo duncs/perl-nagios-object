@@ -119,7 +119,7 @@ sub new {
                 $logfile = $value;
             }
             elsif ( lc $param eq 'version' ) {
-                $version = $value;
+                $version = int($value);
             }
         }
     }
@@ -150,7 +150,10 @@ Updates the internal data structures from the logfile.
 
 sub update {
     my $self = shift;
-    if ( $self->{VERSION} >= 2 ) {
+    if ( $self->{VERSION} >= 3 ) {
+        return $self->update_v3( @_ );
+    }
+    if ( $self->{VERSION} == 2 ) {
         return $self->update_v2( @_ );
     }
     return $self->update_v1( @_ );
@@ -228,18 +231,18 @@ sub update_v1 ($) {
     1;
 }
 
+# be compatible with StatusLog which makes sure that references
+# held in client code remain valid during update (also prevents
+# some memory leaks)
+sub _copy {
+    my( $from, $to ) = @_; 
+    foreach my $key ( keys %$from ) {
+        $to->{$key} = $from->{$key};
+    }
+}
+
 sub update_v2 ($) {
     my $self = shift;
-
-    # be compatible with StatusLog which makes sure that references
-    # held in client code remain valid during update (also prevents
-    # some memory leaks)
-    sub _copy {
-        my( $from, $to ) = @_; 
-        foreach my $key ( keys %$from ) {
-            $to->{$key} = $from->{$key};
-        }
-    }
 
     my %handlers = (
         host => sub {
@@ -264,6 +267,80 @@ sub update_v2 ($) {
             _copy( shift, $self->{INFO} );
         },
         program => sub { 
+            _copy( shift, $self->{PROGRAM} );
+        }
+
+    );
+
+    my $log_fh = gensym;
+    open( $log_fh, "<$self->{LOGFILE}" )
+        || croak "could not open file $self->{LOGFILE} for reading: $!";
+
+    # change the first line of the RE to this:
+    # (info|program|host|service) \s* {(
+    # to make it a bit more careful, but it has a measurable cost on runtime
+    my $entry_re = qr/
+        # capture the type into $1
+        (\w+) \s*
+        # capture all of the text between the brackets into $2
+        {( .*? )}
+        # match the last bracket only if followed by another definition
+        (?=(?: \s* (?:info|program|host|service) \s* { | \Z) )
+        # capture remaining text (1-2 lines) into $3 for re-processing
+        (.*)$
+    /xs;
+
+    my $entry = '';
+    while ( my $line = <$log_fh> ) {
+        next if ( $line =~ /^\s*#/ );
+        $entry .= $line;
+        if ( $entry =~ m/$entry_re/ ) {
+            ( my $type, my $text, $entry ) = ( $1, $2, $3 );
+            $text =~ s/[\r\n]+\s*/\n/g; # clean up whitespace and newlines
+            my %item = map { split /\s*=\s*/, $_, 2 } split /\n/, $text;
+            $handlers{$type}->( \%item );
+        }
+    }
+
+    close( $log_fh );
+
+    1;
+}
+
+sub update_v3 ($) {
+    my $self = shift;
+
+    my %handlers = (
+        hoststatus => sub {
+            my $item = shift;
+            my $host = $item->{host_name};
+            if ( !exists $self->{HOST}{$host} ) {
+                $self->{HOST}{$host} = {};
+            }
+            _copy( $item, $self->{HOST}{$host} );
+        },
+        servicestatus => sub {
+            my $item = shift;
+            my $host = $item->{host_name};
+            my $svc  = $item->{service_description};
+
+            if ( !exists $self->{SERVICE}{$host}{$svc} ) {
+                $self->{SERVICE}{$host}{$svc} = {};
+            }
+            _copy( $item, $self->{SERVICE}{$host}{$svc} );
+        },
+        contactstatus => sub {
+            my $item = shift;
+            my $contact = $item->{contact_name};
+            if ( !exists $self->{CONTACT}{$contact} ) {
+                $self->{CONTACT}{$contact} = {};
+            }
+            _copy( $item, $self->{CONTACT}{$contact} );
+        },
+        info => sub {
+            _copy( shift, $self->{INFO} );
+        },
+        programstatus => sub { 
             _copy( shift, $self->{PROGRAM} );
         }
 
