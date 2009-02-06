@@ -56,6 +56,6 @@ provides:
     version: 0
   Nagios::StatusLog:
     file: lib/Nagios/StatusLog.pm
-    version: 36
+    version: 37
 resources:
   license: http://www.opensource.org/licenses/gpl-license.php

@@ -25,7 +25,7 @@ use Symbol;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '36';
+our $VERSION = '37';
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
