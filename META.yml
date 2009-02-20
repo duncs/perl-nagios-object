@@ -38,7 +38,7 @@ provides:
     version: 0.1
   Nagios::Object:
     file: lib/Nagios/Object.pm
-    version: 35
+    version: 36
   Nagios::Object::Config:
     file: lib/Nagios/Object/Config.pm
     version: 35
