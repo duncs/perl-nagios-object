@@ -5,7 +5,7 @@ use Test::More qw(no_plan);
 
 use_ok( 'Nagios::Object' );
 
-diag( "creating an object ..." );
+diag( "creating an object ..." ) if ( $ENV{TEST_VERBOSE} );
 my $tp = Nagios::TimePeriod->new(
       timeperiod_name => '24x7',
       alias           => '24x7',

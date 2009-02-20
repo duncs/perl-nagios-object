@@ -12,7 +12,7 @@ use_ok( 'Nagios::Config' );
 ok( my $cf = Nagios::Config->new(Filename => "nagios.cfg"),
     "Nagios::Config->new()" );
 
-diag( "run tests to make sure inherited Nagios::Config::File methods work" );
+diag( "run tests to make sure inherited Nagios::Config::File methods work" ) if ( $ENV{TEST_VERBOSE} );
 
 is( $cf->get('command_check_interval'), '15s',
     "get('command_check_interval') returns 15s" );
@@ -27,7 +27,7 @@ is( ref($list), 'ARRAY',
 
 ok( @$list > 2, "arrayref from previous test has more than two elements" );
 
-diag( "run tests to make sure inherited Nagios::Config::Object methods work" );
+diag( "run tests to make sure inherited Nagios::Config::Object methods work" ) if ( $ENV{TEST_VERBOSE} );
 
 ok( $cf->resolve_objects, "\$parser->resolve_objects should be ok to call multiple times" );
 ok( $cf->register_objects, "\$parser->register_objects should be ok to call multiple times" );

@@ -32,7 +32,7 @@ my %test_host = (
       stalking_options             => [qw(o d u)]
 );
 
-diag( "create a test Nagios::Host object" );
+diag( "create a test Nagios::Host object" ) if ( $ENV{TEST_VERBOSE} );
 my $host = Nagios::Host->new( %test_host );
 
 ok( my $dump1 = $host->dump, "call dump()" );

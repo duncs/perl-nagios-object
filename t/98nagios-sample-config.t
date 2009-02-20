@@ -23,7 +23,7 @@ my @sample_files = qw(
 );
 
 foreach my $file ( @sample_files ) {
-    diag( "testing with Nagios sample file $file ..." );
+    diag( "testing with Nagios sample file $file ..." ) if ( $ENV{TEST_VERBOSE} );
 	my $parser = Nagios::Object::Config->new( Version => '2.0' );
 	$parser->parse( $file );
 	

@@ -12,7 +12,7 @@ my $timetxt = '00:00-09:00,17:00-24:00';
 ok( my $timerange = Nagios::Object::parse_time_range( $timetxt ), "parse_time_range( $timetxt )" );
 ok( eq_array($timerange, [[0,32400],[61200,86400]]), "verify data returned by parse_time_range" );
 
-diag( "creating a Nagios::TimePeriod object ..." );
+diag( "creating a Nagios::TimePeriod object ..." ) if ( $ENV{TEST_VERBOSE} );
 my $tp = Nagios::TimePeriod->new(
       timeperiod_name => '24x7',
       alias           => '24x7',
@@ -26,14 +26,14 @@ my $tp = Nagios::TimePeriod->new(
 );
 isa_ok( $tp, 'Nagios::Object' );
 
-diag( "creating a Nagios::Command object ..." );
+diag( "creating a Nagios::Command object ..." ) if ( $ENV{TEST_VERBOSE} );
 my $cmd = Nagios::Command->new(
     command_name => 'Test',
     command_line => '/bin/true'
 );
 isa_ok( $cmd, 'Nagios::Object' );
 
-diag( "creating a Nagios::Contact object ..." );
+diag( "creating a Nagios::Contact object ..." ) if ( $ENV{TEST_VERBOSE} );
 my $contact = Nagios::Contact->new(
     contact_name => "testuser",
     alias => "The Testing User",
@@ -47,14 +47,14 @@ my $contact = Nagios::Contact->new(
     pager => '5555555555'
 );
 
-diag( "creating a Nagios::ContactGroup object ..." );
+diag( "creating a Nagios::ContactGroup object ..." ) if ( $ENV{TEST_VERBOSE} );
 my $cg = Nagios::ContactGroup->new(
     alias => 'A Test Contact Group',
     contactgroup_name => 'testgroup',
     members => [$contact]
 );
 
-diag( "creating a Nagios::Host object ..." );
+diag( "creating a Nagios::Host object ..." ) if ( $ENV{TEST_VERBOSE} );
 my $host = Nagios::Host->new(
       host_name                    => 'localhost',
       alias                        => 'localhost',
@@ -86,9 +86,9 @@ can_ok( $host, 'alias' );
 ok( $host->set_alias( "bar" ), "Nagios::Host->set_alias() works" );
 is( $host->alias(), "bar", "Nagios::Host->alias() returns value set by previous test" );
 
-diag( "\ntesting templates ...\n\n" );
+diag( "\ntesting templates ...\n\n" ) if ( $ENV{TEST_VERBOSE} );
 
-diag( "creating service template ..." );
+diag( "creating service template ..." ) if ( $ENV{TEST_VERBOSE} );
 my $template = Nagios::Service->new(
     register                     => 0,
     host                         => $host,
