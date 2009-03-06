@@ -28,7 +28,7 @@ use Scalar::Util qw(blessed);
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '36';
+our $VERSION = '37';
 our $pre_link = undef;
 our $fast_mode = undef;
 our %nagios_setup;
@@ -1056,6 +1056,7 @@ sub set_members {
     }
     # also, before resolution, append to the list rather than replace it
     else {
+        $self->{members} = [] if ! defined($self->{members});
         @members = @{ $self->{members} };
         foreach my $item ( @_ ) {
             if ( ref($item) eq 'ARRAY' && @$item == 2 ) {

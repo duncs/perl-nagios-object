@@ -92,3 +92,4 @@
 0.21.3 - Apply 'whatis' patch from Ryan52
        - Cope with Nagios 3 status.dat file better
        - Apply Nagios 3 stanza patch from Shadih Rahman
+0.21.4 - Apply patch from Neil Katin - RT#43890
