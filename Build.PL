@@ -16,7 +16,8 @@ my $build = Module::Build->new(
         'Test::Exception' => 0.01,
         'Module::Build' => 0.26,
         'Data::Dumper' => 0.01,
-        'Scalar::Util' => 0.01
+        'Scalar::Util' => 0.01,
+        'Test::NoWarnings' => 0.08,
     }
 );
 
