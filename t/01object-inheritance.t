@@ -2,6 +2,7 @@
 
 use lib qw( ../lib ./lib );
 use Test::More qw(no_plan);
+use Test::NoWarnings;
 
 use_ok( 'Nagios::Object' );
 

@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use lib qw( ./lib ../lib );
 use Test::More 'no_plan';
+use Test::NoWarnings;
 use Data::Dumper;
 use Test::Exception;
 

@@ -2,6 +2,7 @@
 
 use strict;
 use Test::More qw(no_plan);
+use Test::NoWarnings;
 use Test::Exception;
 use Scalar::Util qw(blessed);
 use lib qw( ../lib ./lib );

@@ -2,8 +2,9 @@
 
 use strict;
 use Test::More;
+use Test::NoWarnings;
 use lib qw( ../lib ./lib );
-BEGIN { plan tests => 25 }
+BEGIN { plan tests => 26 }
 eval { chdir('t') };
 
 use_ok( 'Nagios::StatusLog' );

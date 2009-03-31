@@ -2,6 +2,7 @@
 
 use strict;
 use Test::More qw(no_plan);
+use Test::NoWarnings;
 use Data::Dumper;
 use lib qw( ../lib ./lib );
 

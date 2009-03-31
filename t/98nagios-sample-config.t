@@ -3,6 +3,7 @@
 use strict;
 use File::Temp qw( tempfile );
 use Test::More qw(no_plan);
+use Test::NoWarnings;
 use Data::Dumper;
 use Scalar::Util qw(blessed);
 use lib qw( ./lib ../lib );

@@ -2,6 +2,7 @@
 
 use strict;
 use Test::More qw(no_plan);
+use Test::NoWarnings;
 use File::Temp qw(tempfile);
 use Data::Dumper;
 use Scalar::Util qw(blessed);

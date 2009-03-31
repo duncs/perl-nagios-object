@@ -2,8 +2,9 @@
 
 use strict;
 use Test::More;
+use Test::NoWarnings;
 use lib qw( ./lib ../lib );
-BEGIN { plan tests => 7; }
+BEGIN { plan tests => 8; }
 eval { chdir('t') };
 
 use_ok( 'Nagios::Config::File' );
