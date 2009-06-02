@@ -25,7 +25,7 @@ use Symbol;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '37';
+our $VERSION = '38';
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
@@ -34,16 +34,34 @@ BEGIN {
         Service => [qw(
             host_name description status current_attempt state_type last_check next_check check_type checks_enabled accept_passive_service_checks event_handler_enabled last_state_change problem_has_been_acknowledged last_hard_state time_ok time_unknown time_warning time_critical last_notification current_notification_number notifications_enabled latency execution_time flap_detection_enabled is_flapping percent_state_change scheduled_downtime_depth failure_prediction_enabled process_performance_data obsess_over_service plugin_output
             service_description modified_attributes check_command event_handler has_been_checked should_be_scheduled check_execution_time check_latency current_state max_attempts last_hard_state_change last_time_ok last_time_warning last_time_unknown last_time_critical performance_data next_notification no_more_notifications active_checks_enabled passive_checks_enabled acknowledgement_type last_update 
+            check_interval check_options check_period current_event_id current_notification_id current_problem_id last_event_id last_problem_id long_plugin_output notification_period retry_interval
         )],
 
         Host => [qw(
             host_name status last_check last_state_change problem_has_been_acknowledged time_up time_down time_unreachable last_notification current_notification_number notifications_enabled event_handler_enabled checks_enabled flap_detection_enabled is_flapping percent_state_change scheduled_downtime_depth failure_prediction_enabled process_performance_data plugin_output
             modified_attributes check_command event_handler has_been_checked should_be_scheduled check_execution_time check_latency current_state last_hard_state check_type performance_data next_check current_attempt max_attempts state_type last_hard_state_change last_time_up last_time_down last_time_unreachable next_notification no_more_notifications acknowledgement_type active_checks_enabled passive_checks_enabled obsess_over_host last_update
+            check_interval check_options check_period current_event_id current_notification_id current_problem_id last_event_id last_problem_id long_plugin_output notification_period retry_interval
         )],
 
         Program => [qw(
             program_start nagios_pid daemon_mode last_command_check last_log_rotation enable_notifications execute_service_checks accept_passive_service_checks enable_event_handlers obsess_over_services enable_flap_detection enable_failure_prediction process_performance_data
             modified_host_attributes modified_service_attributes active_service_checks_enabled passive_service_checks_enabled active_host_checks_enabled passive_host_checks_enabled obsess_over_hosts check_service_freshness check_host_freshness global_host_event_handler global_service_event_handler
+            active_ondemand_host_check_stats active_ondemand_service_check_stats active_scheduled_host_check_stats active_scheduled_service_check_stats cached_host_check_stats cached_service_check_stats external_command_stats high_external_command_buffer_slots next_comment_id next_downtime_id next_event_id next_notification_id next_problem_id parallel_host_check_stats passive_host_check_stats passive_service_check_stats serial_host_check_stats total_external_command_buffer_slots used_external_command_buffer_slots
+        )],
+        Contact => [qw(
+            contact_name modified_attributes modified_host_attributes modified_service_attributes host_notification_period service_notification_period last_host_notification last_service_notification host_notifications_enabled service_notifications_enabled
+        )],
+        Servicecomment => [qw(
+            host_name service_description entry_type comment_id source persistent entry_time expires expire_time author comment_data
+        )],
+        Hostcomment => [qw(
+            host_name entry_type comment_id source persistent entry_time expires expire_time author comment_data
+        )],
+        Servicedowntime => [qw(
+             host_name service_description downtime_id entry_time start_time end_time triggered_by fixed duration author comment
+        )],
+        Hostdowntime => [qw(
+             host_name downtime_id entry_time start_time end_time triggered_by fixed duration author comment
         )],
         Info => [qw( created version )]
     );
@@ -78,7 +96,8 @@ Nagios::StatusLog, Nagios::(Service|Host|Program)::Status - Perl objects to repr
 
 Reads the Nagios status log and returns ::Status objects that can
 be used to get status information about a host.   For Nagios version 2.x logs,
-pass in the Version => 2.0 parameter to new().
+pass in the Version => 2.0 parameter to new().  And similarly, pass in the
+Version => 3.0 parameter to new() for Nagios version 3.x logs.
 
  my $log = Nagios::StatusLog->new(
                 Filename => "/var/opt/nagios/status.log",
@@ -93,6 +112,12 @@ pass in the Version => 2.0 parameter to new().
  my $log = Nagios::StatusLog->new(
                 Filename => "/var/opt/nagios/status.dat",
                 Version  => 2.0
+           );
+
+ # for Nagios v3.0
+ my $log = Nagios::StatusLog->new(
+                Filename => "/var/opt/nagios/status.dat",
+                Version  => 3.0
            );
 
 =head1 METHODS
@@ -129,12 +154,17 @@ sub new {
     }
 
     my $self = bless( {
-        LOGFILE => $logfile,
-        VERSION => $version,
-        INFO    => {},
-        PROGRAM => {},
-        HOST    => {},
-        SERVICE => {}
+        LOGFILE         => $logfile,
+        VERSION         => $version,
+        INFO            => {},
+        CONTACT         => {},
+        PROGRAM         => {},
+        HOST            => {},
+        HOSTCOMMENT     => {},
+        HOSTDOWNTIME    => {},
+        SERVICE         => {},
+        SERVICECOMMENT  => {},
+        SERVICEDOWNTIME => {}
     }, $type );
 
     $self->update();
@@ -342,7 +372,50 @@ sub update_v3 ($) {
         },
         programstatus => sub { 
             _copy( shift, $self->{PROGRAM} );
-        }
+        },
+	# Hosts & services can each have multiple comments & downtime, distinguished only by their Id:
+        servicecomment => sub {
+	    my $item = shift;
+            my $host = $item->{host_name};
+            my $svc  = $item->{service_description};
+	    my $id = $item->{comment_id};
+
+            if ( !exists $self->{SERVICECOMMENT}{$host}{$svc}{$id} ) {
+                $self->{SERVICECOMMENT}{$host}{$svc}{$id} = {};
+            }
+            _copy( $item, $self->{SERVICECOMMENT}{$host}{$svc}{$id} );
+        },
+        hostcomment => sub {
+	    my $item = shift;
+            my $host = $item->{host_name};
+	    my $id = $item->{comment_id};
+
+            if ( !exists $self->{HOSTCOMMENT}{$host}{$id} ) {
+                $self->{HOSTCOMMENT}{$host}{$id} = {};
+            }
+            _copy( $item, $self->{HOSTCOMMENT}{$host}{$id} );
+        },
+        servicedowntime => sub {
+	    my $item = shift;
+            my $host = $item->{host_name};
+            my $svc  = $item->{service_description};
+	    my $id = $item->{downtime_id};
+
+            if ( !exists $self->{SERVICEDOWNTIME}{$host}{$svc}{$id} ) {
+                $self->{SERVICEDOWNTIME}{$host}{$svc}{$id} = {};
+            }
+            _copy( $item, $self->{SERVICEDOWNTIME}{$host}{$svc}{$id} );
+        },
+        hostdowntime => sub {
+	    my $item = shift;
+            my $host = $item->{host_name};
+	    my $id = $item->{downtime_id};
+
+            if ( !exists $self->{HOSTDOWNTIME}{$host}{$id} ) {
+                $self->{HOSTDOWNTIME}{$host}{$id} = {};
+            }
+            _copy( $item, $self->{HOSTDOWNTIME}{$host}{$id} );
+        },
 
     );
 
@@ -351,7 +424,7 @@ sub update_v3 ($) {
         || croak "could not open file $self->{LOGFILE} for reading: $!";
 
     # change the first line of the RE to this:
-    # (info|program|host|service) \s* {(
+    # (info|programstatus|hoststatus|servicestatus|contactstatus|servicecomment|hostcomment|servicedowntime|hostdowntime) \s* {(
     # to make it a bit more careful, but it has a measurable cost on runtime
     my $entry_re = qr/
         # capture the type into $1
@@ -359,7 +432,7 @@ sub update_v3 ($) {
         # capture all of the text between the brackets into $2
         {( .*? )}
         # match the last bracket only if followed by another definition
-        (?=(?: \s* (?:info|program|host|service) \s* { | \Z) )
+        (?=(?: \s* (?:info|programstatus|hoststatus|servicestatus|contacstatus|servicecomment|hostcomment|servicedowntime|hostdowntime) \s* { | \Z) )
         # capture remaining text (1-2 lines) into $3 for re-processing
         (.*)$
     /xs;
@@ -390,6 +463,7 @@ sub list_tags {
 =item service()
 
 Returns a Nagios::Service::Status object.  Input arguments can be a host_name and description list, or a Nagios::Service object.
+
  my $svc_stat = $log->service( "localhost", "SSH" );
  my $svc_stat = $log->service( $localhost_ssh_svc_object );
 
@@ -491,6 +565,7 @@ sub list_services_on_host {
 =item host()
 
 Returns a Nagios::Host::Status object.  Input can be a simple host_name, a Nagios::Host object, or a Nagios::Service object.
+
  my $hst_stat = $log->host( 'localhost' );
  my $hst_stat = $log->host( $host_object );
  my $hst_stat = $log->host( $svc_object );
@@ -541,7 +616,9 @@ Returns a simple array of host names (no objects).
 
 =cut
 
-=item info() [Nagios v2 logs only]
+sub list_hosts { keys %{$_[0]->{HOST}}; }
+
+=item info() [Nagios v2 & v3 logs only]
 
 Returns a Nagios::Info::Status object.   It only has two methods, created()
 and version().
@@ -559,11 +636,212 @@ sub info {
 }
 
 
-sub list_hosts { keys %{$_[0]->{HOST}}; }
+=item contact() [Nagios v3 logs only]
+
+Returns a Nagios::Contact::Status object.  Input can be a simple contact_name, or a Nagios::Contact object.
+
+ my $c = $log->contact( 'john' );
+ my $c = $log->contact( $contact_object );
+
+Nagios::Contact::Status has the following accessor methods (for v3):
+ contact_name
+ modified_attributes
+ modified_host_attributes
+ modified_service_attributes
+ host_notification_period
+ service_notification_period
+ last_host_notification
+ last_service_notification
+ host_notifications_enabled
+ service_notifications_enabled
+
+=cut
+
+sub contact {
+    my( $self, $name ) = @_;
+
+    $name = $name->contact_name if ( ref $name eq 'Nagios::Contact' );
+
+    return undef if ( !$self->{CONTACT}{$name} );
+
+    bless( $self->{CONTACT}{$name}, 'Nagios::Contact::Status' );
+}
+
+=item hostcomment() [Nagios v3 logs only]
+
+Returns a Nagios::Hostcomment::Status object.  Input can be a simple host_name, or a Nagios::Host or Nagios::Service object.
+
+ my $c = $log->hostcomment( 'localhost' );
+ my $c = $log->hostcomment( $localhost_object );
+ my $c = $log->hostcomment( $localhost_service_object );
+ foreach my $id (sort keys %$c) {
+     printf "Host %s has a comment[$id] made by %s on %s: %s",
+       $c->{$id}->host_name, $c->{$id}->author, scalar localtime $c->{$id}->entry_time, $c->{$id}->comment_data;
+ }
+
+Nagios::Hostcomment::Status is a perl HASH, keyed with the Nagios comment IDs, where each ID has the following accessor methods (for v3):
+ host_name
+ entry_type
+ comment_id
+ source
+ persistent
+ entry_time
+ expires
+ expire_time
+ author
+ comment_data
+
+=cut
+
+sub hostcomment {
+    my( $self, $host ) = @_;
+
+    $host = $host->host_name if ( ref $host =~ /^Nagios::(Host|Service)$/ );
+
+    return undef if ( !$self->{HOSTCOMMENT}{$host} );
+    foreach my $id ( keys %{$self->{HOSTCOMMENT}{$host}} ) {
+      bless( $self->{HOSTCOMMENT}{$host}{$id}, 'Nagios::Hostcomment::Status' );
+    }
+    return $self->{HOSTCOMMENT}{$host};
+}
+
+=item servicecomment() [Nagios v3 logs only]
+
+Returns a Nagios::Servicecomment::Status object.  Input can be a simple host_name or Nagios::Host object with
+a service description or Nagios::Service object, or just a Nagios::Service object by itself.
+
+ my $c = $log->servicecomment( 'localhost', 'SSH' );
+ my $c = $log->servicecomment( $localhost_object, $localhost_ssh_svc_object );
+ my $c = $log->servicecomment( $localhost_ssh_svc_object );
+ foreach my $id (sort keys %$c) {
+     printf "Service %s on %s  has a comment[$id] made by %s on %s: %s",
+       $c->{$id}->service_description, $c->{$id}->host_name, $c->{$id}->author, scalar localtime $c->{$id}->entry_time, $c->{$id}->comment_data;
+ }
+
+Nagios::Servicecomment::Status is a perl HASH, keyed with the Nagios comment IDs, where each ID has the following accessor methods (for v3):
+ host_name
+ service_description
+ entry_type
+ comment_id
+ source
+ persistent
+ entry_time
+ expires
+ expire_time
+ author
+ comment_data
+
+=cut
+
+sub servicecomment {
+    my( $self, $host, $service ) = @_;
+
+    $host = $host->host_name if ( ref $host eq 'Nagios::Host' );
+    # allow just a service to be passed in
+    if ( ref $host eq 'Nagios::Service' ) {
+        $service = $host;
+        $host = $service->host_name;
+    }
+    $service = $service->service_description if ( ref $service eq 'Nagios::Service' );
+
+    return undef if ( !$self->{SERVICECOMMENT}{$host}{$service} );
+    foreach my $id ( keys %{$self->{SERVICECOMMENT}{$host}{$service}} ) {
+      bless( $self->{SERVICECOMMENT}{$host}{$service}{$id}, 'Nagios::Servicecomment::Status' );
+    }
+    return $self->{SERVICECOMMENT}{$host}{$service};
+}
+
+=item hostdowntime() [Nagios v3 logs only]
+
+Returns a Nagios::Hostdowntime::Status object.  Input can be a simple host_name, or a Nagios::Host or Nagios::Service object.
+
+ my $d = $log->hostdowntime( 'localhost' );
+ my $d = $log->hostdowntime( $localhost_object );
+ my $d = $log->hostdowntime( $localhost_service_object );
+ foreach my $id (sort keys %$d) {
+     printf "Host %s has scheduled downtime[$id] made by %s on %s for %.1f hours [%s - %s]: %s",
+       $d->{$id}->host_name, $d->{$id}->author, scalar localtime $d->{$id}->entry_time, ($d->{$id}->duration)/3600.0,
+         scalar localtime $d->{$id}->start_time, scalar localtime $d->{$id}->end_time, $d->{$id}->comment;
+ }
+
+Nagios::Hostdowntime::Status is a perl HASH, keyed with the Nagios downtime IDs, where each ID has the following accessor methods (for v3):
+ host_name
+ downtime_id
+ entry_time
+ start_time
+ end_time
+ triggered_by
+ fixed
+ duration
+ author
+ comment
+
+=cut
+
+sub hostdowntime {
+    my( $self, $host ) = @_;
+
+    $host = $host->host_name if ( ref $host =~ /^Nagios::(Host|Service)$/ );
+
+    return undef if ( !$self->{HOSTDOWNTIME}{$host} );
+    foreach my $id ( keys %{$self->{HOSTDOWNTIME}{$host}} ) {
+      bless( $self->{HOSTDOWNTIME}{$host}{$id}, 'Nagios::Hostdowntime::Status' );
+    }
+    return $self->{HOSTDOWNTIME}{$host};
+}
+
+=item servicedowntime() [Nagios v3 logs only]
+
+Returns a Nagios::Servicedowntime::Status object.  Input can be a simple host_name or Nagios::Host object with
+a service description or Nagios::Service object, or just a Nagios::Service object by itself.
+
+ my $c = $log->servicedowntime( 'localhost', 'SSH' );
+ my $c = $log->servicedowntime( $localhost_object, $localhost_ssh_svc_object );
+ my $c = $log->servicedowntime( $localhost_ssh_svc_object );
+ foreach my $id (sort keys %$d) {
+     printf "Service %s on %s has scheduled downtime[$id] made by %s on %s for %.1f hours [%s - %s]: %s",
+       $d->{$id}->service_description, $d->{$id}->host_name, $d->{$id}->author, scalar localtime $d->{$id}->entry_time, ($d->{$id}->duration)/3600.0,
+         scalar localtime $d->{$id}->start_time, scalar localtime $d->{$id}->end_time, $d->{$id}->comment;
+ }
+
+Nagios::Servicedowntime::Status is a perl HASH, keyed with the Nagios downtime IDs, where each ID has the following accessor methods (for v3):
+ host_name
+ service_description
+ downtime_id
+ entry_time
+ start_time
+ end_time
+ triggered_by
+ fixed
+ duration
+ author
+ comment
+
+=cut
+
+sub servicedowntime {
+    my( $self, $host, $service ) = @_;
+
+    $host = $host->host_name if ( ref $host eq 'Nagios::Host' );
+    # allow just a service to be passed in
+    if ( ref $host eq 'Nagios::Service' ) {
+        $service = $host;
+        $host = $service->host_name;
+    }
+    $service = $service->service_description if ( ref $service eq 'Nagios::Service' );
+
+    return undef if ( !$self->{SERVICEDOWNTIME}{$host}{$service} );
+    foreach my $id ( keys %{$self->{SERVICEDOWNTIME}{$host}{$service}} ) {
+      bless( $self->{SERVICEDOWNTIME}{$host}{$service}{$id}, 'Nagios::Servicedowntime::Status' );
+    }
+    return $self->{SERVICEDOWNTIME}{$host}{$service};
+}
+
 
 =item program()
 
 Returns a Nagios::Program::Status object. No arguments.
+
  my $prog_st = $log->program;
 
 Nagios::Program::Status has the following accessor methods (For V1):
