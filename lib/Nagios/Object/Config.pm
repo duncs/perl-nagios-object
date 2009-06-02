@@ -531,7 +531,15 @@ sub register_object_list {
     my( $self, $object, $attribute, $attr_type ) = @_;
 
     # split on comma surrounded by whitespace or by just whitespace
-    my @to_find = split /\s*,\s*|\s+/, $object->$attribute();
+    #  - don't try splitting it if it has already been split by the Nagios::Object::_set function!
+    #  - same bug reported in CPAN's RT:  http://rt.cpan.org/Public/Bug/Display.html?id=31291
+    my @to_find;
+    my $value = $object->$attribute();
+    if (ref $value eq 'ARRAY') {
+	@to_find = @{ $value };
+    } else {
+	@to_find = split /\s*,\s*|\s+/, $value;
+    }
     my @found = ();
 
     # handle splat '*' matching of all objects of a type (optimization)
