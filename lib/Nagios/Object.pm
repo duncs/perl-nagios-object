@@ -1056,8 +1056,7 @@ sub set_members {
     }
     # also, before resolution, append to the list rather than replace it
     else {
-        $self->{members} = [] if ! defined($self->{members});
-        @members = @{ $self->{members} };
+        @members = @{ $self->{members} } if $self->{members};
         foreach my $item ( @_ ) {
             if ( ref($item) eq 'ARRAY' && @$item == 2 ) {
                 push @members, $item;
