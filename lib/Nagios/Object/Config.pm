@@ -181,7 +181,12 @@ sub parse {
 	    }
 	
 	    # end of object definition
-	    if ( $line =~ /}(.*)$/ ) {
+	    # Some object attributes are strings, which can contain a right-curly bracket and confuse this parser:
+	    #  - The proper fix would be to make the parser sensitive to arbitrary string attributes, but I will just
+	    #    do it the easy way for now and assume there is no more text on the same line after the right-curly
+	    #    bracket that closes the object definition.
+	    #if ( $line =~ /}(.*)$/ ) {
+	    if ( $line =~ /}(\s*)$/ ) {
 	        $in_definition = undef;
             # continue parsing after closing object with text following the '}'
             $append = $1;
