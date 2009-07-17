@@ -24,8 +24,8 @@ provides:
     file: lib/Nagios/Config/File.pm
     version: 35
   Nagios::Host:
-    file: lib/Nagios/Object.pm
-    version: 0
+    file: lib/Nagios/Host.pm
+    version: 0.21
   Nagios::Host::Status:
     file: lib/Nagios/StatusLog.pm
     version: 0.1
@@ -45,8 +45,8 @@ provides:
     file: lib/Nagios/StatusLog.pm
     version: 0.1
   Nagios::Service:
-    file: lib/Nagios/Object.pm
-    version: 0
+    file: lib/Nagios/Service.pm
+    version: 0.21
   Nagios::Service::Status:
     file: lib/Nagios/StatusLog.pm
     version: 0.1
