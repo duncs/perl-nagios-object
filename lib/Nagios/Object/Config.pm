@@ -27,7 +27,7 @@ use Carp;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '35';
+our $VERSION = '36';
 our $fast_mode = undef;
 our $strict_mode = undef;
 
@@ -180,6 +180,24 @@ sub parse {
 	        $append = undef;
 	    }
 	
+            if ( $line =~ /include_file\s*=\s*([\w\-\/\\\:\.]+)/ )
+	    {	my $incfile = $1;
+		$self->parse($incfile);
+		next;
+	    }
+            if ( $line =~ /include_dir\s*=\s*([\w\-\/\\\:\.]+)/ )
+	    {	my $incdir = $1;
+		opendir(INCDIR, $incdir) or next; #Just ignore if can't open directory?
+		my @files = readdir(INCDIR);
+		closedir(INCDIR);
+		@files = grep /\.cfg$/, @files; #Only want *.cfg files
+		@files = grep { -f "$incdir/$_" } @files; #Only want files
+		foreach my $file (@files)
+		{	$self->parse($file);
+		}
+		next;
+	    }
+
 	    # end of object definition
 	    # Some object attributes are strings, which can contain a right-curly bracket and confuse this parser:
 	    #  - The proper fix would be to make the parser sensitive to arbitrary string attributes, but I will just

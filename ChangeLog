@@ -99,3 +99,4 @@
        - Apply patch from Jason Smith - RT#46495
        - Apply patch from Jason Smith - RT#46497
 0.21.5 - Rerelease to pick up missing test files
+0.21.6 - Apply patch from 'PAYERLE' - RT#47781
