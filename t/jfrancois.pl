@@ -20,8 +20,8 @@ use strict;
 my $conffile = "jfrancois.cfg";
 
 print "Test 1:\n";
-my $nagios=Nagios::Config->new ( Filename => $conffile, Version => 1 );
-$nagios->parse( $conffile );
+my $nagios = Nagios::Config->new( Filename => $conffile, Version => 1 );
+$nagios->parse($conffile);
 
 use Data::Dumper;
 
@@ -31,15 +31,15 @@ $nagios->resolve_objects();
 $nagios->register_objects();
 
 # Get an existing host
-my $test_host= $nagios->find_object("debian-master", 'Nagios::Host' );
-if ( $test_host ) {
-    my $name = $test_host->host_name;
+my $test_host = $nagios->find_object( "debian-master", 'Nagios::Host' );
+if ($test_host) {
+    my $name    = $test_host->host_name;
     my $address = $test_host->address;
 
     print "\tmy name is $name\n";
     print "\tmy address is $address\n";
     print "\tDumping ... (\$test_host->dump())\n\n";
-    print $test_host->dump(); 
+    print $test_host->dump();
 }
 
 =pod
@@ -97,24 +97,21 @@ I can proceed without find_object() with this small workaround :
 
 print "\n\nTest2:\n";
 
- my $host = undef;
- my @hostlist = $nagios->list_hosts();
- foreach my $h (@hostlist)
- {
-   if ($h->name() eq "debian-master")
-   {
-     $host = $h;
-     last;                                             # found it, abort foreach {}
-   }
- }
+my $host     = undef;
+my @hostlist = $nagios->list_hosts();
+foreach my $h (@hostlist) {
+    if ( $h->name() eq "debian-master" ) {
+        $host = $h;
+        last;    # found it, abort foreach {}
+    }
+}
 
- if ( $host = undef )
- {
-   print "cannot found debian-master\n";
- }
- else {
+if ( $host = undef ) {
+    print "cannot found debian-master\n";
+}
+else {
     print "found debian-master: $host\n";
- }
+}
 
 =pod
 

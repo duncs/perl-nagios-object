@@ -27,8 +27,8 @@ use Carp;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '36';
-our $fast_mode = undef;
+our $VERSION     = '36';
+our $fast_mode   = undef;
 our $strict_mode = undef;
 
 =head1 NAME
@@ -64,42 +64,48 @@ arguments to new().    See enable_regexp_matching() and enable_true_regexp_match
 =cut
 
 sub new {
-    my $class = ref($_[0]) ? ref(shift) : shift;
+    my $class = ref( $_[0] ) ? ref(shift) : shift;
     my $self = {
         regexp_matching      => undef,
         true_regexp_matching => undef,
-        config_files    => []
+        config_files         => []
     };
 
     # initialize lists e.g. host_list, command_list, etc.
     foreach my $class ( keys %nagios_setup ) {
-        $self->{lc($class).'_list'} = [];
+        $self->{ lc($class) . '_list' } = [];
     }
 
     # parse arguments passed in
     if ( @_ % 2 == 0 ) {
         my %args = ();
-        for ( my $i=0; $i<@_; $i+=2 ) {
-            $args{lc $_[$i]} = $_[$i+1];
+        for ( my $i = 0; $i < @_; $i += 2 ) {
+            $args{ lc $_[$i] } = $_[ $i + 1 ];
         }
 
         # set up limited Nagios v1/v2 validation
         if ( !$fast_mode && $args{version} ) {
             if ( $args{version} >= 2 ) {
                 $self->{nagios_version} = NAGIOS_V2;
+
                 # remove keys from nagios_setup that are invalid for V2
                 foreach my $key ( keys %nagios_setup ) {
-                    if ( ($nagios_setup{$key}->{use}[1] & NAGIOS_V1_ONLY) == NAGIOS_V1_ONLY ) {
-                        delete $nagios_setup{$key}
+                    if ( ( $nagios_setup{$key}->{use}[1] & NAGIOS_V1_ONLY )
+                        == NAGIOS_V1_ONLY )
+                    {
+                        delete $nagios_setup{$key};
                     }
                 }
             }
             elsif ( $args{version} < 2 ) {
                 $self->{nagios_version} = NAGIOS_V1;
+
                 # remove keys from nagios_setup that are invalid for V1
                 foreach my $key ( keys %nagios_setup ) {
-                    if ( ($nagios_setup{$key}->{use}[1] & NAGIOS_V2) == NAGIOS_V2 ) {
-                        delete $nagios_setup{$key}
+                    if ( ( $nagios_setup{$key}->{use}[1] & NAGIOS_V2 )
+                        == NAGIOS_V2 )
+                    {
+                        delete $nagios_setup{$key};
                     }
                 }
             }
@@ -112,13 +118,13 @@ sub new {
             $self->{_regexp_matching_enabled} = 1;
         }
         elsif ( $args{true_regexp_matching} ) {
-            $self->{_regexp_matching_enabled} = 1;
+            $self->{_regexp_matching_enabled}      = 1;
             $self->{_true_regexp_matching_enabled} = 1;
         }
     }
     else {
         croak "Single argument form of this constructor is not supported.\n",
-              "Try: Nagios::Object::Config->new( Version => 2 );";
+            "Try: Nagios::Object::Config->new( Version => 2 );";
     }
 
     return bless( $self, $class );
@@ -149,134 +155,149 @@ Parse a nagios object configuration file into memory.  Although Nagios::Objects 
 # one that should be faster and more tolerant of broken configs, but it
 # needs a lot of testing before going to CPAN.
 sub parse {
-    my( $self, $filename ) = @_;
+    my ( $self, $filename ) = @_;
 
     $Nagios::Object::pre_link = 1;
 
-	my $fh = gensym();
-	open( $fh, "<$filename" )
-	    || croak "could not open $filename for reading: $!";
+    my $fh = gensym();
+    open( $fh, "<$filename" )
+        || croak "could not open $filename for reading: $!";
 
     our $line_no = 0;
-	sub strippedline {
-	    $line_no++;
-	    return undef if ( eof($_[0]) );
-	    my $line = readline($_[0]);
-	    $line =~ s/[\r\n\s]+$//; # remove trailing whitespace and CRLF
-	    $line =~ s/^\s+//;       # remove leading whitespace
-	    return ' ' if ( $line =~ /^[#;]/ ); # skip/delete comments
-	    return $line || ' '; # empty lines are a single space
-	}
 
-	my( $append, $type, $current, $in_definition ) = ( '', '', {}, undef );
-	while ( my $line = strippedline($fh) ) {
-	    # skip empty lines
-	    next if ( $line eq ' ' );
-	
-	    # append saved text to the current line
-	    if ( $append ) {
-	        if ( $append !~ / $/ && $line !~ /^ / ) { $append .= ' ' }
-	        $line = $append . $line;
-	        $append = undef;
-	    }
-	
-            if ( $line =~ /include_file\s*=\s*([\w\-\/\\\:\.]+)/ )
-	    {	my $incfile = $1;
-		$self->parse($incfile);
-		next;
-	    }
-            if ( $line =~ /include_dir\s*=\s*([\w\-\/\\\:\.]+)/ )
-	    {	my $incdir = $1;
-		opendir(INCDIR, $incdir) or next; #Just ignore if can't open directory?
-		my @files = readdir(INCDIR);
-		closedir(INCDIR);
-		@files = grep /\.cfg$/, @files; #Only want *.cfg files
-		@files = grep { -f "$incdir/$_" } @files; #Only want files
-		foreach my $file (@files)
-		{	$self->parse($file);
-		}
-		next;
-	    }
+    sub strippedline {
+        $line_no++;
+        return undef if ( eof( $_[0] ) );
+        my $line = readline( $_[0] );
+        $line =~ s/[\r\n\s]+$//;    # remove trailing whitespace and CRLF
+        $line =~ s/^\s+//;          # remove leading whitespace
+        return ' ' if ( $line =~ /^[#;]/ );    # skip/delete comments
+        return $line || ' ';    # empty lines are a single space
+    }
 
-	    # end of object definition
-	    # Some object attributes are strings, which can contain a right-curly bracket and confuse this parser:
-	    #  - The proper fix would be to make the parser sensitive to arbitrary string attributes, but I will just
-	    #    do it the easy way for now and assume there is no more text on the same line after the right-curly
-	    #    bracket that closes the object definition.
-	    #if ( $line =~ /}(.*)$/ ) {
-	    if ( $line =~ /}(\s*)$/ ) {
-	        $in_definition = undef;
-            # continue parsing after closing object with text following the '}'
+    my ( $append, $type, $current, $in_definition ) = ( '', '', {}, undef );
+    while ( my $line = strippedline($fh) ) {
+
+        # skip empty lines
+        next if ( $line eq ' ' );
+
+        # append saved text to the current line
+        if ($append) {
+            if ( $append !~ / $/ && $line !~ /^ / ) { $append .= ' ' }
+            $line   = $append . $line;
+            $append = undef;
+        }
+
+        if ( $line =~ /include_file\s*=\s*([\w\-\/\\\:\.]+)/ ) {
+            my $incfile = $1;
+            $self->parse($incfile);
+            next;
+        }
+        if ( $line =~ /include_dir\s*=\s*([\w\-\/\\\:\.]+)/ ) {
+            my $incdir = $1;
+            opendir( INCDIR, $incdir )
+                or next;    #Just ignore if can't open directory?
+            my @files = readdir(INCDIR);
+            closedir(INCDIR);
+            @files = grep /\.cfg$/, @files;    #Only want *.cfg files
+            @files = grep { -f "$incdir/$_" } @files;    #Only want files
+            foreach my $file (@files) {
+                $self->parse($file);
+            }
+            next;
+        }
+
+# end of object definition
+# Some object attributes are strings, which can contain a right-curly bracket and confuse this parser:
+#  - The proper fix would be to make the parser sensitive to arbitrary string attributes, but I will just
+#    do it the easy way for now and assume there is no more text on the same line after the right-curly
+#    bracket that closes the object definition.
+#if ( $line =~ /}(.*)$/ ) {
+        if ( $line =~ /}(\s*)$/ ) {
+            $in_definition = undef;
+
+           # continue parsing after closing object with text following the '}'
             $append = $1;
             next;
-	    }
-	    # beginning of object definition
-	    elsif ( $line =~ /define\s+(\w+)\s*{?(.*)$/ ) {
-	        $type = $1;
-	        if ( $in_definition ) {
-	            croak "Error: Unexpected start of object definition in file ".
-                      "'$filename' on line $line_no.  Make sure you close ".
-                      "preceding objects before starting a new one.\n";
+        }
+
+        # beginning of object definition
+        elsif ( $line =~ /define\s+(\w+)\s*{?(.*)$/ ) {
+            $type = $1;
+            if ($in_definition) {
+                croak "Error: Unexpected start of object definition in file "
+                    . "'$filename' on line $line_no.  Make sure you close "
+                    . "preceding objects before starting a new one.\n";
             }
             elsif ( !Nagios::Object->validate_object_type($type) ) {
-	            croak "Error: Invalid object definition type '$type' in file '$filename' on line $line_no.\n";
-	        }
+                croak
+                    "Error: Invalid object definition type '$type' in file '$filename' on line $line_no.\n";
+            }
             else {
-		        $current = Nagios::Object->new( Type => Nagios::Object->validate_object_type($type) );
-                push( @{$self->{$type.'_list'}}, $current );
-	            $in_definition = 1;
-                $append = $2;
+                $current = Nagios::Object->new(
+                    Type => Nagios::Object->validate_object_type($type) );
+                push( @{ $self->{ $type . '_list' } }, $current );
+                $in_definition = 1;
+                $append        = $2;
 
-                # save a reference to this Nagios::Object::Config for later use
-                # outside this module (it's needed for accessing the big linked data
-                # structure)
+          # save a reference to this Nagios::Object::Config for later use
+          # outside this module (it's needed for accessing the big linked data
+          # structure)
                 $current->{object_config_object} = $self;
 
                 next;
             }
-	    }
+        }
+
         # save whatever's left in the buffer for the next iteration
-	    elsif ( !$in_definition ) {
-	        $append = $line;
-	        next;
-	    }
+        elsif ( !$in_definition ) {
+            $append = $line;
+            next;
+        }
+
         # this is an attribute inside an object definition
-        elsif ( $in_definition ) {
+        elsif ($in_definition) {
             $line =~ s/\s*;(.*)$//;
 
             # the comment stripped off of $line is saved in $1 due to the ()
             # around .*, so it's saved in the object if supported
             if ( !$fast_mode && $1 && $current->can('set_comment') ) {
-                $current->set_comment( $1 );
+                $current->set_comment($1);
             }
 
-            my( $key, $val ) = split( /\s+/, $line, 2 );
-            my $set_method = 'set_'.$key;
-            if ( $current->can( $set_method ) ) {
-	            $current->$set_method( $val );
+            my ( $key, $val ) = split( /\s+/, $line, 2 );
+            my $set_method = 'set_' . $key;
+            if ( $current->can($set_method) ) {
+                $current->$set_method($val);
             }
-            elsif ( $strict_mode ) {
-                confess "Invalid attribute: \"$key\".  Could not find ".ref($current)."::$set_method.   Try disabling strict_mode? (see: perldoc Nagios::Object::Config)";
+            elsif ($strict_mode) {
+                confess "Invalid attribute: \"$key\".  Could not find "
+                    . ref($current)
+                    . "::$set_method.   Try disabling strict_mode? (see: perldoc Nagios::Object::Config)";
             }
+
             # fall back to simple scalar storage with even less verification
             # - this is the bit that lets me slack off between Nagios releases
             # because it'll let new options "just work" for most cases - the
             # rest can send in bug reports, rather than the majority
             else {
-                $nagios_setup{$current->setup_key}->{$key} = [ 'STRING', 0 ];
+                $nagios_setup{ $current->setup_key }->{$key}
+                    = [ 'STRING', 0 ];
                 $current->{$key} = $val;
             }
-	    }
-        else {
-            croak "Error: Unexpected token in file '$filename' on line $line_no.\n";
         }
-	}
-
-    if ( $in_definition ) {
-        croak "Error: Unexpected EOF in file '$filename' on line $line_no - check for a missing closing bracket.\n";
+        else {
+            croak
+                "Error: Unexpected token in file '$filename' on line $line_no.\n";
+        }
     }
-	
-	close( $fh );
+
+    if ($in_definition) {
+        croak
+            "Error: Unexpected EOF in file '$filename' on line $line_no - check for a missing closing bracket.\n";
+    }
+
+    close($fh);
 
     return 1;
 }
@@ -293,18 +314,19 @@ the size of the list to be searched, so it is recommended.
 =cut
 
 sub find_object {
-    my( $self, $name, $type ) = @_;
+    my ( $self, $name, $type ) = @_;
 
     my $searchlist;
     if ( $type && $type =~ /^Nagios::/ ) {
-        $searchlist = $self->all_objects_for_type( $type );
+        $searchlist = $self->all_objects_for_type($type);
     }
     elsif ( !$type ) {
         $searchlist = $self->all_objects;
     }
 
-    foreach my $obj ( @$searchlist ) {
-        #printf STDERR "obj name '%s', name searched '%s'\n", $obj->name, $name;
+    foreach my $obj (@$searchlist) {
+
+      #printf STDERR "obj name '%s', name searched '%s'\n", $obj->name, $name;
         if ( $obj->name && $obj->name eq $name ) {
             return $obj;
         }
@@ -327,18 +349,18 @@ and use_true_regexp_matching and does full RE matching all the time.
 =cut
 
 sub find_objects_by_regex {
-    my( $self, $re, $type ) = @_;
+    my ( $self, $re, $type ) = @_;
     my @retval;
-    
+
     my $searchlist;
     if ( !$type ) {
         $searchlist = $self->all_objects;
     }
     else {
-        $searchlist = $self->all_objects_for_type( $type );
+        $searchlist = $self->all_objects_for_type($type);
     }
 
-    foreach my $obj ( @$searchlist ) {
+    foreach my $obj (@$searchlist) {
         my $objname = $obj->name;
         if ( $objname && $objname =~ /$re/ ) {
             push @retval, $obj;
@@ -378,12 +400,13 @@ Example:
 =cut
 
 sub all_objects_for_type {
-    my ($self, $obj_type) = @_;
+    my ( $self, $obj_type ) = @_;
 
     my $ret_array = [];
 
-    confess "must specify Nagios object type to all_objects_for_type('$obj_type')"
-        unless  ($obj_type =~ /^Nagios::(.*)$/);
+    confess
+        "must specify Nagios object type to all_objects_for_type('$obj_type')"
+        unless ( $obj_type =~ /^Nagios::(.*)$/ );
 
     # e.g. service_list is an arrayref in $self - just return it
     my $list_type = lc($1) . '_list';
@@ -423,23 +446,28 @@ Search through the objects parsed thus far, looking for a particular textual nam
 =cut
 
 sub find_attribute {
-    my( $self, $attribute, $what, $type ) = @_;
-    confess "must specify what string to find_attribute" if ( !$what && $what != 0 );
+    my ( $self, $attribute, $what, $type ) = @_;
+    confess "must specify what string to find_attribute"
+        if ( !$what && $what != 0 );
 
     my @to_search = ();
     if ( defined $type && $type =~ /^Nagios::(.*)$/ ) {
         $to_search[0] = lc($1);
     }
     else {
+
         # brute-force search through all objects of all types
         @to_search = map { lc $_ } keys %nagios_setup;
     }
 
-    foreach my $type ( @to_search ) {
-        foreach my $obj ( @{$self->{"${type}_list"}} ) {
-            if ( $obj->has_attribute($attribute) && $obj->$attribute() eq $what ) {
+    foreach my $type (@to_search) {
+        foreach my $obj ( @{ $self->{"${type}_list"} } ) {
+            if (   $obj->has_attribute($attribute)
+                && $obj->$attribute() eq $what )
+            {
                 return $obj;
             }
+
             #if ( $obj->has_attribute($attribute) ) {
             #    my $match_attr = $obj->$attribute();
             #    if ( ref $match_attr && $match_attr->name eq $what ) {
@@ -464,7 +492,7 @@ Resolve the template for the specified object.  Templates will not work until th
 =cut
 
 sub resolve {
-    my( $self, $object ) = @_;
+    my ( $self, $object ) = @_;
 
     # return if this object has already been resolved
     return 1 if ( $object->resolved );
@@ -472,7 +500,10 @@ sub resolve {
     # set the resolved flag
     $object->resolved(1);
 
-    if ( exists $object->{use} && defined $object->{use} && !exists $object->{_use} ) {
+    if (   exists $object->{use}
+        && defined $object->{use}
+        && !exists $object->{_use} )
+    {
         my $template = $self->find_object( $object->use, ref $object );
         $object->{_use} = $template;
     }
@@ -490,7 +521,7 @@ Examine all attributes of an object and link all of it's references to other Nag
 =cut
 
 sub register {
-    my( $self, $object ) = @_;
+    my ( $self, $object ) = @_;
 
     # bail out if this object has already been registered
     return 1 if ( $object->registered );
@@ -510,27 +541,30 @@ sub register {
         next unless defined $object->$attribute();
 
         my $attr_type = $object->attribute_type($attribute);
-        
+
         # all done unless the attribute is supposed to point to another object
         next unless $attr_type =~ /^Nagios::.*$/ or ref $attr_type eq 'ARRAY';
 
         # deal with lists types
         if ( !ref $attr_type && $object->attribute_is_list($attribute) ) {
+
             # pushed out to subroutine to keep things readable
-            my @refs = $self->register_object_list( $object, $attribute, $attr_type );
+            my @refs = $self->register_object_list( $object, $attribute,
+                $attr_type );
             $object->_set( $attribute, \@refs );
 
         }
+
         # multi-type lists, like Nagios::ServiceGroup
         elsif ( ref $attr_type eq 'ARRAY' ) {
-            my $values = $object->$attribute();            
+            my $values = $object->$attribute();
             confess "invalid element in attribute \"$attribute\" ($values)"
                 unless ref($values) eq 'ARRAY';
 
             my @new_list;
-            foreach my $value ( @$values ) {
+            foreach my $value (@$values) {
                 my @mapped;
-                for ( my $i=0; $i<@$attr_type; $i++ ) {
+                for ( my $i = 0; $i < @$attr_type; $i++ ) {
                     push @mapped,
                         $self->find_object( $value->[$i], $attr_type->[$i] );
                 }
@@ -538,11 +572,11 @@ sub register {
             }
 
             my $set = 'set_' . $attribute;
-            $object->$set( @new_list );
+            $object->$set(@new_list);
         }
         else {
             my $ref = $self->find_object( $object->$attribute(), $attr_type );
-            $object->_set( $attribute, $ref ) if ( $ref );
+            $object->_set( $attribute, $ref ) if ($ref);
         }
 
     }
@@ -551,52 +585,63 @@ sub register {
 }
 
 sub register_object_list {
-    my( $self, $object, $attribute, $attr_type ) = @_;
+    my ( $self, $object, $attribute, $attr_type ) = @_;
 
-    # split on comma surrounded by whitespace or by just whitespace
-    #  - don't try splitting it if it has already been split by the Nagios::Object::_set function!
-    #  - same bug reported in CPAN's RT:  http://rt.cpan.org/Public/Bug/Display.html?id=31291
+# split on comma surrounded by whitespace or by just whitespace
+#  - don't try splitting it if it has already been split by the Nagios::Object::_set function!
+#  - same bug reported in CPAN's RT:  http://rt.cpan.org/Public/Bug/Display.html?id=31291
     my @to_find;
     my $value = $object->$attribute();
-    if (ref $value eq 'ARRAY') {
-	@to_find = @{ $value };
-    } else {
-	@to_find = split /\s*,\s*|\s+/, $value;
+    if ( ref $value eq 'ARRAY' ) {
+        @to_find = @{$value};
+    }
+    else {
+        @to_find = split /\s*,\s*|\s+/, $value;
     }
     my @found = ();
 
     # handle splat '*' matching of all objects of a type (optimization)
     if ( @to_find == 1 && $to_find[0] eq '*' ) {
         @found = @{ $self->all_objects_for_type($attr_type); };
-        confess "Wildcard matching failed.  Have you defined any $attr_type objects?"
+        confess
+            "Wildcard matching failed.  Have you defined any $attr_type objects?"
             unless ( @found > 0 );
         return @found;
     }
+
     # now back to our regularly scheduled search ...
 
     my %wildcard_finds = ();
 
-    foreach my $item ( @to_find ) {
-        # no regular expression matching if both flags are false OR
-        # only "regexp_matching" is enabled and the string does not contain ? or *
-        if ( (!$self->{_regexp_matching_enabled} && !$self->{_true_regexp_matching_enabled})
-          || (!$self->{_true_regexp_matching_enabled} && $item !~ /[\*\?]/) ) {
+    foreach my $item (@to_find) {
+
+    # no regular expression matching if both flags are false OR
+    # only "regexp_matching" is enabled and the string does not contain ? or *
+        if ((      !$self->{_regexp_matching_enabled}
+                && !$self->{_true_regexp_matching_enabled}
+            )
+            || (  !$self->{_true_regexp_matching_enabled}
+                && $item !~ /[\*\?]/ )
+            )
+        {
             my $ref = $self->find_object( $item, $attr_type );
-            push( @found, $ref ) if ( $ref );
+            push( @found, $ref ) if ($ref);
         }
+
         # otherwise, use RE's (I bet most people have this turned on)
         else {
             my $re = $item;
-            $re =~ s/(<=\.)\*/.*?/g; # convert "*" to ".*?"
-            $re =~ s/\?/./g;         # convert "?" to "."
-            # when true_regexp... isn't on, the RE is anchored
+            $re =~ s/(<=\.)\*/.*?/g;    # convert "*" to ".*?"
+            $re =~ s/\?/./g;            # convert "?" to "."
+                 # when true_regexp... isn't on, the RE is anchored
             if ( !$self->{_true_regexp_matching_enabled} ) {
-                $re = "^$re\$"; # anchor the RE for Nagios "light" RE's
+                $re = "^$re\$";    # anchor the RE for Nagios "light" RE's
             }
 
             my @ret = $self->find_objects_by_regex( $re, $attr_type );
 
-            croak "Wildcard match failed.   The generated regular expression was '$re'.  Maybe you meant to enable_true_regexp_matching?"
+            croak
+                "Wildcard match failed.   The generated regular expression was '$re'.  Maybe you meant to enable_true_regexp_matching?"
                 unless @ret > 0;
 
             push @found, @ret;
@@ -617,8 +662,8 @@ sub resolve_objects {
     my $self = shift;
 
     foreach my $obj_type ( map { lc $_ } keys %nagios_setup ) {
-        foreach my $object ( @{$self->{$obj_type.'_list'}} ) {
-            $self->resolve( $object );
+        foreach my $object ( @{ $self->{ $obj_type . '_list' } } ) {
+            $self->resolve($object);
         }
     }
     return 1;
@@ -636,8 +681,8 @@ sub register_objects {
     my $self = shift;
 
     foreach my $obj_type ( map { lc $_ } keys %nagios_setup ) {
-        foreach my $object ( @{$self->{$obj_type.'_list'}} ) {
-            $self->register( $object );
+        foreach my $object ( @{ $self->{ $obj_type . '_list' } } ) {
+            $self->register($object);
         }
     }
 
@@ -657,7 +702,7 @@ other objects (^ and $ are added to either end).
 
 =cut
 
-sub enable_regexp_matching { shift->{_regexp_matching_enabled} = 1 }
+sub enable_regexp_matching  { shift->{_regexp_matching_enabled} = 1 }
 sub disable_regexp_matching { shift->{_regexp_matching_enabled} = undef }
 
 =item enable_true_regexp_matching()/disable_true_regexp_matching()
@@ -678,7 +723,10 @@ This option always supercedes enable_regexp_matching.
 =cut
 
 sub enable_true_regexp_matching { shift->{_true_regexp_matching_enabled} = 1 }
-sub disable_true_regexp_matching { shift->{_true_regexp_matching_enabled} = undef }
+
+sub disable_true_regexp_matching {
+    shift->{_true_regexp_matching_enabled} = undef;
+}
 
 =item list_hosts(), list_hostgroups(), etc.
 
@@ -705,9 +753,9 @@ Returns an array/arrayref of objects of the given type.
 # may want to change this eventually to return a copy of the array
 # instead of the array referenced in $self
 sub _list {
-    my( $self, $type ) = @_;
+    my ( $self, $type ) = @_;
     my $key = $type . '_list';
-    wantarray ? @{$self->{$key}} : $self->{$key};
+    wantarray ? @{ $self->{$key} } : $self->{$key};
 }
 
 sub list_hosts                { shift->_list('host') }
@@ -739,20 +787,20 @@ sub Nagios::Host::list_services {
     foreach my $s ( $conf->list_services ) {
         next if ( !$s->service_description );
         if ( $s->host_name ) {
-            foreach my $h ( @{$s->host_name} ) {
+            foreach my $h ( @{ $s->host_name } ) {
                 if ( $h->host_name eq $self->host_name ) {
                     push( @retval, $s );
                 }
             }
         }
         if ( $s->hostgroup_name ) {
-            foreach my $hg ( @{$s->hostgroup_name} ) {
-                foreach my $h ( @{$hg->members} ) {
+            foreach my $hg ( @{ $s->hostgroup_name } ) {
+                foreach my $h ( @{ $hg->members } ) {
                     if ( $h->host_name eq $self->host_name ) {
                         push( @retval, $s );
                     }
                 }
-           }
+            }
         }
     }
     return @retval;
@@ -760,7 +808,7 @@ sub Nagios::Host::list_services {
 
 # I use a patched version of Nagios right now, so I need these to
 # keep the parser from bombing when I test on my config. (Al Tobey)
-sub Nagios::Host::snmp_community { }
+sub Nagios::Host::snmp_community     { }
 sub Nagios::Host::set_snmp_community { }
 
 =back

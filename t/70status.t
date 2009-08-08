@@ -17,4 +17,4 @@ my $log = Nagios::StatusLog->new(
     Version  => 3,
 );
 
-isa_ok($log, 'Nagios::StatusLog');
+isa_ok( $log, 'Nagios::StatusLog' );

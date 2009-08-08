@@ -1,19 +1,18 @@
-package Nagios::Config::File ;
+package Nagios::Config::File;
 
-use strict ;
-use warnings ;
-use Carp ; 
-use Symbol ;
+use strict;
+use warnings;
+use Carp;
+use Symbol;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
 our $VERSION = '35';
 
 my %DUPLICATES_ALLOWED = (
-	cfg_file => 1,
-	cfg_dir => 1,
-) ;
-
+    cfg_file => 1,
+    cfg_dir  => 1,
+);
 
 =head1 NAME
 
@@ -33,7 +32,6 @@ files. You should not need to create these yourself.
 
 =cut
 
-
 =head1 CONSTRUCTOR
 
 =over 4
@@ -47,92 +45,88 @@ Creates a C<Nagios::Config::File>.
 =cut
 
 sub new {
-	my $class = shift ;
-	my $file = shift ;
+    my $class = shift;
+    my $file  = shift;
 
-    croak "Missing argument: must specify a configuration file to parse." if ( !$file );
+    croak "Missing argument: must specify a configuration file to parse."
+        if ( !$file );
 
-	my $this = {} ;
-	bless($this, $class) ;
+    my $this = {};
+    bless( $this, $class );
 
-	my $fh = undef ;
-	if (ref($file)){
-		$fh = $file ;
-	}
-	else{
+    my $fh = undef;
+    if ( ref($file) ) {
+        $fh = $file;
+    }
+    else {
         $fh = gensym;
-		open($fh, "<$file") ||
-			croak("Can't open $file for reading: $!") ;
-		$this->{filename} = $file ;
-	}
+        open( $fh, "<$file" )
+            || croak("Can't open $file for reading: $!");
+        $this->{filename} = $file;
+    }
 
+    $this->{file_attributes} = {};
+    $this->{fh}              = $fh;
 
-	$this->{file_attributes} = {} ;
-	$this->{fh} = $fh ;
+    $this->parse();
+    close($fh);
 
-	$this->parse() ;
-	close($fh) ;
-
-	return $this ;
+    return $this;
 }
 
 sub parse {
-	my $this = shift ;
+    my $this = shift;
 
-	my $fh = $this->{fh} ;
+    my $fh = $this->{fh};
 
-	while (<$fh>){
-		my $line = $this->strip($_) ;
+    while (<$fh>) {
+        my $line = $this->strip($_);
 
-		if ($this->is_comment($line)){
-			next ;
-		}
-		elsif (my ($name, $value) = $this->is_attribute($line)){
-			if ($DUPLICATES_ALLOWED{$name}){
-				push @{$this->{file_attributes}->{$name}}, $value ;
-			}
-			else{
-				$this->{file_attributes}->{$name} = $value ;
-			}
-		}
-	}
+        if ( $this->is_comment($line) ) {
+            next;
+        }
+        elsif ( my ( $name, $value ) = $this->is_attribute($line) ) {
+            if ( $DUPLICATES_ALLOWED{$name} ) {
+                push @{ $this->{file_attributes}->{$name} }, $value;
+            }
+            else {
+                $this->{file_attributes}->{$name} = $value;
+            }
+        }
+    }
 }
-
 
 sub strip {
-	my $this = shift ;
-	my $line = shift ;
+    my $this = shift;
+    my $line = shift;
 
-	$line =~ s/^\s+// ;
-	$line =~ s/\s+$// ;
+    $line =~ s/^\s+//;
+    $line =~ s/\s+$//;
 
-	return $line ;
+    return $line;
 }
-
 
 sub is_comment {
-	my $this = shift ;
-	my $line = shift ;
+    my $this = shift;
+    my $line = shift;
 
-	if (($line eq '')||($line =~ /^#/)){
-		return 1 ;
-	}
-	
-	return 0 ;
+    if ( ( $line eq '' ) || ( $line =~ /^#/ ) ) {
+        return 1;
+    }
+
+    return 0;
 }
-
 
 sub is_attribute {
-	my $this = shift ;
-	my $line = shift ;
+    my $this = shift;
+    my $line = shift;
 
-	if ($line =~ /^([\w\$]+)\s*=\s*(.+)$/){
-		return ($1, $2) ;
-	}
-	
-	return () ;
+    if ( $line =~ /^([\w\$]+)\s*=\s*(.+)$/ ) {
+        return ( $1, $2 );
+    }
+
+    return ();
 }
-
 
 =head1 METHODS
 
@@ -147,12 +141,11 @@ If C<SPLIT> is true, returns a list of all the values split on
 =cut
 
 sub get {
-    my( $this, $name, $split ) = @_;
-	my $val = $this->{file_attributes}->{$name};
-	return $split ? split(/\s*,\s*/, $val) : $val;
+    my ( $this, $name, $split ) = @_;
+    my $val = $this->{file_attributes}->{$name};
+    return $split ? split( /\s*,\s*/, $val ) : $val;
 }
 sub get_attr { &get; }
-
 
 =item filename()
 
@@ -169,23 +162,22 @@ Returns a scalar with the full configuration text ready to parse again.
 =cut
 
 sub dump {
-	my $this = shift ;
+    my $this   = shift;
     my $outtxt = "# filename: $this->{filename}\n";
-    foreach my $attr ( keys(%{$this->{file_attributes}}) ) {
-		if ($DUPLICATES_ALLOWED{$attr}){
-            foreach my $element ( @{$this->{file_attributes}{$attr}} ) {
-                $outtxt .= $attr .'='. $element."\n";
+    foreach my $attr ( keys( %{ $this->{file_attributes} } ) ) {
+        if ( $DUPLICATES_ALLOWED{$attr} ) {
+            foreach my $element ( @{ $this->{file_attributes}{$attr} } ) {
+                $outtxt .= $attr . '=' . $element . "\n";
             }
-		}
+        }
         else {
-            $outtxt .= $attr .'='. $this->{file_attributes}{$attr}."\n";
+            $outtxt .= $attr . '=' . $this->{file_attributes}{$attr} . "\n";
         }
     }
     return $outtxt;
 }
 
-1 ;
-
+1;
 
 =back 
 
@@ -200,5 +192,4 @@ Al Tobey, tobeya@cpan.org
 Nagios::Config, Nagios::Config::Object
 
 =cut
-
 

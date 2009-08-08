@@ -30,7 +30,7 @@ use File::Basename;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '35';
+our $VERSION   = '35';
 our $fast_mode = undef;
 
 =head1 NAME
@@ -68,16 +68,16 @@ The resource configuration file is not parsed - for that, use Nagios::Config::Fi
 =cut
 
 sub new {
-    my $class = ref($_[0]) ? ref(shift) : shift;
-    my $filename = undef;
-    my $version  = undef;
-    my $allow_missing_files = undef;
+    my $class                = ref( $_[0] ) ? ref(shift) : shift;
+    my $filename             = undef;
+    my $version              = undef;
+    my $allow_missing_files  = undef;
     my $force_relative_files = undef;
 
     if ( @_ % 2 == 0 ) {
         my %args = ();
-        for ( my $i=0; $i<=@_; $i+=2 ) {
-            $args{lc $_[$i]} = $_[$i+1];
+        for ( my $i = 0; $i <= @_; $i += 2 ) {
+            $args{ lc $_[$i] } = $_[ $i + 1 ];
         }
         if ( $args{filename} ) {
             $filename = $args{filename};
@@ -94,39 +94,40 @@ sub new {
     }
     else {
         croak "single argument form of new() no longer supported\n",
-              "try Nagios::Config->new( Filename => \$file );";
+            "try Nagios::Config->new( Filename => \$file );";
     }
 
-    my $main_cfg = Nagios::Config::File->new( $filename );
+    my $main_cfg = Nagios::Config::File->new($filename);
     my $obj_cfgs = Nagios::Object::Config->new( Version => $version );
 
     # parse all object configuration files
     if ( my $files = $main_cfg->get('cfg_file') ) {
-        foreach my $file ( @$files ) {
-            if ( $force_relative_files ) {
+        foreach my $file (@$files) {
+            if ($force_relative_files) {
                 $file = _modpath( $filename, $file );
             }
             next if ( $allow_missing_files && !-e $file );
-            $obj_cfgs->parse( $file );
+            $obj_cfgs->parse($file);
         }
     }
+
     # parse all files in cfg_dir(s)
     if ( my $dir = $main_cfg->get('cfg_dir') ) {
         my @dir_files = ();
-        foreach my $cfgdir ( @$dir ) {
+        foreach my $cfgdir (@$dir) {
             recurse_dir( \@dir_files, $cfgdir );
         }
-        foreach my $file ( @dir_files ) {
-            if ( $force_relative_files ) {
+        foreach my $file (@dir_files) {
+            if ($force_relative_files) {
                 $file = _modpath( $filename, $file );
             }
             next if ( $allow_missing_files && !-e $file );
-            $obj_cfgs->parse( $file );
+            $obj_cfgs->parse($file);
         }
     }
 
     # set up the important parts of the Nagios::Config::File instance
-    $obj_cfgs->{filename} = $filename;
+    $obj_cfgs->{filename}        = $filename;
     $obj_cfgs->{file_attributes} = $main_cfg->{file_attributes};
 
     # resolve and register Nagios::Object tree
@@ -142,7 +143,7 @@ sub new {
 }
 
 sub recurse_dir {
-    my( $file_list, $dir ) = @_;
+    my ( $file_list, $dir ) = @_;
     my $fh = gensym;
     opendir( $fh, $dir );
     while ( my $file = readdir $fh ) {
@@ -150,21 +151,21 @@ sub recurse_dir {
             push( @$file_list, "$dir/$file" );
         }
         elsif ( -d "$dir/$file" && $file !~ /^\./ && $file ne 'CVS' ) {
-            recurse_dir( $file_list, "$dir/$file" )
+            recurse_dir( $file_list, "$dir/$file" );
         }
     }
 }
 
 sub _modpath {
-    my( $main_cfg, $sub_cfg ) = @_;
+    my ( $main_cfg, $sub_cfg ) = @_;
     my $cfgfile = File::Basename::basename($sub_cfg);
     my $subdir  = File::Basename::dirname($main_cfg);
-    return $subdir .'/' . $cfgfile;
+    return $subdir . '/' . $cfgfile;
 }
 
 sub fast_mode {
     if ( $_[1] ) { $fast_mode = $_[1] }
-    $Nagios::Object::fast_mode = $fast_mode;
+    $Nagios::Object::fast_mode         = $fast_mode;
     $Nagios::Object::Config::fast_mode = $fast_mode;
     return $fast_mode;
 }

@@ -18,9 +18,11 @@ ok( $c->parse($cfile), "Config parse() succeeded for '$cfile'" );
 $c->resolve_objects;
 $c->register_objects;
 
-ok( my $service = $c->find_object('Current Load'), "Get a service object to work with" );
+ok( my $service = $c->find_object('Current Load'),
+    "Get a service object to work with"
+);
 
-ok( my $host = $c->find_object( 'anotherhost' ), "Get a host to work with" );
+ok( my $host = $c->find_object('anotherhost'), "Get a host to work with" );
 my $host_multi = $host->parents;
 
 #print Dumper($host_multi);

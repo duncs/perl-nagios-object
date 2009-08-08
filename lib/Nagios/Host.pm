@@ -19,20 +19,20 @@ sub list_services {
     foreach my $s ( $conf->list_services ) {
         next if ( !$s->service_description );
         if ( $s->host_name ) {
-            foreach my $h ( @{$s->host_name} ) {
+            foreach my $h ( @{ $s->host_name } ) {
                 if ( $h->host_name eq $self->host_name ) {
                     push( @retval, $s );
                 }
             }
         }
         if ( $s->hostgroup_name ) {
-            foreach my $hg ( @{$s->hostgroup_name} ) {
-                foreach my $h ( @{$hg->members} ) {
+            foreach my $hg ( @{ $s->hostgroup_name } ) {
+                foreach my $h ( @{ $hg->members } ) {
                     if ( $h->host_name eq $self->host_name ) {
                         push( @retval, $s );
                     }
                 }
-           }
+            }
         }
     }
     return @retval;
@@ -40,7 +40,7 @@ sub list_services {
 
 # I use a patched version of Nagios right now, so I need these to
 # keep the parser from bombing. (Al Tobey)
-sub snmp_community { }
+sub snmp_community     { }
 sub set_snmp_community { }
 
 1;

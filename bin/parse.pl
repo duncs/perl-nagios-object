@@ -12,16 +12,16 @@ use Getopt::Std;
 use Benchmark qw(:all);
 use Data::Dumper;
 
-our( $opt_n, $opt_o, $opt_v, $opt_b, $opt_d, $opt_f, $opt_r, $opt_l );
-getopt( 'n:o:v:' );
-getopt( 'bdfrl' );
+our ( $opt_n, $opt_o, $opt_v, $opt_b, $opt_d, $opt_f, $opt_r, $opt_l );
+getopt('n:o:v:');
+getopt('bdfrl');
 
-if ( $opt_f ) {
+if ($opt_f) {
     Nagios::Config->fast_mode(1);
 }
 
 Nagios::Object::Config->strict_mode(undef);
-unless ( $opt_l ) {
+unless ($opt_l) {
     Nagios::Object::Config->strict_mode(1);
 }
 
@@ -33,24 +33,24 @@ if ( !$opt_n && !$opt_o ) {
 my $t0 = new Benchmark;
 
 my $obj = undef;
-if ( $opt_n ) {
+if ($opt_n) {
     $obj = Nagios::Config->new( Filename => $opt_n, Version => $opt_v );
 }
-if ( $opt_o ) {
+if ($opt_o) {
     $obj = Nagios::Object::Config->new( Version => $opt_v );
-    $obj->parse( $opt_o );
+    $obj->parse($opt_o);
 
-    if ( $opt_r ) {
+    if ($opt_r) {
         $obj->resolve_objects;
         $obj->register_objects;
     }
 }
 
-if ( $opt_d ) {
+if ($opt_d) {
     print Dumper($obj), "\n";
 }
 
-if ( $opt_b ) {
+if ($opt_b) {
     my $t1 = new Benchmark;
     my $td = timediff( $t1, $t0 );
     printf "Benchmark: %s\n", timestr($td);

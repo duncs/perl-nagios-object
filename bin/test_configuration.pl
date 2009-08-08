@@ -25,11 +25,11 @@ perl test_configuration.pl -l -c /etc/opt/nagios/nagios.cfg
 
 our $opt_c;
 our $opt_l;
-getopt( 'c:l' );
+getopt('c:l');
 die "Must specify location of Nagios configuration with -c option."
     if ( !$opt_c );
 
-unless ( $opt_l ) {
+unless ($opt_l) {
     Nagios::Object::Config->strict_mode(1);
 }
 
@@ -39,5 +39,5 @@ my $cf = Nagios::Config->new( Filename => $opt_c, force_relative_files => 1 );
 my $bench_end = Benchmark->new;
 
 printf "\nTime to parse: %s\n",
-        timestr(timediff( $bench_end, $bench_start ));
+    timestr( timediff( $bench_end, $bench_start ) );
 

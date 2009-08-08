@@ -29,61 +29,80 @@ our $VERSION = '39';
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
+
     # first block of items is from Nagios v1, second is new stuff in Nagios v2
     my %_tags = (
-        Service => [qw(
-            host_name description status current_attempt state_type last_check next_check check_type checks_enabled accept_passive_service_checks event_handler_enabled last_state_change problem_has_been_acknowledged last_hard_state time_ok time_unknown time_warning time_critical last_notification current_notification_number notifications_enabled latency execution_time flap_detection_enabled is_flapping percent_state_change scheduled_downtime_depth failure_prediction_enabled process_performance_data obsess_over_service plugin_output
-            service_description modified_attributes check_command event_handler has_been_checked should_be_scheduled check_execution_time check_latency current_state max_attempts last_hard_state_change last_time_ok last_time_warning last_time_unknown last_time_critical performance_data next_notification no_more_notifications active_checks_enabled passive_checks_enabled acknowledgement_type last_update 
-            check_interval check_options check_period current_event_id current_notification_id current_problem_id last_event_id last_problem_id long_plugin_output notification_period retry_interval
-        )],
+        Service => [
+            qw(
+                host_name description status current_attempt state_type last_check next_check check_type checks_enabled accept_passive_service_checks event_handler_enabled last_state_change problem_has_been_acknowledged last_hard_state time_ok time_unknown time_warning time_critical last_notification current_notification_number notifications_enabled latency execution_time flap_detection_enabled is_flapping percent_state_change scheduled_downtime_depth failure_prediction_enabled process_performance_data obsess_over_service plugin_output
+                service_description modified_attributes check_command event_handler has_been_checked should_be_scheduled check_execution_time check_latency current_state max_attempts last_hard_state_change last_time_ok last_time_warning last_time_unknown last_time_critical performance_data next_notification no_more_notifications active_checks_enabled passive_checks_enabled acknowledgement_type last_update
+                check_interval check_options check_period current_event_id current_notification_id current_problem_id last_event_id last_problem_id long_plugin_output notification_period retry_interval
+                )
+        ],
 
-        Host => [qw(
-            host_name status last_check last_state_change problem_has_been_acknowledged time_up time_down time_unreachable last_notification current_notification_number notifications_enabled event_handler_enabled checks_enabled flap_detection_enabled is_flapping percent_state_change scheduled_downtime_depth failure_prediction_enabled process_performance_data plugin_output
-            modified_attributes check_command event_handler has_been_checked should_be_scheduled check_execution_time check_latency current_state last_hard_state check_type performance_data next_check current_attempt max_attempts state_type last_hard_state_change last_time_up last_time_down last_time_unreachable next_notification no_more_notifications acknowledgement_type active_checks_enabled passive_checks_enabled obsess_over_host last_update
-            check_interval check_options check_period current_event_id current_notification_id current_problem_id last_event_id last_problem_id long_plugin_output notification_period retry_interval
-        )],
+        Host => [
+            qw(
+                host_name status last_check last_state_change problem_has_been_acknowledged time_up time_down time_unreachable last_notification current_notification_number notifications_enabled event_handler_enabled checks_enabled flap_detection_enabled is_flapping percent_state_change scheduled_downtime_depth failure_prediction_enabled process_performance_data plugin_output
+                modified_attributes check_command event_handler has_been_checked should_be_scheduled check_execution_time check_latency current_state last_hard_state check_type performance_data next_check current_attempt max_attempts state_type last_hard_state_change last_time_up last_time_down last_time_unreachable next_notification no_more_notifications acknowledgement_type active_checks_enabled passive_checks_enabled obsess_over_host last_update
+                check_interval check_options check_period current_event_id current_notification_id current_problem_id last_event_id last_problem_id long_plugin_output notification_period retry_interval
+                )
+        ],
 
-        Program => [qw(
-            program_start nagios_pid daemon_mode last_command_check last_log_rotation enable_notifications execute_service_checks accept_passive_service_checks enable_event_handlers obsess_over_services enable_flap_detection enable_failure_prediction process_performance_data
-            modified_host_attributes modified_service_attributes active_service_checks_enabled passive_service_checks_enabled active_host_checks_enabled passive_host_checks_enabled obsess_over_hosts check_service_freshness check_host_freshness global_host_event_handler global_service_event_handler
-            active_ondemand_host_check_stats active_ondemand_service_check_stats active_scheduled_host_check_stats active_scheduled_service_check_stats cached_host_check_stats cached_service_check_stats external_command_stats high_external_command_buffer_slots next_comment_id next_downtime_id next_event_id next_notification_id next_problem_id parallel_host_check_stats passive_host_check_stats passive_service_check_stats serial_host_check_stats total_external_command_buffer_slots used_external_command_buffer_slots
-        )],
-        Contact => [qw(
-            contact_name modified_attributes modified_host_attributes modified_service_attributes host_notification_period service_notification_period last_host_notification last_service_notification host_notifications_enabled service_notifications_enabled
-        )],
-        Servicecomment => [qw(
-            host_name service_description entry_type comment_id source persistent entry_time expires expire_time author comment_data
-        )],
-        Hostcomment => [qw(
-            host_name entry_type comment_id source persistent entry_time expires expire_time author comment_data
-        )],
-        Servicedowntime => [qw(
-             host_name service_description downtime_id entry_time start_time end_time triggered_by fixed duration author comment
-        )],
-        Hostdowntime => [qw(
-             host_name downtime_id entry_time start_time end_time triggered_by fixed duration author comment
-        )],
+        Program => [
+            qw(
+                program_start nagios_pid daemon_mode last_command_check last_log_rotation enable_notifications execute_service_checks accept_passive_service_checks enable_event_handlers obsess_over_services enable_flap_detection enable_failure_prediction process_performance_data
+                modified_host_attributes modified_service_attributes active_service_checks_enabled passive_service_checks_enabled active_host_checks_enabled passive_host_checks_enabled obsess_over_hosts check_service_freshness check_host_freshness global_host_event_handler global_service_event_handler
+                active_ondemand_host_check_stats active_ondemand_service_check_stats active_scheduled_host_check_stats active_scheduled_service_check_stats cached_host_check_stats cached_service_check_stats external_command_stats high_external_command_buffer_slots next_comment_id next_downtime_id next_event_id next_notification_id next_problem_id parallel_host_check_stats passive_host_check_stats passive_service_check_stats serial_host_check_stats total_external_command_buffer_slots used_external_command_buffer_slots
+                )
+        ],
+        Contact => [
+            qw(
+                contact_name modified_attributes modified_host_attributes modified_service_attributes host_notification_period service_notification_period last_host_notification last_service_notification host_notifications_enabled service_notifications_enabled
+                )
+        ],
+        Servicecomment => [
+            qw(
+                host_name service_description entry_type comment_id source persistent entry_time expires expire_time author comment_data
+                )
+        ],
+        Hostcomment => [
+            qw(
+                host_name entry_type comment_id source persistent entry_time expires expire_time author comment_data
+                )
+        ],
+        Servicedowntime => [
+            qw(
+                host_name service_description downtime_id entry_time start_time end_time triggered_by fixed duration author comment
+                )
+        ],
+        Hostdowntime => [
+            qw(
+                host_name downtime_id entry_time start_time end_time triggered_by fixed duration author comment
+                )
+        ],
         Info => [qw( created version )]
     );
 
-    GENESIS: {
+GENESIS: {
         no warnings;
+
         # create the Nagios::*::Status packages at compile time
-	    foreach my $key ( keys(%_tags) ) {
-	        my $pkg = 'Nagios::'.$key.'::Status::';
-	
-	        # store the list of tags for this package to access later
-	        do { ${"${pkg}tags"} = $_tags{$key} };
+        foreach my $key ( keys(%_tags) ) {
+            my $pkg = 'Nagios::' . $key . '::Status::';
+
+            # store the list of tags for this package to access later
+            do { ${"${pkg}tags"} = $_tags{$key} };
 
             # modify @ISA for each class
             my $isa = do { \@{"${pkg}ISA"} };
             push( @$isa, 'Nagios::StatusLog' );
-	
-	        foreach my $method ( @{$_tags{$key}} ) {
+
+            foreach my $method ( @{ $_tags{$key} } ) {
+
                 # the manually implemented status method is described below
-	            *{"$pkg$method"} = sub { $_[0]->{$method} }
+                *{"$pkg$method"} = sub { $_[0]->{$method} }
                     unless $method eq 'status';
-	        }
+            }
         }
     }
 }
@@ -133,13 +152,13 @@ be initialized for you (using $self->update()).
 =cut
 
 sub new {
-    my $type = shift;
+    my $type    = shift;
     my $logfile = $_[0] if ( @_ == 1 );
     my $version = 1;
-    
+
     if ( @_ % 2 == 0 ) {
         my %args = @_;
-        while ( my($param,$value) = each %args ) {
+        while ( my ( $param, $value ) = each %args ) {
             if ( lc $param eq 'filename' ) {
                 $logfile = $value;
             }
@@ -153,19 +172,21 @@ sub new {
         die "could not open $logfile for reading: $!";
     }
 
-    my $self = bless( {
-        LOGFILE         => $logfile,
-        VERSION         => $version,
-        INFO            => {},
-        CONTACT         => {},
-        PROGRAM         => {},
-        HOST            => {},
-        HOSTCOMMENT     => {},
-        HOSTDOWNTIME    => {},
-        SERVICE         => {},
-        SERVICECOMMENT  => {},
-        SERVICEDOWNTIME => {}
-    }, $type );
+    my $self = bless(
+        {   LOGFILE         => $logfile,
+            VERSION         => $version,
+            INFO            => {},
+            CONTACT         => {},
+            PROGRAM         => {},
+            HOST            => {},
+            HOSTCOMMENT     => {},
+            HOSTDOWNTIME    => {},
+            SERVICE         => {},
+            SERVICECOMMENT  => {},
+            SERVICEDOWNTIME => {}
+        },
+        $type
+    );
 
     $self->update();
     return $self;
@@ -181,12 +202,12 @@ Updates the internal data structures from the logfile.
 sub update {
     my $self = shift;
     if ( $self->{VERSION} >= 3 ) {
-        return $self->update_v3( @_ );
+        return $self->update_v3(@_);
     }
     if ( $self->{VERSION} == 2 ) {
-        return $self->update_v2( @_ );
+        return $self->update_v2(@_);
     }
-    return $self->update_v1( @_ );
+    return $self->update_v1(@_);
 }
 
 sub update_v1 ($) {
@@ -194,11 +215,12 @@ sub update_v1 ($) {
 
     # break the line down into a hash, return a reference
     sub hashline ($ $ $) {
-        my( $line, $no, $ar ) = @_;
-        my @parts = split(/;/, $$line, $no+1);
+        my ( $line, $no, $ar ) = @_;
+        my @parts = split( /;/, $$line, $no + 1 );
+
         # create the hash using the constant array (defined at top
         # of this file) and the split line
-        my %data = map { $ar->[$_] => $parts[$_] } 0..$no;
+        my %data = map { $ar->[$_] => $parts[$_] } 0 .. $no;
         return \%data;
     }
 
@@ -206,45 +228,56 @@ sub update_v1 ($) {
     open( $log_fh, "<$self->{LOGFILE}" )
         || croak "could not open file $self->{LOGFILE} for reading: $!";
     my @LOG = <$log_fh>;
-    close( $log_fh );
+    close($log_fh);
 
-    for ( my $i=0; $i<@LOG; $i++ ) {
+    for ( my $i = 0; $i < @LOG; $i++ ) {
         chomp( $LOG[$i] );
         $LOG[$i] =~ s/#.*$//;
-        next if ( !defined($LOG[$i]) || !length($LOG[$i]) );
+        next if ( !defined( $LOG[$i] ) || !length( $LOG[$i] ) );
         $LOG[$i] =~ m/^(\[\d+])\s+([A-Z]+);(.*)$/;
-        my( $ts, $type, $line ) = ( $1, $2, $3 );
+        my ( $ts, $type, $line ) = ( $1, $2, $3 );
 
         # set some variables to switch between SERVICES|HOST|PROGRAM
         # $no must be the number of elements - 1 (because arrays start on 0)
 
-        my( $ldata, $ref ) = ( {}, undef );
+        my ( $ldata, $ref ) = ( {}, undef );
         if ( $type eq 'SERVICE' ) {
+
             # let the hashline() function do the work of creating the hashref
-            $ldata = hashline( \$line, 30, Nagios::Service::Status->list_tags() );
+            $ldata = hashline( \$line, 30,
+                Nagios::Service::Status->list_tags() );
 
             # if it already exists, we'll copy data after this if/else tree
-            if ( !exists($self->{$type}{$ldata->{host_name}}{$ldata->{description}}) ) {
-                $self->{$type}{$ldata->{host_name}}{$ldata->{description}} = $ldata;
+            if (!exists(
+                    $self->{$type}{ $ldata->{host_name} }
+                        { $ldata->{description} }
+                )
+                )
+            {
+                $self->{$type}{ $ldata->{host_name} }{ $ldata->{description} }
+                    = $ldata;
             }
 
             # 1st time we've seen this combination, use the new svc hashref
             else {
-                $ref = $self->{$type}{$ldata->{host_name}}{$ldata->{description}};
+                $ref = $self->{$type}{ $ldata->{host_name} }
+                    { $ldata->{description} };
             }
         }
         elsif ( $type eq 'HOST' ) {
-            $ldata = hashline( \$line, 19, Nagios::Host::Status->list_tags() );
-            if ( !exists($self->{$type}{$ldata->{host_name}}) ) {
-                $self->{$type}{$ldata->{host_name}} = $ldata;
+            $ldata
+                = hashline( \$line, 19, Nagios::Host::Status->list_tags() );
+            if ( !exists( $self->{$type}{ $ldata->{host_name} } ) ) {
+                $self->{$type}{ $ldata->{host_name} } = $ldata;
             }
             else {
-                $ref = $self->{$type}{$ldata->{host_name}};
+                $ref = $self->{$type}{ $ldata->{host_name} };
             }
         }
         elsif ( $type eq 'PROGRAM' ) {
-            $ldata = hashline( \$line, 12, Nagios::Program::Status->list_tags() );
-            if ( !defined($self->{$type}) ) {
+            $ldata = hashline( \$line, 12,
+                Nagios::Program::Status->list_tags() );
+            if ( !defined( $self->{$type} ) ) {
                 $self->{$type} = $ldata;
             }
             else {
@@ -253,9 +286,11 @@ sub update_v1 ($) {
         }
         else { croak "unknown tag ($type) in logfile"; }
 
-        # update existing data without changing the location the reference points to
+  # update existing data without changing the location the reference points to
         if ( defined($ref) ) {
-            foreach my $key ( keys(%$ldata) ) { $ref->{$key} = $ldata->{$key}; }
+            foreach my $key ( keys(%$ldata) ) {
+                $ref->{$key} = $ldata->{$key};
+            }
         }
     }
     1;
@@ -265,7 +300,7 @@ sub update_v1 ($) {
 # held in client code remain valid during update (also prevents
 # some memory leaks)
 sub _copy {
-    my( $from, $to ) = @_; 
+    my ( $from, $to ) = @_;
     foreach my $key ( keys %$from ) {
         $to->{$key} = $from->{$key};
     }
@@ -296,9 +331,9 @@ sub update_v2 ($) {
         info => sub {
             _copy( shift, $self->{INFO} );
         },
-        program => sub { 
+        program => sub {
             _copy( shift, $self->{PROGRAM} );
-        }
+            }
 
     );
 
@@ -316,20 +351,21 @@ sub update_v2 ($) {
         {( .*? )}
     /xs;
 
-		my @lines = <$log_fh>;
-		my $file = "@lines";
-		#Drop comments if we don't need them as it should speed things up a little bit.
-		#Comment out the line below if you do want to keep comments
-		$file =~ s/#.*\n//mg;
-		$file =~ s/[\r\n]+\s*/\n/g; # clean up whitespace and newlines
-	
-    while($file =~ /$entry_re/g){
-			( my $type, my $text ) = ( $1, $2 );
-            my %item = map { split /\s*=\s*/, $_, 2 } split /\n/, $text;
-            $handlers{$type}->( \%item );
+    my @lines = <$log_fh>;
+    my $file  = "@lines";
+
+#Drop comments if we don't need them as it should speed things up a little bit.
+#Comment out the line below if you do want to keep comments
+    $file =~ s/#.*\n//mg;
+    $file =~ s/[\r\n]+\s*/\n/g;    # clean up whitespace and newlines
+
+    while ( $file =~ /$entry_re/g ) {
+        ( my $type, my $text ) = ( $1, $2 );
+        my %item = map { split /\s*=\s*/, $_, 2 } split /\n/, $text;
+        $handlers{$type}->( \%item );
     }
 
-    close( $log_fh );
+    close($log_fh);
 
     1;
 }
@@ -357,7 +393,7 @@ sub update_v3 ($) {
             _copy( $item, $self->{SERVICE}{$host}{$svc} );
         },
         contactstatus => sub {
-            my $item = shift;
+            my $item    = shift;
             my $contact = $item->{contact_name};
             if ( !exists $self->{CONTACT}{$contact} ) {
                 $self->{CONTACT}{$contact} = {};
@@ -367,15 +403,16 @@ sub update_v3 ($) {
         info => sub {
             _copy( shift, $self->{INFO} );
         },
-        programstatus => sub { 
+        programstatus => sub {
             _copy( shift, $self->{PROGRAM} );
         },
-	# Hosts & services can each have multiple comments & downtime, distinguished only by their Id:
+
+# Hosts & services can each have multiple comments & downtime, distinguished only by their Id:
         servicecomment => sub {
-	    my $item = shift;
+            my $item = shift;
             my $host = $item->{host_name};
             my $svc  = $item->{service_description};
-	    my $id = $item->{comment_id};
+            my $id   = $item->{comment_id};
 
             if ( !exists $self->{SERVICECOMMENT}{$host}{$svc}{$id} ) {
                 $self->{SERVICECOMMENT}{$host}{$svc}{$id} = {};
@@ -383,9 +420,9 @@ sub update_v3 ($) {
             _copy( $item, $self->{SERVICECOMMENT}{$host}{$svc}{$id} );
         },
         hostcomment => sub {
-	    my $item = shift;
+            my $item = shift;
             my $host = $item->{host_name};
-	    my $id = $item->{comment_id};
+            my $id   = $item->{comment_id};
 
             if ( !exists $self->{HOSTCOMMENT}{$host}{$id} ) {
                 $self->{HOSTCOMMENT}{$host}{$id} = {};
@@ -393,10 +430,10 @@ sub update_v3 ($) {
             _copy( $item, $self->{HOSTCOMMENT}{$host}{$id} );
         },
         servicedowntime => sub {
-	    my $item = shift;
+            my $item = shift;
             my $host = $item->{host_name};
             my $svc  = $item->{service_description};
-	    my $id = $item->{downtime_id};
+            my $id   = $item->{downtime_id};
 
             if ( !exists $self->{SERVICEDOWNTIME}{$host}{$svc}{$id} ) {
                 $self->{SERVICEDOWNTIME}{$host}{$svc}{$id} = {};
@@ -404,9 +441,9 @@ sub update_v3 ($) {
             _copy( $item, $self->{SERVICEDOWNTIME}{$host}{$svc}{$id} );
         },
         hostdowntime => sub {
-	    my $item = shift;
+            my $item = shift;
             my $host = $item->{host_name};
-	    my $id = $item->{downtime_id};
+            my $id   = $item->{downtime_id};
 
             if ( !exists $self->{HOSTDOWNTIME}{$host}{$id} ) {
                 $self->{HOSTDOWNTIME}{$host}{$id} = {};
@@ -420,9 +457,9 @@ sub update_v3 ($) {
     open( $log_fh, "<$self->{LOGFILE}" )
         || croak "could not open file $self->{LOGFILE} for reading: $!";
 
-    # change the first line of the RE to this:
-    # (info|programstatus|hoststatus|servicestatus|contactstatus|servicecomment|hostcomment|servicedowntime|hostdowntime) \s* {(
-    # to make it a bit more careful, but it has a measurable cost on runtime
+# change the first line of the RE to this:
+# (info|programstatus|hoststatus|servicestatus|contactstatus|servicecomment|hostcomment|servicedowntime|hostdowntime) \s* {(
+# to make it a bit more careful, but it has a measurable cost on runtime
     my $entry_re = qr/
         # capture the type into $1
         (\w+) \s*
@@ -440,19 +477,19 @@ sub update_v3 ($) {
         $entry .= $line;
         if ( $entry =~ m/$entry_re/ ) {
             ( my $type, my $text, $entry ) = ( $1, $2, $3 );
-            $text =~ s/[\r\n]+\s*/\n/g; # clean up whitespace and newlines
+            $text =~ s/[\r\n]+\s*/\n/g;    # clean up whitespace and newlines
             my %item = map { split /\s*=\s*/, $_, 2 } split /\n/, $text;
             $handlers{$type}->( \%item );
         }
     }
 
-    close( $log_fh );
+    close($log_fh);
 
     1;
 }
 
 sub list_tags {
-    my $type = ref($_[0]) ? ref($_[0]) : $_[0];
+    my $type = ref( $_[0] ) ? ref( $_[0] ) : $_[0];
     my $listref = ${"$type\::tags"};
     return wantarray ? @$listref : $listref;
 }
@@ -499,15 +536,16 @@ Nagios::Service::Status has the following accessor methods (For V1):
 =cut
 
 sub service {
-    my( $self, $host, $service ) = @_;
+    my ( $self, $host, $service ) = @_;
 
     if ( ref $host eq 'Nagios::Host' ) {
         $host = $host->host_name;
     }
+
     # allow just a service to be passed in
     if ( ref $host eq 'Nagios::Service' ) {
         $service = $host;
-        $host = $service->host_name;
+        $host    = $service->host_name;
     }
     if ( ref $service eq 'Nagios::Service' ) {
         $service = $service->service_description;
@@ -534,8 +572,8 @@ may be listed on more than one host are only listed once here.
 sub list_services {
     my $self = shift;
     my %list = ();
-    foreach my $host ( keys %{$self->{SERVICE}} ) {
-        foreach my $service ( keys %{$self->{SERVICE}{$host}} ) {
+    foreach my $host ( keys %{ $self->{SERVICE} } ) {
+        foreach my $service ( keys %{ $self->{SERVICE}{$host} } ) {
             $list{$service} = 1;
         }
     }
@@ -552,11 +590,11 @@ Returns an array of services descriptions for a given host.
 =cut
 
 sub list_services_on_host {
-    my( $self, $host ) = @_;
-    if ( ref $host && UNIVERSAL::can( $host, 'host_name') ) {
+    my ( $self, $host ) = @_;
+    if ( ref $host && UNIVERSAL::can( $host, 'host_name' ) ) {
         $host = $host->host_name;
     }
-    return keys %{$self->{SERVICE}{$host}};
+    return keys %{ $self->{SERVICE}{$host} };
 }
 
 =item host()
@@ -592,7 +630,7 @@ Nagios::Host::Status has the following accessor methods (for V1):
 =cut
 
 sub host {
-    my( $self, $host ) = @_;
+    my ( $self, $host ) = @_;
 
     if ( ref $host =~ /^Nagios::(Host|Service)$/ ) {
         $host = $host->host_name;
@@ -613,7 +651,7 @@ Returns a simple array of host names (no objects).
 
 =cut
 
-sub list_hosts { keys %{$_[0]->{HOST}}; }
+sub list_hosts { keys %{ $_[0]->{HOST} }; }
 
 =item info() [Nagios v2 & v3 logs only]
 
@@ -631,7 +669,6 @@ sub info {
     my $self = shift;
     return bless $self->{INFO}, 'Nagios::Info::Status';
 }
-
 
 =item contact() [Nagios v3 logs only]
 
@@ -655,7 +692,7 @@ Nagios::Contact::Status has the following accessor methods (for v3):
 =cut
 
 sub contact {
-    my( $self, $name ) = @_;
+    my ( $self, $name ) = @_;
 
     $name = $name->contact_name if ( ref $name eq 'Nagios::Contact' );
 
@@ -691,13 +728,14 @@ Nagios::Hostcomment::Status is a perl HASH, keyed with the Nagios comment IDs, w
 =cut
 
 sub hostcomment {
-    my( $self, $host ) = @_;
+    my ( $self, $host ) = @_;
 
     $host = $host->host_name if ( ref $host =~ /^Nagios::(Host|Service)$/ );
 
     return undef if ( !$self->{HOSTCOMMENT}{$host} );
-    foreach my $id ( keys %{$self->{HOSTCOMMENT}{$host}} ) {
-      bless( $self->{HOSTCOMMENT}{$host}{$id}, 'Nagios::Hostcomment::Status' );
+    foreach my $id ( keys %{ $self->{HOSTCOMMENT}{$host} } ) {
+        bless( $self->{HOSTCOMMENT}{$host}{$id},
+            'Nagios::Hostcomment::Status' );
     }
     return $self->{HOSTCOMMENT}{$host};
 }
@@ -731,19 +769,22 @@ Nagios::Servicecomment::Status is a perl HASH, keyed with the Nagios comment IDs
 =cut
 
 sub servicecomment {
-    my( $self, $host, $service ) = @_;
+    my ( $self, $host, $service ) = @_;
 
     $host = $host->host_name if ( ref $host eq 'Nagios::Host' );
+
     # allow just a service to be passed in
     if ( ref $host eq 'Nagios::Service' ) {
         $service = $host;
-        $host = $service->host_name;
+        $host    = $service->host_name;
     }
-    $service = $service->service_description if ( ref $service eq 'Nagios::Service' );
+    $service = $service->service_description
+        if ( ref $service eq 'Nagios::Service' );
 
     return undef if ( !$self->{SERVICECOMMENT}{$host}{$service} );
-    foreach my $id ( keys %{$self->{SERVICECOMMENT}{$host}{$service}} ) {
-      bless( $self->{SERVICECOMMENT}{$host}{$service}{$id}, 'Nagios::Servicecomment::Status' );
+    foreach my $id ( keys %{ $self->{SERVICECOMMENT}{$host}{$service} } ) {
+        bless( $self->{SERVICECOMMENT}{$host}{$service}{$id},
+            'Nagios::Servicecomment::Status' );
     }
     return $self->{SERVICECOMMENT}{$host}{$service};
 }
@@ -776,13 +817,16 @@ Nagios::Hostdowntime::Status is a perl HASH, keyed with the Nagios downtime IDs,
 =cut
 
 sub hostdowntime {
-    my( $self, $host ) = @_;
+    my ( $self, $host ) = @_;
 
     $host = $host->host_name if ( ref $host =~ /^Nagios::(Host|Service)$/ );
 
     return undef if ( !$self->{HOSTDOWNTIME}{$host} );
-    foreach my $id ( keys %{$self->{HOSTDOWNTIME}{$host}} ) {
-      bless( $self->{HOSTDOWNTIME}{$host}{$id}, 'Nagios::Hostdowntime::Status' );
+    foreach my $id ( keys %{ $self->{HOSTDOWNTIME}{$host} } ) {
+        bless(
+            $self->{HOSTDOWNTIME}{$host}{$id},
+            'Nagios::Hostdowntime::Status'
+        );
     }
     return $self->{HOSTDOWNTIME}{$host};
 }
@@ -817,23 +861,25 @@ Nagios::Servicedowntime::Status is a perl HASH, keyed with the Nagios downtime I
 =cut
 
 sub servicedowntime {
-    my( $self, $host, $service ) = @_;
+    my ( $self, $host, $service ) = @_;
 
     $host = $host->host_name if ( ref $host eq 'Nagios::Host' );
+
     # allow just a service to be passed in
     if ( ref $host eq 'Nagios::Service' ) {
         $service = $host;
-        $host = $service->host_name;
+        $host    = $service->host_name;
     }
-    $service = $service->service_description if ( ref $service eq 'Nagios::Service' );
+    $service = $service->service_description
+        if ( ref $service eq 'Nagios::Service' );
 
     return undef if ( !$self->{SERVICEDOWNTIME}{$host}{$service} );
-    foreach my $id ( keys %{$self->{SERVICEDOWNTIME}{$host}{$service}} ) {
-      bless( $self->{SERVICEDOWNTIME}{$host}{$service}{$id}, 'Nagios::Servicedowntime::Status' );
+    foreach my $id ( keys %{ $self->{SERVICEDOWNTIME}{$host}{$service} } ) {
+        bless( $self->{SERVICEDOWNTIME}{$host}{$service}{$id},
+            'Nagios::Servicedowntime::Status' );
     }
     return $self->{SERVICEDOWNTIME}{$host}{$service};
 }
-
 
 =item program()
 
@@ -861,32 +907,35 @@ Nagios::Program::Status has the following accessor methods (For V1):
 sub program ($) { bless( $_[0]->{PROGRAM}, 'Nagios::Program::Status' ); }
 
 sub write {
-    my( $self, $filename ) = @_;
+    my ( $self, $filename ) = @_;
     my $ts = time;
 
     my $fh = gensym;
     open( $fh, ">$filename" )
         || die "could not open file \"$filename\" for writing: $!";
 
-    print $fh, "[$ts] PROGRAM;", Nagios::Program::Status->csvline( $self->{PROGRAM} ), "\n";
+    print $fh, "[$ts] PROGRAM;",
+        Nagios::Program::Status->csvline( $self->{PROGRAM} ), "\n";
 
-    foreach my $host ( keys %{$self->{HOST}} ) {
-        print $fh "[$ts] HOST;", Nagios::Host::Status->csvline( $self->{HOST}{$host} ), "\n";
+    foreach my $host ( keys %{ $self->{HOST} } ) {
+        print $fh "[$ts] HOST;",
+            Nagios::Host::Status->csvline( $self->{HOST}{$host} ), "\n";
     }
-    foreach my $host ( keys %{$self->{SERVICE}} ) {
-        foreach my $svc ( keys %{$self->{SERVICE}{$host}} ) {
+    foreach my $host ( keys %{ $self->{SERVICE} } ) {
+        foreach my $svc ( keys %{ $self->{SERVICE}{$host} } ) {
             my $ref = $self->{SERVICE}{$host}{$svc};
-            print $fh "[$ts] SERVICE;", Nagios::Service::Status->csvline( $ref ), "\n";
+            print $fh "[$ts] SERVICE;",
+                Nagios::Service::Status->csvline($ref), "\n";
         }
     }
 
-    close( $fh );
+    close($fh);
 }
 
 sub csvline {
     my $self = shift;
     my $data = shift || $self;
-    join( ';', map { $data->{$_} } ($self->list_tags) ); 
+    join( ';', map { $data->{$_} } ( $self->list_tags ) );
 }
 
 =back
@@ -923,7 +972,7 @@ sub status {
     my $self = shift;
     if ( $self->{__parent}{VERSION} > 1.9999999 ) {
         if ( $self->{current_state} == 0 ) {
-            if ($self->{has_been_checked} == 0) {
+            if ( $self->{has_been_checked} == 0 ) {
                 return 'PENDING';
             }
             else {
@@ -956,7 +1005,7 @@ sub status {
     my $self = shift;
     if ( $self->{__parent}{VERSION} > 1.9999999 ) {
         if ( $self->{current_state} == 0 ) {
-            if ($self->{has_been_checked} == 0) {
+            if ( $self->{has_been_checked} == 0 ) {
                 return 'PENDING';
             }
             else {
