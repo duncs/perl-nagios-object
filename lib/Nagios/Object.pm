@@ -28,7 +28,7 @@ use Scalar::Util qw(blessed);
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '38';
+our $VERSION = '39';
 our $pre_link = undef;
 our $fast_mode = undef;
 our %nagios_setup;
@@ -248,6 +248,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     ServiceEscalation => {
 	    use                           => ['Nagios::ServiceEscalation',280],
 		host_name                     => ['Nagios::Host',            280],
+        hostgroup_name                => [['Nagios::HostGroup'],     280],
 		service_description           => ['Nagios::Service',         280],
         contacts                      => [['Nagios::Contact'],       280],
         contact_groups                => [['Nagios::ContactGroup'],  280],
