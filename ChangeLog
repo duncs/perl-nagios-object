@@ -103,3 +103,4 @@
 0.21.7 - Apply patch from PJNewman - RT#47912
        - Apply patch from Neil Katin - RT#48282
        - Run 'perltidy -pbp' across all perl code
+0.21.8 - Apply speedup patch for v2 to v3 from PJNewman's patch (RT#47912)
