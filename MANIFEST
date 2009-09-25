@@ -14,7 +14,6 @@ lib/Nagios/Service.pm
 lib/Nagios/StatusLog.pm
 MANIFEST
 META.yml
-Nagios-Object-0.21.6.tar.gz
 README
 t/00object.t
 t/01object-inheritance.t
