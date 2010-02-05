@@ -25,7 +25,7 @@ use Symbol;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '40';
+our $VERSION = '41';
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
@@ -471,18 +471,16 @@ sub update_v3 ($) {
         (.*)$
     /xs;
 
-    my @lines = <$log_fh>;
-    my $file  = "@lines";
-
-#Drop comments if we don't need them as it should speed things up a little bit.
-#Comment out the line below if you do want to keep comments
-    $file =~ s/#.*\n//mg;
-    $file =~ s/[\r\n]+\s*/\n/g;    # clean up whitespace and newlines
-
-    while ( $file =~ /$entry_re/g ) {
-        ( my $type, my $text ) = ( $1, $2 );
-        my %item = map { split /\s*=\s*/, $_, 2 } split /\n/, $text;
-        $handlers{$type}->( \%item );
+    my $entry = '';
+    while ( my $line = <$log_fh> ) {
+        next if ( $line =~ /^\s*#/ );
+        $entry .= $line;
+        if ( $entry =~ m/$entry_re/ ) {
+            ( my $type, my $text, $entry ) = ( $1, $2, $3 );
+            $text =~ s/[\r\n]+\s*/\n/g;    # clean up whitespace and newlines
+            my %item = map { split /\s*=\s*/, $_, 2 } split /\n/, $text;
+            $handlers{$type}->( \%item );
+        }
     }
 
     close($log_fh);
