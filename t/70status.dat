@@ -74,7 +74,7 @@ hoststatus {
 	current_event_id=31
 	current_problem_id=18
 	last_problem_id=0
-	plugin_output=CRITICAL - 192.168.50.10: rta nan, lost 100%
+	plugin_output=CRITICAL - 192.168.50.10: rta nan, lost 100% with {}
 	long_plugin_output=
 	performance_data=rta=0.000ms;500.000;1000.000;0; pl=100%;80;100;;
 	last_check=1233216743
@@ -178,6 +178,19 @@ contactstatus {
 	host_notification_period=24x7
 	service_notification_period=24x7
 	last_host_notification=0
+	last_service_notification=0
+	host_notifications_enabled=1
+	service_notifications_enabled=1
+	}
+
+contactstatus {
+	contact_name=admin2
+	modified_attributes=0
+	modified_host_attributes=0
+	modified_service_attributes=0
+	host_notification_period=24x7
+	service_notification_period=24x7
+	last_host_notification=1
 	last_service_notification=0
 	host_notifications_enabled=1
 	service_notifications_enabled=1

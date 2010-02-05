@@ -457,29 +457,28 @@ sub update_v3 ($) {
     open( $log_fh, "<$self->{LOGFILE}" )
         || croak "could not open file $self->{LOGFILE} for reading: $!";
 
-# change the first line of the RE to this:
-# (info|programstatus|hoststatus|servicestatus|contactstatus|servicecomment|hostcomment|servicedowntime|hostdowntime) \s* {(
-# to make it a bit more careful, but it has a measurable cost on runtime
-    my $entry_re = qr/
-        # capture the type into $1
-        (\w+) \s*
-        # capture all of the text between the brackets into $2
-        {( .*? )}
-        # match the last bracket only if followed by another definition
-        (?=(?: \s* (?:info|programstatus|hoststatus|servicestatus|contacstatus|servicecomment|hostcomment|servicedowntime|hostdowntime) \s* { | \Z) )
-        # capture remaining text (1-2 lines) into $3 for re-processing
-        (.*)$
-    /xs;
-
+    my %valid_types = map { ( $_ => 1 ) } qw(info programstatus hoststatus servicestatus contactstatus servicecomment hostcomment servicedowntime hostdowntime);
     my $entry = '';
+    my %attributes;
+    my $type = 0;
     while ( my $line = <$log_fh> ) {
-        next if ( $line =~ /^\s*#/ );
-        $entry .= $line;
-        if ( $entry =~ m/$entry_re/ ) {
-            ( my $type, my $text, $entry ) = ( $1, $2, $3 );
-            $text =~ s/[\r\n]+\s*/\n/g;    # clean up whitespace and newlines
-            my %item = map { split /\s*=\s*/, $_, 2 } split /\n/, $text;
-            $handlers{$type}->( \%item );
+        next if ( $line =~ /^\s*#|^\s*$/ );
+        if ( $line =~ /^\s*(\w+)\s*{\s*$/ ) {
+            %attributes = ();
+            if (exists $valid_types{$1}) {
+                $type = $1;
+            } else {
+                $type = 0;
+            }
+        }
+        if ( $line =~ /^\s*}\s*$/ ) {
+            # Only save the object if it is a valid type
+            if ($type) {
+                $handlers{$type}->( \%attributes );
+            }
+        }
+        if ( $line =~ /\s*(\w+)=(.*)$/ ) {
+            $attributes{$1} = $2;
         }
     }
 

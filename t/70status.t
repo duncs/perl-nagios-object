@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Test::More tests => 6;
+use Test::More tests => 8;
 use Test::NoWarnings;
 use Test::Exception;
 
@@ -31,6 +31,22 @@ is_deeply( $admin_contact, {
     service_notification_period => "24x7",
     service_notifications_enabled => 1,
     }, "Attributes for admin right" );
+
+my $admin2 = $log->contact("admin2");
+isa_ok( $admin2, "Nagios::Contact::Status");
+is_deeply( $admin2, {
+    contact_name => "admin2",
+    host_notification_period => "24x7",
+    host_notifications_enabled => 1,
+    last_host_notification => 1,
+    last_service_notification => 0,
+    modified_attributes => 0,
+    modified_host_attributes => 0,
+    modified_service_attributes => 0,
+    service_notification_period => "24x7",
+    service_notifications_enabled => 1,
+    }, "Attributes for admin right" );
+
 
 my $host = $log->host("doesnt_exist_1");
 my $hostattrs = attributes_hash($host);
@@ -80,7 +96,7 @@ is_deeply( $hostattrs, {
          'passive_checks_enabled' => 1,
          'percent_state_change' => "0.00",
          'performance_data' => 'rta=0.000ms;500.000;1000.000;0; pl=100%;80;100;;',
-         'plugin_output' => 'CRITICAL - 192.168.50.10: rta nan, lost 100%',
+         'plugin_output' => 'CRITICAL - 192.168.50.10: rta nan, lost 100% with {}',
          'problem_has_been_acknowledged' => 0,
          'process_performance_data' => 1,
          'retry_interval' => "1.000000",
