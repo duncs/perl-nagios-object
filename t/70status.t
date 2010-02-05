@@ -143,7 +143,7 @@ is_deeply( $serviceattrs, {
             'last_time_unknown' => 0,
             'last_time_warning' => 0,
             'last_update' => 1233914050,
-            'long_plugin_output' => '',
+            'long_plugin_output' => 'IOS (tm) 7200 Software (C7200-P-M), Version 12.2(14)S5, EARLY DEPLOYMENT RELEASE SOFTWARE (fc2)\nTAC Support: http://www.cisco.com/tac\nCopyright (c) 1986-2003 by cisco Systems, Inc.\nCompiled Fri 26-Sep-03 1\n',
             'max_attempts' => 3,
             'modified_attributes' => 1,
             'next_check' => 1233914307,

@@ -144,7 +144,7 @@ servicestatus {
 	last_time_unknown=0
 	last_time_critical=1233914007
 	plugin_output=CRITICAL - 192.168.50.10: rta nan, lost 100%
-	long_plugin_output=
+	long_plugin_output=IOS (tm) 7200 Software (C7200-P-M), Version 12.2(14)S5, EARLY DEPLOYMENT RELEASE SOFTWARE (fc2)\nTAC Support: http://www.cisco.com/tac\nCopyright (c) 1986-2003 by cisco Systems, Inc.\nCompiled Fri 26-Sep-03 1\n
 	performance_data=rta=0.000ms;100.000;500.000;0; pl=100%;20;60;;
 	last_check=1233914007
 	next_check=1233914307
