@@ -1,6 +1,6 @@
 ---
 name: Nagios-Object
-version: 0.21.8
+version: 0.21.9
 author:
   - 'Duncan Ferguson <duncs@cpan.org>'
 abstract: 'Nagios::Object - Nagios object configuration parsing.'
