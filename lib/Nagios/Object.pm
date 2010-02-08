@@ -1089,6 +1089,8 @@ sub AUTOLOAD {
 # ---------------------------------------------------------------------------- #
 # special-case methods coded straight into their packages
 
+1;
+
 package Nagios::Host;
 our $VERSION = $Nagios::Object::VERSION;
 
@@ -1096,12 +1098,16 @@ our $VERSION = $Nagios::Object::VERSION;
 sub hostgroups     { shift->hostgroup(@_); }
 sub set_hostgroups { shift->set_hostgroup(@_); }
 
+1;
+
 package Nagios::HostGroup;
 our $VERSION = $Nagios::Object::VERSION;
 
 # aliases
 sub hostgroup     { shift->hostgroup_name(@_); }
 sub set_hostgroup { shift->set_hostgroup_name(@_); }
+
+1;
 
 package Nagios::ServiceGroup;
 use Carp;
@@ -1164,6 +1170,8 @@ sub _split_members {
     #warn Data::Dumper::Dumper(\@out);
     return @out;
 }
+
+1;
 
 package Nagios::Service;
 our $VERSION = $Nagios::Object::VERSION;
