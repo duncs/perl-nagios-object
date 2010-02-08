@@ -7,10 +7,8 @@ Build.PL
 ChangeLog
 lib/Nagios/Config.pm
 lib/Nagios/Config/File.pm
-lib/Nagios/Host.pm
 lib/Nagios/Object.pm
 lib/Nagios/Object/Config.pm
-lib/Nagios/Service.pm
 lib/Nagios/StatusLog.pm
 MANIFEST
 META.yml

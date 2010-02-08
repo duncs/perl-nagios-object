@@ -24,8 +24,8 @@ provides:
     file: lib/Nagios/Config/File.pm
     version: 35
   Nagios::Host:
-    file: lib/Nagios/Host.pm
-    version: 0.21
+    file: lib/Nagios/Object.pm
+    version: 0
   Nagios::Host::Status:
     file: lib/Nagios/StatusLog.pm
     version: 0.1
@@ -45,8 +45,8 @@ provides:
     file: lib/Nagios/StatusLog.pm
     version: 0.1
   Nagios::Service:
-    file: lib/Nagios/Service.pm
-    version: 0.21
+    file: lib/Nagios/Object.pm
+    version: 0
   Nagios::Service::Status:
     file: lib/Nagios/StatusLog.pm
     version: 0.1
@@ -55,7 +55,7 @@ provides:
     version: 0
   Nagios::StatusLog:
     file: lib/Nagios/StatusLog.pm
-    version: 40
+    version: 41
 generated_by: Module::Build version 0.33
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
