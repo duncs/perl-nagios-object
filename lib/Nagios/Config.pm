@@ -30,7 +30,7 @@ use File::Basename;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION   = '35';
+our $VERSION   = '36';
 our $fast_mode = undef;
 
 =head1 NAME
@@ -76,7 +76,7 @@ sub new {
 
     if ( @_ % 2 == 0 ) {
         my %args = ();
-        for ( my $i = 0; $i <= @_; $i += 2 ) {
+        for ( my $i = 0; $i <= @_ && defined $_[$i]; $i += 2 ) {
             $args{ lc $_[$i] } = $_[ $i + 1 ];
         }
         if ( $args{filename} ) {

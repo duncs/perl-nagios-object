@@ -107,3 +107,4 @@
        - Apply patch from Stephen Gran to add in more missing methods (RT#49411)
 0.21.9 - Fixed speedup patch using logic similar to Nagios' for parsing status.dat
        - Added more comprehensive test for parsing status file
+0.21.10 - Fixed test failure on Perl 5.11 (RT #54464)
