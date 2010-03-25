@@ -3,6 +3,15 @@ use strict;
 use Module::Build;
 
 my $build = Module::Build->new(
+    meta_merge => {
+        resources => {
+            repository => 'http://github.com/duncs/perl-nagios-object',
+            bugtracker =>
+                'https://rt.cpan.org/Public/Dist/Display.html?Name=Nagios-Object',
+            homepage => 'http://github.com/duncs/perl-nagios-object',
+        },
+    },
+
     dist_name      => 'Nagios-Object',
     dist_version   => "0.21.10",
     dist_author    => 'Duncan Ferguson <duncs@cpan.org>',

@@ -22,7 +22,7 @@ Module::Build is to do "perl -MCPAN -e 'install Module::Build'".
 Bug Reports:
 
   Please report all bugs via the CPAN bugs RT system:
-    http://rt.cpan.org/NoAuth/Bugs.html?Dist=Nagios-Object
+    https://rt.cpan.org/Public/Dist/Display.html?Name=Nagios-Object
   In any bug report, include a short description of your problem and a copy 
 of the output from "Build test."  The more diagnostic information you send, 
 the better.
