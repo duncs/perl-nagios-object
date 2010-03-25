@@ -11,6 +11,7 @@ build_requires:
   Test::NoWarnings: 0.08
 configure_requires:
   Module::Build: 0.36
+dynamic_config: 0
 generated_by: 'Module::Build version 0.3603'
 license: gpl
 meta-spec:
@@ -64,4 +65,4 @@ resources:
   homepage: http://github.com/duncs/perl-nagios-object
   license: http://www.gnu.org/licenses/old-licenses/gpl-1.0.txt
   repository: http://github.com/duncs/perl-nagios-object
-version: v0.21.11
+version: v0.21.10
