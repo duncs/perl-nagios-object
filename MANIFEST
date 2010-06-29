@@ -11,6 +11,7 @@ lib/Nagios/Object.pm
 lib/Nagios/Object/Config.pm
 lib/Nagios/StatusLog.pm
 MANIFEST
+MANIFEST.SKIP
 META.yml
 README
 t/00object.t
@@ -27,6 +28,7 @@ t/70status.dat
 t/70status.t
 t/98nagios-sample-config.t
 t/99config-extend.t
+t/continuation_lines.t
 t/hostgroup_hostgroups.cfg
 t/hostgroup_hostgroups.t
 t/jfrancois.cfg

@@ -1,1 +1,8 @@
 ^MYMETA.yml$
+^\.git\/
+^Nagios-Object-\d+.\d+.\d+.tar.gz$
+^blib\/
+^_build\/
+^\.gitignore$
+^Build$
+^MANIFEST\.bak$
