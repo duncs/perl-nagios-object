@@ -27,7 +27,7 @@ use Carp;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION     = '36';
+our $VERSION     = '37';
 our $fast_mode   = undef;
 our $strict_mode = undef;
 
@@ -178,15 +178,24 @@ sub parse {
     my ( $append, $type, $current, $in_definition ) = ( '', '', {}, undef );
     while ( my $line = strippedline($fh) ) {
 
-        # skip empty lines
-        next if ( $line eq ' ' );
-
         # append saved text to the current line
         if ($append) {
+            $line = '' unless $line;
             if ( $append !~ / $/ && $line !~ /^ / ) { $append .= ' ' }
             $line   = $append . $line;
             $append = undef;
         }
+
+	if ( $line && $line =~ /\\$/ )
+	{	#Continued line (ends in a '\')
+		#Remove \, append to $append, and let next iteration handle it
+		$line =~ s/\s*\\$//;
+		$append = $line;
+		next;
+	}
+
+        # skip empty lines (don't do earlier because may get stuff prepended)
+        next if ( $line eq ' ' );
 
         if ( $line =~ /include_file\s*=\s*([\w\-\/\\\:\.]+)/ ) {
             my $incfile = $1;

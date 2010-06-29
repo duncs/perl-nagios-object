@@ -109,3 +109,4 @@
        - Added more comprehensive test for parsing status file
 0.21.10 - Fixed test failure on Perl 5.11 (RT #54464)
 0.21.11 - Added repository, bugtracker and homepage resources
+0.21.12 - Fixed continuation line handling - Thanks to payerle (RT#58906)
