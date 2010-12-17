@@ -28,7 +28,7 @@ use Scalar::Util qw(blessed);
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION   = '40';
+our $VERSION   = '41';
 our $pre_link  = undef;
 our $fast_mode = undef;
 our %nagios_setup;
@@ -71,7 +71,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     Service => {
         use                 => [ 'Nagios::Service', 10 ],
         service_description => [ 'STRING',          10 ],
-        display_name        => ['STRING',             280],
+        display_name        => [ 'STRING',          280 ],
         host_name      => [ ['Nagios::Host'],         10 ],
         servicegroups  => [ ['Nagios::ServiceGroup'], 280 ],
         hostgroup_name => [ ['Nagios::HostGroup'],    256 ],
@@ -294,8 +294,8 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         notification_interval => [ 'INTEGER',   280 ],
         name                  => [ 'host_name', 280 ],
         comment               => [ 'comment',   280 ],
-        escalation_options    => [[qw(d u r)],  280 ],
-        file                  => [ 'filename',  280 ]
+        escalation_options => [ [qw(d u r)], 280 ],
+        file => [ 'filename', 280 ]
     },
     HostDependency => {
         use                      => [ 'Nagios::HostDependency', 280 ],
@@ -657,20 +657,20 @@ Which is just short for:
 my $_name_hack;
 
 sub name {
-    my $self        = shift;
-    my $name_method = $self->_name_attribute;
-
-    if ( $name_method eq 'generated' ) {
-        $_name_hack++;
-        return
-            ref($self) . '-'
-            . $_name_hack;    # FIXME: this should work but feels wrong
-    }
+    my $self = shift;
 
     if ( !$self->register ) {
         return $self->{name};
     }
     else {
+        my $name_method = $self->_name_attribute;
+        if ( $name_method eq 'generated' ) {
+            $_name_hack++;
+            return
+                ref($self) . '-'
+                . $_name_hack;    # FIXME: this should work but feels wrong
+        }
+
         my $name = $self->$name_method();
 
         # recurse down on references to get the names, then generate something

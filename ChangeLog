@@ -110,3 +110,4 @@
 0.21.10 - Fixed test failure on Perl 5.11 (RT #54464)
 0.21.11 - Added repository, bugtracker and homepage resources
 0.21.12 - Fixed continuation line handling - Thanks to payerle (RT#58906)
+0.21.13 - Fixed parsing of ServiceEscalation, ServiceDependency and HostEscalation types.  Thanks to PIRZYK (RT#63802)
