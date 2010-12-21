@@ -25,6 +25,7 @@ my $build = Module::Build->new(
         'Data::Dumper'     => 0.01,
         'Scalar::Util'     => 0.01,
         'Test::NoWarnings' => 0.08,
+        'List::Compare'    => 0.37,
     }
 );
 

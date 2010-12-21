@@ -613,8 +613,68 @@ sub register {
             $object->$set(@new_list);
         }
         else {
-            my $ref = $self->find_object( $object->$attribute(), $attr_type );
-            $object->_set( $attribute, $ref ) if ($ref);
+            my @refl = $self->find_objects( $object->$attribute(), $attr_type );
+            if ( scalar @refl == 1 ) {
+                $object->_set( $attribute, $refl[0] );
+            }
+
+            # If we have found multiple hits, then we most likely have a Nagios::Service
+            # Need to pick the correct one.  Use the Nagios::Host object to help pick it.
+            elsif ( scalar @refl > 1 && ( $object->can('host_name') || $object->can('hostgroup_name') ))  {
+                sub _host_list {
+                    my ($self, $method, $h) = @_;
+                    if ( $self->can($method) ) {
+                        if ( ref $self->$method eq 'ARRAY' ) {
+                            map {
+                                if ( ref $_ eq '' ) {
+                                    $h->{$_}++;
+                                } else {
+                                    $h->{$_->host_name}++;
+                                }
+                            } @{$self->$method};
+                        } elsif ( defined $self->$method ) {
+                            $h->{ $self->$method }++;
+                        }
+                    }
+                }
+                sub get_host_list {
+                    my $self = shift;
+                    my $obj = $self->{'object_config_object'};
+                    my %h;
+                    &_host_list($self, 'host_name', \%h);
+                    if ( $self->can('hostgroup_name') ) {
+                        if ( ref $self->hostgroup_name eq 'ARRAY' ) {
+                            foreach my $hg ( @{$self->hostgroup_name} ) {
+                                my $hg2 = ( ref $hg eq ''
+                                    ? $obj->find_object($hg, 'Nagios::HostGroup')
+                                    : $hg);
+                                &_host_list($hg2, 'members', \%h);
+                            }
+                        } elsif ( defined $self->hostgroup_name ) {
+                            my $hg2 = ( ref $self->hostgroup_name eq ''
+                                ? $obj->find_object($self->hostgroup_name, 'Nagios::HostGroup')
+                                : $self->hostgroup_name);
+                            &_host_list($hg2, 'members', \%h);
+                        }
+                    }
+                    return keys %h;
+                }
+                my @h1 = &get_host_list($object);
+                my $old_found = 0;
+                foreach my $o ( @refl ) {
+                    my @h2 = &get_host_list($o);
+                    next if ( ! scalar @h2 );
+                    my $found = 0;
+                    foreach my $h ( @h1 ) {
+                        $found++ if ( grep {$h eq $_} @h2 );
+                    }
+                    # Use the service which had the max hosts found.
+                    if ( $found > $old_found ) {
+                        $object->_set( $attribute, $o );
+                        $old_found = $found;
+                    }
+                }
+            }
         }
 
         # This field is marked as to be synced with it's group members object
@@ -746,7 +806,9 @@ Same deal as resolve_objects(), but as you'd guess, it registers all objects cur
 sub register_objects {
     my $self = shift;
 
-    foreach my $obj_type ( map { lc $_ } keys %nagios_setup ) {
+    # Order we process the Object is important.  We need the Host/HostGroups
+    # processed before the Service and the Service before the ServiceEescalation
+    foreach my $obj_type ( map { lc $_ } sort keys %nagios_setup ) {
         foreach my $object ( @{ $self->{ $obj_type . '_list' } } ) {
             $self->register($object);
         }

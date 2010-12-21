@@ -4,6 +4,7 @@ author:
   - 'Duncan Ferguson <duncs@cpan.org>'
 build_requires:
   Data::Dumper: 0.01
+  List::Compare: 0.37
   Module::Build: 0.26
   Scalar::Util: 0.01
   Test::Exception: 0.01
