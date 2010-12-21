@@ -112,3 +112,4 @@
 0.21.12 - Fixed continuation line handling - Thanks to payerle (RT#58906)
 0.21.13 - Fixed parsing of ServiceEscalation, ServiceDependency and HostEscalation types.  Thanks to PIRZYK (RT#63802)  
         - Fixed host_name and hostgroup_name methods in various objects. Thanks to PIRZYK (RT#63805)
+        - Improve find_object performance.  Thanks to PIRZYK (RT#63803)

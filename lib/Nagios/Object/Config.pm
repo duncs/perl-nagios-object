@@ -27,7 +27,7 @@ use Carp;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION     = '37';
+our $VERSION     = '38';
 our $fast_mode   = undef;
 our $strict_mode = undef;
 
@@ -71,9 +71,10 @@ sub new {
         config_files         => []
     };
 
-    # initialize lists e.g. host_list, command_list, etc.
+    # initialize lists and indexes e.g. host_list, command_index, etc.
     foreach my $class ( keys %nagios_setup ) {
         $self->{ lc($class) . '_list' } = [];
+        $self->{ lc($class) . '_index' } = {};
     }
 
     # parse arguments passed in
@@ -294,6 +295,11 @@ sub parse {
                     = [ 'STRING', 0 ];
                 $current->{$key} = $val;
             }
+
+            # Add to the find_object search hash.
+            if ( $key eq 'name' || $key eq $nagios_setup{ $current->setup_key }->{'name'}[0] ) {
+                push( @{ $self->{ lc($current->setup_key) . '_index' }->{$val} }, $current );
+            }
         }
         else {
             croak
@@ -327,19 +333,42 @@ sub find_object {
 
     my $searchlist;
     if ( $type && $type =~ /^Nagios::/ ) {
-        $searchlist = $self->all_objects_for_type($type);
+        my @objl = $self->find_objects($name, $type);
+        return $objl[0] if ( scalar @objl );
     }
     elsif ( !$type ) {
         $searchlist = $self->all_objects;
-    }
 
-    foreach my $obj (@$searchlist) {
+        foreach my $obj (@$searchlist) {
 
-      #printf STDERR "obj name '%s', name searched '%s'\n", $obj->name, $name;
-        if ( $obj->name && $obj->name eq $name ) {
-            return $obj;
+          #printf STDERR "obj name '%s', name searched '%s'\n", $obj->name, $name;
+            my $n = $obj->name;
+            if ( $n && $n eq $name ) {
+                return $obj;
+            }
         }
     }
+}
+
+=item find_objects()
+
+Search through the list of objects' names and return all the matches. 
+The second argument is required.
+
+ my @object_list = $parser->find_objects( "load", "Nagios::Service" );
+
+=cut
+
+sub find_objects {
+    my ( $self, $name, $type ) = @_;
+
+    if ( $type && $type =~ /^Nagios::(.*)/ ) {
+        my $index_type = lc($1) . '_index';
+        if ( exists $self->{$index_type} && exists $self->{$index_type}->{$name} ) {
+             return @{$self->{$index_type}->{$name}};
+        }
+    }
+    return ();
 }
 
 =item find_objects_by_regex()

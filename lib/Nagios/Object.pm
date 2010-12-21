@@ -28,7 +28,7 @@ use Scalar::Util qw(blessed);
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION   = '42';
+our $VERSION   = '43';
 our $pre_link  = undef;
 our $fast_mode = undef;
 our %nagios_setup;
@@ -174,7 +174,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         alias          => [ 'STRING',            280 ],
         contact_groups => [ ['Nagios::ContactGroup'], 40 ],
         members        => [ ['Nagios::Host'],         280 ],
-        name    => [ 'hostgroup', 280 ],
+        name    => [ 'hostgroup_name', 280 ],
         comment => [ 'comment',   280 ],
         file    => [ 'filename',  280 ]
     },
