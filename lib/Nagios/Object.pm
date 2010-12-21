@@ -28,7 +28,7 @@ use Scalar::Util qw(blessed);
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION   = '44';
+our $VERSION   = '45';
 our $pre_link  = undef;
 our $fast_mode = undef;
 our %nagios_setup;
@@ -44,11 +44,12 @@ sub NAGIOS_V2_ONLY    { 1 << 6 }    # not valid for nagios v1
 sub NAGIOS_NO_DISPLAY { 1 << 7 }    # should not be displayed by gui
 sub NAGIOS_V3         { 1 << 8 }    # nagios v3 attribute
 sub NAGIOS_V3_ONLY    { 1 << 9 }    # not valid for nagios v1 or v2
+sub NAGIOS_GROUP_SYNC { 1 << 10 }   # keep sync'ed with members method in group object
 
 # export constants - the :all tag will export them all
 our %EXPORT_TAGS = (
     all => [
-        qw(NAGIOS_NO_INHERIT NAGIOS_PERL_ONLY NAGIOS_V1 NAGIOS_V2 NAGIOS_V3 NAGIOS_V1_ONLY NAGIOS_V2_ONLY NAGIOS_V3_ONLY NAGIOS_NO_DISPLAY)
+        qw(NAGIOS_NO_INHERIT NAGIOS_PERL_ONLY NAGIOS_V1 NAGIOS_V2 NAGIOS_V3 NAGIOS_V1_ONLY NAGIOS_V2_ONLY NAGIOS_V3_ONLY NAGIOS_NO_DISPLAY NAGIOS_GROUP_SYNC)
     ]
 );
 Exporter::export_ok_tags('all');
@@ -131,7 +132,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         alias     => [ 'STRING',       280 ],
         address   => [ 'STRING',       280 ],
         parents    => [ ['Nagios::Host'],      280 ],
-        hostgroups => [ ['Nagios::HostGroup'], 280 ],
+        hostgroups => [ ['Nagios::HostGroup'], 1304 ],
         check_command      => [ 'STRING',  280 ],
         max_check_attempts => [ 'INTEGER', 280 ],
         checks_enabled     => [ 'BINARY',  280 ],
@@ -174,7 +175,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         hostgroup_name => [ 'STRING',            280 ],
         alias          => [ 'STRING',            280 ],
         contact_groups => [ ['Nagios::ContactGroup'], 40 ],
-        members        => [ ['Nagios::Host'],         280 ],
+        members        => [ ['Nagios::Host'],         1304 ],
         hostgroup_members => [ ['Nagios::HostGroup'], 280 ],
         name    => [ 'hostgroup_name', 280 ],
         comment => [ 'comment',   280 ],
@@ -203,7 +204,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         address4                      => [ 'STRING', 16 ],
         address5                      => [ 'STRING', 16 ],
         address6                      => [ 'STRING', 16 ],
-        contactgroups => [ ['Nagios::ContactGroup'], 16 ],
+        contactgroups => [ ['Nagios::ContactGroup'], 1040 ],
         name    => [ 'contact_name', 280 ],
         comment => [ 'comment',      280 ],
         file    => [ 'filename',     280 ]
@@ -212,7 +213,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         use               => [ 'Nagios::ContactGroup', 280 ],
         contactgroup_name => [ 'STRING',               280 ],
         alias             => [ 'STRING',               280 ],
-        members => [ ['Nagios::Contact'], 280 ],
+        members => [ ['Nagios::Contact'], 1304 ],
         contactgroup_members => [ ['Nagios::ContactGroup'], 280 ],
         name    => [ 'contactgroup_name', 280 ],
         comment => [ 'comment',           280 ],

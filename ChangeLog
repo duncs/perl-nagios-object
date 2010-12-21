@@ -114,3 +114,4 @@
         - Fixed host_name and hostgroup_name methods in various objects. Thanks to PIRZYK (RT#63805)
         - Improve find_object performance.  Thanks to PIRZYK (RT#63803)
         - Allow for nested group membership. Thanks to PIRZYK (RT#63804)
+        - Ensure host membership lists are consistent. Thanks to PIRZYK (RT#63808)

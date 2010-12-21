@@ -27,7 +27,7 @@ use Carp;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION     = '38';
+our $VERSION     = '39';
 our $fast_mode   = undef;
 our $strict_mode = undef;
 
@@ -617,6 +617,34 @@ sub register {
             $object->_set( $attribute, $ref ) if ($ref);
         }
 
+        # This field is marked as to be synced with it's group members object
+        if ( ( $nagios_setup{ $object->setup_key }->{ $attribute }[1] & NAGIOS_GROUP_SYNC ) == NAGIOS_GROUP_SYNC ) {
+            my $method = ( $attribute eq 'members'
+                ? lc($object->{'_nagios_setup_key'}) . 's'
+                : 'members');
+            my $setmethod = 'set_' . $method;
+
+            foreach my $o ( @{$object->$attribute()} ) {
+                next if ( ! $o->can($method) );
+                my $members = $o->$method();
+
+                # If the object has not yet been registered, just add the name
+                if ( ! $o->registered ) { 
+                    if ( defined $members && ref $members eq '' ) {
+                        $members = [ $members, $object->name ];
+                    } else {
+                        push @$members, $object->name;
+                    }
+                    $o->$setmethod($members);
+                }
+
+                # otherwise add the object itself.
+                elsif ( ! $members || ! grep ({$object eq $_} @$members )) {
+                    push @$members, $object;
+                    $o->$setmethod($members);
+                }
+            }
+        }
     }
 
     $object->registered(1);
