@@ -42,7 +42,7 @@ provides:
     version: 40
   Nagios::Object::Config:
     file: lib/Nagios/Object/Config.pm
-    version: 36
+    version: 37
   Nagios::Program::Status:
     file: lib/Nagios/StatusLog.pm
     version: 0.1
@@ -65,4 +65,4 @@ resources:
   homepage: http://github.com/duncs/perl-nagios-object
   license: http://www.gnu.org/licenses/old-licenses/gpl-1.0.txt
   repository: http://github.com/duncs/perl-nagios-object
-version: v0.21.11
+version: v0.21.12

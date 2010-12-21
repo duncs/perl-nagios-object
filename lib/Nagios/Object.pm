@@ -28,7 +28,7 @@ use Scalar::Util qw(blessed);
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION   = '41';
+our $VERSION   = '42';
 our $pre_link  = undef;
 our $fast_mode = undef;
 our %nagios_setup;
@@ -252,7 +252,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     },
     ServiceEscalation => {
         use       => [ 'Nagios::ServiceEscalation', 280 ],
-        host_name => [ 'Nagios::Host',              280 ],
+        host_name => [ ['Nagios::Host'],            280 ],
         hostgroup_name => [ ['Nagios::HostGroup'], 280 ],
         service_description => [ 'Nagios::Service', 280 ],
         contacts       => [ ['Nagios::Contact'],      280 ],
@@ -268,11 +268,11 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     },
     ServiceDependency => {
         use                           => [ 'Nagios::ServiceDependency', 280 ],
-        dependent_host_name           => [ 'Nagios::Host',              280 ],
+        dependent_host_name           => [ ['Nagios::Host'],            280 ],
         dependent_service_description => [ 'Nagios::Service',           280 ],
-        hostgroup_name                => [ 'Nagios::HostGroup',         280 ],
-        dependent_hostgroup_name      => [ 'Nagios::HostGroup',         280 ],
-        host_name                     => [ 'Nagios::Host',              280 ],
+        hostgroup_name                => [ ['Nagios::HostGroup'],       280 ],
+        dependent_hostgroup_name      => [ ['Nagios::HostGroup'],       280 ],
+        host_name                     => [ ['Nagios::Host'],            280 ],
         service_description           => [ 'Nagios::Service',           280 ],
         inherits_parent               => [ 'INTEGER',                   280 ],
         execution_failure_criteria    => [ [qw(o w u c n)], 280 ],
@@ -285,8 +285,8 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     },
     HostEscalation => {
         use       => [ 'Nagios::HostEscalation', 280 ],
-        host_name => [ 'Nagios::Host',           280 ],
-        hostgroup => [ 'Nagios::HostGroup',      280 ],
+        host_name => [ ['Nagios::Host'],         280 ],
+        hostgroup => [ ['Nagios::HostGroup'],    280 ],
         contacts       => [ ['Nagios::Contact'],      280 ],
         contact_groups => [ ['Nagios::ContactGroup'], 280 ],
         first_notification    => [ 'INTEGER',   280 ],
@@ -299,9 +299,10 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
     },
     HostDependency => {
         use                      => [ 'Nagios::HostDependency', 280 ],
-        dependent_host_name      => [ 'Nagios::Host',           280 ],
-        dependent_hostgroup_name => [ 'Nagios::HostGroup',      280 ],
-        host_name                => [ 'Nagios::Host',           280 ],
+        dependent_host_name      => [ ['Nagios::Host'],         280 ],
+        dependent_hostgroup_name => [ ['Nagios::HostGroup'],    280 ],
+        host_name                => [ ['Nagios::Host'],         280 ],
+        hostgroup_name           => [ ['Nagios::HostGroup'],    280 ],
         inherits_parent          => [ 'INTEGER',                16 ],
         notification_failure_criteria => [ [qw(o w u c n)], 280 ],
         notification_failure_options  => [ [qw(o w u c n)], 280 ],
