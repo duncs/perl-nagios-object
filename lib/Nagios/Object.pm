@@ -28,7 +28,7 @@ use Scalar::Util qw(blessed);
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION   = '43';
+our $VERSION   = '44';
 our $pre_link  = undef;
 our $fast_mode = undef;
 our %nagios_setup;
@@ -120,6 +120,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         servicegroup_name => [ 'STRING',               18 ],
         alias             => [ 'STRING',               16 ],
         members => [ [ 'Nagios::Host', 'Nagios::Service' ], 16 ],
+        servicegroup_members => [ ['Nagios::ServiceGroup'], 280 ],
         name    => [ 'servicegroup_name', 22 ],
         comment => [ 'comment',           22 ],
         file    => [ 'filename',          22 ]
@@ -174,6 +175,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         alias          => [ 'STRING',            280 ],
         contact_groups => [ ['Nagios::ContactGroup'], 40 ],
         members        => [ ['Nagios::Host'],         280 ],
+        hostgroup_members => [ ['Nagios::HostGroup'], 280 ],
         name    => [ 'hostgroup_name', 280 ],
         comment => [ 'comment',   280 ],
         file    => [ 'filename',  280 ]
@@ -211,6 +213,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         contactgroup_name => [ 'STRING',               280 ],
         alias             => [ 'STRING',               280 ],
         members => [ ['Nagios::Contact'], 280 ],
+        contactgroup_members => [ ['Nagios::ContactGroup'], 280 ],
         name    => [ 'contactgroup_name', 280 ],
         comment => [ 'comment',           280 ],
         file    => [ 'filename',          280 ]
