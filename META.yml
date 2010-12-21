@@ -4,6 +4,7 @@ author:
   - 'Duncan Ferguson <duncs@cpan.org>'
 build_requires:
   Data::Dumper: 0.01
+  List::Compare: 0.37
   Module::Build: 0.26
   Scalar::Util: 0.01
   Test::Exception: 0.01
@@ -38,10 +39,10 @@ provides:
     version: 0.1
   Nagios::Object:
     file: lib/Nagios/Object.pm
-    version: 40
+    version: 45
   Nagios::Object::Config:
     file: lib/Nagios/Object/Config.pm
-    version: 37
+    version: 39
   Nagios::Program::Status:
     file: lib/Nagios/StatusLog.pm
     version: 0.1
@@ -64,4 +65,4 @@ resources:
   homepage: http://github.com/duncs/perl-nagios-object
   license: http://www.gnu.org/licenses/old-licenses/gpl-1.0.txt
   repository: http://github.com/duncs/perl-nagios-object
-version: v0.21.12
+version: v0.21.13
