@@ -29,6 +29,10 @@ t/70status.t
 t/98nagios-sample-config.t
 t/99config-extend.t
 t/continuation_lines.t
+t/find_object-template.cfg
+t/find_object-template.t
+t/group_membership.cfg
+t/group_membership.t
 t/hostgroup_hostgroups.cfg
 t/hostgroup_hostgroups.t
 t/jfrancois.cfg
@@ -44,6 +48,8 @@ t/nestedtemplates.t
 t/sample-config-bigger.cfg
 t/sample-config-minimal.cfg
 t/sample-config-v3.cfg
+t/service_escalation.cfg
+t/service_escalation.t
 t/status.log
 t/statuslog.t
 t/testconfig.cfg

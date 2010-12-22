@@ -116,3 +116,4 @@
         - Allow for nested group membership. Thanks to PIRZYK (RT#63804)
         - Ensure host membership lists are consistent. Thanks to PIRZYK (RT#63808)
         - Allow for name() method to not be unique on service objects.  Thanks to PIRZYK (RT#63806)
+0.21.14 - Re-release to include extra test files missed previously
