@@ -117,4 +117,5 @@
         - Ensure host membership lists are consistent. Thanks to PIRZYK (RT#63808)
         - Allow for name() method to not be unique on service objects.  Thanks to PIRZYK (RT#63806)
 0.21.14 - Re-release to include extra test files missed previously
-0.21.15 - timeperiod in host type should not be an Array.  Thanks to PIRZYK (RT#66347)
+0.21.15 - Fixed timeperiod in host type should not be an Array.  Thanks to PIRZYK (RT#66347)
+        - Fixed notes field does not support having a ';' in it.   Thanks to PIRZYK (RT#66348)

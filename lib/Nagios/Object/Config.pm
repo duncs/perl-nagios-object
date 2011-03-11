@@ -27,7 +27,7 @@ use Carp;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION     = '39';
+our $VERSION     = '40';
 our $fast_mode   = undef;
 our $strict_mode = undef;
 
@@ -268,16 +268,19 @@ sub parse {
         # this is an attribute inside an object definition
         elsif ($in_definition) {
             $line =~ s/\s*;(.*)$//;
+            my $comment = $1;
 
             # the comment stripped off of $line is saved in $1 due to the ()
             # around .*, so it's saved in the object if supported
             if ( !$fast_mode && $1 && $current->can('set_comment') ) {
-                $current->set_comment($1);
+                $current->set_comment($comment);
             }
 
             my ( $key, $val ) = split( /\s+/, $line, 2 );
             my $set_method = 'set_' . $key;
             if ( $current->can($set_method) ) {
+                # Put back the comment if we have a notes key.
+                $val .= ';' . $comment if ( $key eq 'notes' && defined $comment );
                 $current->$set_method($val);
             }
             elsif ($strict_mode) {
