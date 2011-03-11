@@ -28,7 +28,7 @@ use Scalar::Util qw(blessed);
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION   = '45';
+our $VERSION   = '46';
 our $pre_link  = undef;
 our $fast_mode = undef;
 our %nagios_setup;
@@ -154,7 +154,7 @@ push( @Nagios::Object::EXPORT_OK, '%nagios_setup' );
         process_perf_data            => [ 'BINARY', 280 ],
         retain_status_information    => [ 'BINARY', 280 ],
         retain_nonstatus_information => [ 'BINARY', 280 ],
-        notification_period => [ ['Nagios::TimePeriod'], 280 ],
+        notification_period => [ 'Nagios::TimePeriod', 280 ],
         notification_interval => [ 'INTEGER', 280 ],
         notification_options => [ [qw(d u r)], 280 ],
         notifications_enabled => [ 'BINARY', 280 ],
