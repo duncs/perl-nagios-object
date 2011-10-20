@@ -57,7 +57,7 @@ provides:
     version: 0
   Nagios::StatusLog:
     file: lib/Nagios/StatusLog.pm
-    version: 42
+    version: 43
 requires:
   perl: v5.6.1
 resources:

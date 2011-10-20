@@ -25,7 +25,7 @@ use Symbol;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '42';
+our $VERSION = '43';
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
@@ -537,16 +537,16 @@ Nagios::Service::Status has the following accessor methods (For V1):
 sub service {
     my ( $self, $host, $service ) = @_;
 
-    if ( ref $host eq 'Nagios::Host' ) {
+    if ( ref($host) eq 'Nagios::Host' ) {
         $host = $host->host_name;
     }
 
     # allow just a service to be passed in
-    if ( ref $host eq 'Nagios::Service' ) {
+    if ( ref($host) eq 'Nagios::Service' ) {
         $service = $host;
         $host    = $service->host_name;
     }
-    if ( ref $service eq 'Nagios::Service' ) {
+    if ( ref($service) eq 'Nagios::Service' ) {
         $service = $service->service_description;
     }
 
@@ -590,7 +590,7 @@ Returns an array of services descriptions for a given host.
 
 sub list_services_on_host {
     my ( $self, $host ) = @_;
-    if ( ref $host && UNIVERSAL::can( $host, 'host_name' ) ) {
+    if ( ref($host) && UNIVERSAL::can( $host, 'host_name' ) ) {
         $host = $host->host_name;
     }
     return keys %{ $self->{SERVICE}{$host} };
@@ -631,7 +631,7 @@ Nagios::Host::Status has the following accessor methods (for V1):
 sub host {
     my ( $self, $host ) = @_;
 
-    if ( ref $host =~ /^Nagios::(Host|Service)$/ ) {
+    if ( ref($host) =~ /^Nagios::(Host|Service)$/ ) {
         $host = $host->host_name;
     }
 
@@ -693,7 +693,7 @@ Nagios::Contact::Status has the following accessor methods (for v3):
 sub contact {
     my ( $self, $name ) = @_;
 
-    $name = $name->contact_name if ( ref $name eq 'Nagios::Contact' );
+    $name = $name->contact_name if ( ref($name) eq 'Nagios::Contact' );
 
     return undef if ( !$self->{CONTACT}{$name} );
 
@@ -729,7 +729,7 @@ Nagios::Hostcomment::Status is a perl HASH, keyed with the Nagios comment IDs, w
 sub hostcomment {
     my ( $self, $host ) = @_;
 
-    $host = $host->host_name if ( ref $host =~ /^Nagios::(Host|Service)$/ );
+    $host = $host->host_name if ( ref($host) =~ /^Nagios::(Host|Service)$/ );
 
     return undef if ( !$self->{HOSTCOMMENT}{$host} );
     foreach my $id ( keys %{ $self->{HOSTCOMMENT}{$host} } ) {
@@ -770,15 +770,15 @@ Nagios::Servicecomment::Status is a perl HASH, keyed with the Nagios comment IDs
 sub servicecomment {
     my ( $self, $host, $service ) = @_;
 
-    $host = $host->host_name if ( ref $host eq 'Nagios::Host' );
+    $host = $host->host_name if ( ref($host) eq 'Nagios::Host' );
 
     # allow just a service to be passed in
-    if ( ref $host eq 'Nagios::Service' ) {
+    if ( ref($host) eq 'Nagios::Service' ) {
         $service = $host;
         $host    = $service->host_name;
     }
     $service = $service->service_description
-        if ( ref $service eq 'Nagios::Service' );
+        if ( ref($service) eq 'Nagios::Service' );
 
     return undef if ( !$host || !$service || !$self->{SERVICECOMMENT}{$host}{$service} );
     foreach my $id ( keys %{ $self->{SERVICECOMMENT}{$host}{$service} } ) {
@@ -818,7 +818,7 @@ Nagios::Hostdowntime::Status is a perl HASH, keyed with the Nagios downtime IDs,
 sub hostdowntime {
     my ( $self, $host ) = @_;
 
-    $host = $host->host_name if ( ref $host =~ /^Nagios::(Host|Service)$/ );
+    $host = $host->host_name if ( ref($host) =~ /^Nagios::(Host|Service)$/ );
 
     return undef if ( !$self->{HOSTDOWNTIME}{$host} );
     foreach my $id ( keys %{ $self->{HOSTDOWNTIME}{$host} } ) {
@@ -862,15 +862,15 @@ Nagios::Servicedowntime::Status is a perl HASH, keyed with the Nagios downtime I
 sub servicedowntime {
     my ( $self, $host, $service ) = @_;
 
-    $host = $host->host_name if ( ref $host eq 'Nagios::Host' );
+    $host = $host->host_name if ( ref($host) eq 'Nagios::Host' );
 
     # allow just a service to be passed in
-    if ( ref $host eq 'Nagios::Service' ) {
+    if ( ref($host) eq 'Nagios::Service' ) {
         $service = $host;
         $host    = $service->host_name;
     }
     $service = $service->service_description
-        if ( ref $service eq 'Nagios::Service' );
+        if ( ref($service) eq 'Nagios::Service' );
 
     return undef if ( !$self->{SERVICEDOWNTIME}{$host}{$service} );
     foreach my $id ( keys %{ $self->{SERVICEDOWNTIME}{$host}{$service} } ) {

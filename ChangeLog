@@ -120,3 +120,4 @@
 0.21.15 - Fixed timeperiod in host type should not be an Array.  Thanks to PIRZYK (RT#66347)
         - Fixed notes field does not support having a ';' in it.   Thanks to PIRZYK (RT#66348)
 0.21.16 - Fixed undefined variable when parsing service comments
+        - Ensure 'ref' is used as a function call correctly.  Thanks to Patrik Mueller
