@@ -25,7 +25,7 @@ use Symbol;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '41';
+our $VERSION = '42';
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {
@@ -780,7 +780,7 @@ sub servicecomment {
     $service = $service->service_description
         if ( ref $service eq 'Nagios::Service' );
 
-    return undef if ( !$self->{SERVICECOMMENT}{$host}{$service} );
+    return undef if ( !$host || !$service || !$self->{SERVICECOMMENT}{$host}{$service} );
     foreach my $id ( keys %{ $self->{SERVICECOMMENT}{$host}{$service} } ) {
         bless( $self->{SERVICECOMMENT}{$host}{$service}{$id},
             'Nagios::Servicecomment::Status' );
