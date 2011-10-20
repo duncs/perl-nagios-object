@@ -22,12 +22,14 @@ use strict;
 use warnings;
 use Nagios::Object qw(:all %nagios_setup);
 use Scalar::Util qw(blessed);
+use File::Basename qw(dirname);
+use File::Find qw(find);
 use Symbol;
 use Carp;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION     = '40';
+our $VERSION     = '41';
 our $fast_mode   = undef;
 our $strict_mode = undef;
 
@@ -166,6 +168,8 @@ sub parse {
 
     our $line_no = 0;
 
+    my $dirname = dirname($filename);
+
     sub strippedline {
         $line_no++;
         return undef if ( eof( $_[0] ) );
@@ -198,22 +202,15 @@ sub parse {
         # skip empty lines (don't do earlier because may get stuff prepended)
         next if ( $line eq ' ' );
 
-        if ( $line =~ /include_file\s*=\s*([\w\-\/\\\:\.]+)/ ) {
-            my $incfile = $1;
-            $self->parse($incfile);
+        if ( $line =~ /(include|cfg)_file\s*=\s*([\w\-\/\\\:\.]+)/ ) {
+            my $incfile = $2;
+            $self->parse("$dirname/$incfile") if -f "$dirname/$incfile";
             next;
         }
-        if ( $line =~ /include_dir\s*=\s*([\w\-\/\\\:\.]+)/ ) {
-            my $incdir = $1;
-            opendir( INCDIR, $incdir )
-                or next;    #Just ignore if can't open directory?
-            my @files = readdir(INCDIR);
-            closedir(INCDIR);
-            @files = grep /\.cfg$/, @files;    #Only want *.cfg files
-            @files = grep { -f "$incdir/$_" } @files;    #Only want files
-            foreach my $file (@files) {
-                $self->parse($file);
-            }
+        if ( $line =~ /(include|cfg)_dir\s*=\s*([\w\-\/\\\:\.]+)/ ) {
+            my $incdir = $2;
+
+            find(sub { $self->parse($_) if ($_=~/\.cfg$/ && -f $_); }, "$dirname/$incdir") if -d "$dirname/$incdir";
             next;
         }
 

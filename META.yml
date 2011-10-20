@@ -42,7 +42,7 @@ provides:
     version: 46
   Nagios::Object::Config:
     file: lib/Nagios/Object/Config.pm
-    version: 40
+    version: 41
   Nagios::Program::Status:
     file: lib/Nagios/StatusLog.pm
     version: 0.1
