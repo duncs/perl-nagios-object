@@ -22,6 +22,7 @@ use Carp;
 use strict qw( subs vars );
 use warnings;
 use Symbol;
+use Scalar::Util;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
@@ -556,6 +557,7 @@ sub service {
         if ( !$self->{SERVICE}{$host}{$service} );
 
     $self->{SERVICE}{$host}{$service}{__parent} = $self;
+    Scalar::Util::weaken($self->{SERVICE}{$host}{$service}{__parent});
     bless( $self->{SERVICE}{$host}{$service}, 'Nagios::Service::Status' );
 }
 
@@ -639,6 +641,7 @@ sub host {
         if ( !$self->{HOST}{$host} );
 
     $self->{HOST}{$host}{__parent} = $self;
+    Scalar::Util::weaken($self->{HOST}{$host}{__parent});
     bless( $self->{HOST}{$host}, 'Nagios::Host::Status' );
 }
 
