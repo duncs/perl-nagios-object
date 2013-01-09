@@ -855,6 +855,12 @@ sub _set ($ $ $) {
         $self->_validate( $key, $value, @{ $vf->{$key} } );
     }
 
+    # Nagios allows the usage of a '+' sign. This breaks member lists.
+    # Ignore the '+' sign completely for now.
+    if ( ref $vf->{$key}[0] eq 'ARRAY' && $value =~/^\+(.+)$/ ) {
+        $value = $1;
+    }
+
     if ( ref $vf->{$key}[0] eq 'ARRAY' && $value =~ /,/ ) {
         $value = [ split /\s*,\s*/, $value ];
     }
