@@ -301,10 +301,7 @@ sub update_v1 ($) {
 # held in client code remain valid during update (also prevents
 # some memory leaks)
 sub _copy {
-    my ( $from, $to ) = @_;
-    foreach my $key ( keys %$from ) {
-        $to->{$key} = $from->{$key};
-    }
+    %{ $_[1] } = %{ $_[0] };
 }
 
 sub update_v2 ($) {
@@ -464,7 +461,10 @@ sub update_v3 ($) {
     my $type = 0;
     while ( my $line = <$log_fh> ) {
         next if ( $line =~ /^\s*#|^\s*$/ );
-        if ( $line =~ /^\s*(\w+)\s*{\s*$/ ) {
+        if ( $line =~ /\s*(\w+)=(.*)$/ ) {
+            $attributes{$1} = $2;
+        }
+        elsif ( $line =~ /^\s*(\w+)\s*{\s*$/ ) {
             %attributes = ();
             if (exists $valid_types{$1}) {
                 $type = $1;
@@ -472,14 +472,11 @@ sub update_v3 ($) {
                 $type = 0;
             }
         }
-        if ( $line =~ /^\s*}\s*$/ ) {
+        elsif ( $line =~ /^\s*}\s*$/ ) {
             # Only save the object if it is a valid type
             if ($type) {
                 $handlers{$type}->( \%attributes );
             }
-        }
-        if ( $line =~ /\s*(\w+)=(.*)$/ ) {
-            $attributes{$1} = $2;
         }
     }
 
