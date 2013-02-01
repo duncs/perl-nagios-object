@@ -103,3 +103,4 @@ t/v3_config/template-object/timeperiods.cfg
 t/v3_config/template-object/timeperiods.cfg.in
 t/v3_config/template-object/windows.cfg
 t/v3_config/template-object/windows.cfg.in
+META.json
