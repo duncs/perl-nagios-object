@@ -855,7 +855,7 @@ sub _set ($ $ $) {
         $self->_validate( $key, $value, @{ $vf->{$key} } );
     }
 
-    if ( ref $vf->{$key}[0] eq 'ARRAY' && $value =~ /,/ ) {
+    if ( ref $vf->{$key}[0] eq 'ARRAY' && defined($value) && $value =~ /,/ ) {
         $value = [ split /\s*,\s*/, $value ];
     }
 
