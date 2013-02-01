@@ -457,7 +457,8 @@ sub update_v3 ($) {
     open( $log_fh, "<$self->{LOGFILE}" )
         || croak "could not open file $self->{LOGFILE} for reading: $!";
 
-    my %valid_types = map { ( $_ => 1 ) } qw(info programstatus hoststatus servicestatus contactstatus servicecomment hostcomment servicedowntime hostdowntime);
+    my %valid_types = map { ( $_ => 1 ) }
+        qw(info programstatus hoststatus servicestatus contactstatus servicecomment hostcomment servicedowntime hostdowntime);
     my $entry = '';
     my %attributes;
     my $type = 0;
@@ -465,13 +466,15 @@ sub update_v3 ($) {
         next if ( $line =~ /^\s*#|^\s*$/ );
         if ( $line =~ /^\s*(\w+)\s*{\s*$/ ) {
             %attributes = ();
-            if (exists $valid_types{$1}) {
+            if ( exists $valid_types{$1} ) {
                 $type = $1;
-            } else {
+            }
+            else {
                 $type = 0;
             }
         }
         if ( $line =~ /^\s*}\s*$/ ) {
+
             # Only save the object if it is a valid type
             if ($type) {
                 $handlers{$type}->( \%attributes );
@@ -652,6 +655,16 @@ Returns a simple array of host names (no objects).
 
 sub list_hosts { keys %{ $_[0]->{HOST} }; }
 
+=item list_hostdowntime()
+
+Returns a simple array of host downtimes (no objects)
+
+ my @hostdowntimes = $log->list_hostdowntime;
+
+=cut
+
+sub list_hostdowntime { keys %{ $_[0]->{HOSTDOWNTIME} }; }
+
 =item info() [Nagios v2 & v3 logs only]
 
 Returns a Nagios::Info::Status object.   It only has two methods, created()
@@ -780,7 +793,10 @@ sub servicecomment {
     $service = $service->service_description
         if ( ref($service) eq 'Nagios::Service' );
 
-    return undef if ( !$host || !$service || !$self->{SERVICECOMMENT}{$host}{$service} );
+    return undef
+        if ( !$host
+        || !$service
+        || !$self->{SERVICECOMMENT}{$host}{$service} );
     foreach my $id ( keys %{ $self->{SERVICECOMMENT}{$host}{$service} } ) {
         bless( $self->{SERVICECOMMENT}{$host}{$service}{$id},
             'Nagios::Servicecomment::Status' );
