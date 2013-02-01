@@ -22,6 +22,7 @@ use Carp;
 use strict qw( subs vars );
 use warnings;
 use Symbol;
+use Scalar::Util;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
@@ -300,10 +301,7 @@ sub update_v1 ($) {
 # held in client code remain valid during update (also prevents
 # some memory leaks)
 sub _copy {
-    my ( $from, $to ) = @_;
-    foreach my $key ( keys %$from ) {
-        $to->{$key} = $from->{$key};
-    }
+    %{ $_[1] } = %{ $_[0] };
 }
 
 sub update_v2 ($) {
@@ -464,7 +462,10 @@ sub update_v3 ($) {
     my $type = 0;
     while ( my $line = <$log_fh> ) {
         next if ( $line =~ /^\s*#|^\s*$/ );
-        if ( $line =~ /^\s*(\w+)\s*{\s*$/ ) {
+        if ( $line =~ /\s*(\w+)=(.*)$/ ) {
+            $attributes{$1} = $2;
+        }
+        elsif ( $line =~ /^\s*(\w+)\s*{\s*$/ ) {
             %attributes = ();
             if ( exists $valid_types{$1} ) {
                 $type = $1;
@@ -473,15 +474,11 @@ sub update_v3 ($) {
                 $type = 0;
             }
         }
-        if ( $line =~ /^\s*}\s*$/ ) {
-
+        elsif ( $line =~ /^\s*}\s*$/ ) {
             # Only save the object if it is a valid type
             if ($type) {
                 $handlers{$type}->( \%attributes );
             }
-        }
-        if ( $line =~ /\s*(\w+)=(.*)$/ ) {
-            $attributes{$1} = $2;
         }
     }
 
@@ -559,6 +556,7 @@ sub service {
         if ( !$self->{SERVICE}{$host}{$service} );
 
     $self->{SERVICE}{$host}{$service}{__parent} = $self;
+    Scalar::Util::weaken($self->{SERVICE}{$host}{$service}{__parent});
     bless( $self->{SERVICE}{$host}{$service}, 'Nagios::Service::Status' );
 }
 
@@ -642,6 +640,7 @@ sub host {
         if ( !$self->{HOST}{$host} );
 
     $self->{HOST}{$host}{__parent} = $self;
+    Scalar::Util::weaken($self->{HOST}{$host}{__parent});
     bless( $self->{HOST}{$host}, 'Nagios::Host::Status' );
 }
 
