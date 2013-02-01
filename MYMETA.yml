@@ -40,7 +40,7 @@ provides:
     version: 0.1
   Nagios::Object:
     file: lib/Nagios/Object.pm
-    version: 46
+    version: 47
   Nagios::Object::Config:
     file: lib/Nagios/Object/Config.pm
     version: 41
@@ -58,7 +58,7 @@ provides:
     version: 0
   Nagios::StatusLog:
     file: lib/Nagios/StatusLog.pm
-    version: 43
+    version: 44
 requires:
   perl: v5.6.1
 resources:

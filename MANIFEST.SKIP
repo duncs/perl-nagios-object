@@ -1,4 +1,5 @@
 ^MYMETA.yml$
+^MYMETA.json$
 ^\.git\/
 ^Nagios-Object-\d+.\d+.\d+.tar.gz$
 ^blib\/

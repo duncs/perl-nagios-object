@@ -1,0 +1,107 @@
+{
+   "abstract" : "Nagios::Object - Nagios object configuration parsing.",
+   "author" : [
+      "Duncan Ferguson <duncs@cpan.org>"
+   ],
+   "dynamic_config" : 1,
+   "generated_by" : "Module::Build version 0.4003, CPAN::Meta::Converter version 2.112621",
+   "license" : [
+      "open_source"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "Nagios-Object",
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "Data::Dumper" : "0.01",
+            "List::Compare" : "0.37",
+            "Module::Build" : "0.26",
+            "Scalar::Util" : "0.01",
+            "Test::Exception" : "0.01",
+            "Test::More" : "0.01",
+            "Test::NoWarnings" : "0.08"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "Module::Build" : "0.40"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "perl" : "v5.6.1"
+         }
+      }
+   },
+   "provides" : {
+      "Nagios::Config" : {
+         "file" : "lib/Nagios/Config.pm",
+         "version" : "36"
+      },
+      "Nagios::Config::File" : {
+         "file" : "lib/Nagios/Config/File.pm",
+         "version" : "35"
+      },
+      "Nagios::Host" : {
+         "file" : "lib/Nagios/Object.pm",
+         "version" : 0
+      },
+      "Nagios::Host::Status" : {
+         "file" : "lib/Nagios/StatusLog.pm",
+         "version" : "0.1"
+      },
+      "Nagios::HostGroup" : {
+         "file" : "lib/Nagios/Object.pm",
+         "version" : 0
+      },
+      "Nagios::Info::Status" : {
+         "file" : "lib/Nagios/StatusLog.pm",
+         "version" : "0.1"
+      },
+      "Nagios::Object" : {
+         "file" : "lib/Nagios/Object.pm",
+         "version" : "47"
+      },
+      "Nagios::Object::Config" : {
+         "file" : "lib/Nagios/Object/Config.pm",
+         "version" : "41"
+      },
+      "Nagios::Program::Status" : {
+         "file" : "lib/Nagios/StatusLog.pm",
+         "version" : "0.1"
+      },
+      "Nagios::Service" : {
+         "file" : "lib/Nagios/Object.pm",
+         "version" : 0
+      },
+      "Nagios::Service::Status" : {
+         "file" : "lib/Nagios/StatusLog.pm",
+         "version" : "0.1"
+      },
+      "Nagios::ServiceGroup" : {
+         "file" : "lib/Nagios/Object.pm",
+         "version" : 0
+      },
+      "Nagios::StatusLog" : {
+         "file" : "lib/Nagios/StatusLog.pm",
+         "version" : "44"
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://rt.cpan.org/Public/Dist/Display.html?Name=Nagios-Object"
+      },
+      "homepage" : "http://github.com/duncs/perl-nagios-object",
+      "license" : [
+         "http://www.gnu.org/licenses/old-licenses/gpl-1.0.txt"
+      ],
+      "repository" : {
+         "url" : "http://github.com/duncs/perl-nagios-object"
+      }
+   },
+   "version" : "v0.21.18"
+}

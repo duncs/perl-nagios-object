@@ -124,3 +124,4 @@
         - Cater for recursive includes in configuration files.  Thanks to Michael Fladischer (RT#71017)
 0.21.17 - New 'list_hostdowntime' method.  Thanks to Michael Clay
         - Fixed 'uninitialised value' error
+0.21.18 - Rerelease due to repository conflicts
