@@ -28,7 +28,7 @@ use Scalar::Util qw(blessed);
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION   = '46';
+our $VERSION   = '47';
 our $pre_link  = undef;
 our $fast_mode = undef;
 our %nagios_setup;
