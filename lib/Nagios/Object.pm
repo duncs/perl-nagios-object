@@ -959,6 +959,13 @@ sub _validate {
 # support "hostgroup" alongside "hostgroups" by piggybacking it
 sub hostgroup_name {
     my $self = shift;
+
+    # Since this method is available in all objects, perform a check in
+    # the config to see if its actually valid on the object
+    (my $type = ref $self) =~ s/.*:://;
+    if(!$nagios_setup{$type}{hostgroup_name}) {
+        return;
+    }
     if ( $self->can('hostgroup') ) {
         return $self->hostgroup(@_);
     }
