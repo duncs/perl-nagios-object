@@ -597,6 +597,29 @@ sub list_services_on_host {
     return keys %{ $self->{SERVICE}{$host} };
 }
 
+=item serviceproblems()
+
+Returns a hash of all services that are not in an OK state
+
+ my %serviceproblems = $log->serviceproblems();
+
+=cut
+
+sub serviceproblems {
+    my ( $self, $host, $service ) = @_;
+    my %list = ();
+
+    $self->{SERVICE}{$host}{$service}{__parent} = $self;
+    Scalar::Util::weaken($self->{SERVICE}{$host}{$service}{__parent});
+    
+    foreach my $host ( keys %{ $self->{SERVICE} } ) {
+        foreach my $service ( keys %{ $self->{SERVICE}{$host} } ) {
+            $list{$host}{$service} = $self->{SERVICE}{$host}{$service} unless $self->{SERVICE}{$host}{$service}{current_state} == 0;
+        }
+    }
+    return %list;
+}
+
 =item host()
 
 Returns a Nagios::Host::Status object.  Input can be a simple host_name, a Nagios::Host object, or a Nagios::Service object.
