@@ -26,7 +26,7 @@ use Scalar::Util;
 
 # NOTE: due to CPAN version checks this cannot currently be changed to a
 # standard version string, i.e. '0.21'
-our $VERSION = '44';
+our $VERSION = '45';
 
 # this is going to be rewritten to use AUTOLOAD + method caching in a future version
 BEGIN {

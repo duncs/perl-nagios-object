@@ -126,3 +126,4 @@
         - Fixed 'uninitialised value' error
 0.21.18 - Rerelease due to repository conflicts
 0.21.19 - Fix parsing of configuration when objects mistakenly try to access hostgroup info
+0.21.20 - Added new serviceproblems() method.  Thanks to Deppy.
