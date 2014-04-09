@@ -16,7 +16,7 @@ statusdat_demo.pl - test the StatusLog module
 
 =head1 USAGE
 
-perl statusdat_demo.pl -l /var/opt/nagios/status.dat
+perl statusdat_demo.pl -l /var/opt/nagios/status.dat -v 2
 
 =head1 NOTES
 
@@ -26,12 +26,16 @@ performance is on boxes and configs other than my own.
 =cut
 
 our $opt_l;
-getopt('l:');
-die "Must specify location of Nagios status log with -l option."
-    if ( !$opt_l );
+our $opt_v;
+getopt('l:v:');
+
+if ( !$opt_l || !$opt_v ) {
+    die
+        "Must specify:\n Location of Nagios status log with -l option.\n Nagios Version with -v option\n";
+}
 
 my $bench_begin = Benchmark->new;
-my $log = Nagios::StatusLog->new( Filename => $opt_l, Version => 2.0 );
+my $log = Nagios::StatusLog->new( Filename => $opt_l, Version => $opt_v );
 
 my $bench_postparse = Benchmark->new;
 

@@ -693,7 +693,7 @@ Returns a Nagios::Info::Status object.   It only has two methods, created()
 and version().
 
  my $i = $log->info;
- printf "Logfile created at %s unix epoch time for Nagios verion %s\n",
+ printf "Logfile created at %s unix epoch time for Nagios version %s\n",
     $i->created,
     $i->version;
 
