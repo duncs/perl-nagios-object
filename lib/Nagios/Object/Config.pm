@@ -319,7 +319,7 @@ sub parse {
 
 =item find_object()
 
-Search through the list of objects' names and return the first match. 
+Search through the list of objects' names and return the first match, if one exists. 
 The second argument is optional.  Always using it can considerably reduce
 the size of the list to be searched, so it is recommended.
 
@@ -331,23 +331,18 @@ the size of the list to be searched, so it is recommended.
 sub find_object {
     my ( $self, $name, $type ) = @_;
 
-    my $searchlist;
     if ( $type && $type =~ /^Nagios::/ ) {
         my @objl = $self->find_objects($name, $type);
-        return $objl[0] if ( scalar @objl );
+        return $objl[0] if @objl;
     }
     elsif ( !$type ) {
-        $searchlist = $self->all_objects;
-
-        foreach my $obj (@$searchlist) {
-
-          #printf STDERR "obj name '%s', name searched '%s'\n", $obj->name, $name;
-            my $n = $obj->name;
-            if ( $n && $n eq $name ) {
-                return $obj;
-            }
+        foreach my $obj ( @{ $self->all_objects } ) {
+            my $n = $obj->name or next;
+            return $obj if $n eq $name;
         }
     }
+
+    return;
 }
 
 =item find_objects()
