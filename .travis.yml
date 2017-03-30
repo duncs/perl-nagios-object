@@ -1,10 +1,5 @@
 ---
 sudo: false
-addons:
-  apt:
-    packages:
-      - aspell
-      - aspell-en
 language: perl
 perl:
   - blead
