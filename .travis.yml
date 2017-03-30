@@ -1,0 +1,44 @@
+---
+sudo: false
+addons:
+  apt:
+    packages:
+      - aspell
+      - aspell-en
+language: perl
+perl:
+  - blead
+  - blead-thr
+  - dev
+  - dev-thr
+  - 5.24.0
+  - 5.24.0-thr
+  - 5.22.2
+  - 5.22.2-thr
+  - 5.20.2
+  - 5.20.2-thr
+  - 5.18.3
+  - 5.18.3-thr
+  - 5.16.3
+  - 5.16.3-thr
+  - 5.14.4
+  - 5.14.4-thr
+  - 5.12.5
+  - 5.12.5-thr
+  - 5.10.1
+  - 5.10.1-thr
+  - 5.8.8
+  - 5.8.8-thr
+matrix:
+  allow_failures:
+    - perl: blead
+    - perl: blead-thr
+  include:
+    - env: COVERAGE=1
+      perl: '5.24'
+env:
+  global:
+    - RELEASE_TESTING=1
+    - AUTHOR_TESTING=1
+before_install:
+  - eval $(curl https://travis-perl.github.io/init) --auto
