@@ -1,5 +1,4 @@
 ---
-sudo: false
 language: perl
 perl:
   - blead
@@ -24,6 +23,7 @@ perl:
   - 5.10.1-thr
   - 5.8.8
   - 5.8.8-thr
+sudo: false
 matrix:
   allow_failures:
     - perl: blead
