@@ -37,7 +37,12 @@ source has been placed into a git repository at:
     git://github.com/duncs/perl-nagios-object.git
 
 See also:
-    http://github.com/duncs/perl-nagios-object/
+    Main site: 
+        http://github.com/duncs/perl-nagios-object/
+    Continuous integration tests:
+        https://travis-ci.org/duncs/perl-nagios-object
+    Coverage tests:
+        https://coveralls.io/github/duncs/perl-nagios-object
 
 <duncs@cpan.org>
 
