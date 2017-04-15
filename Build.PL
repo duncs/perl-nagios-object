@@ -9,6 +9,9 @@ my $build = Module::Build->new(
             bugtracker =>
                 'https://rt.cpan.org/Public/Dist/Display.html?Name=Nagios-Object',
             homepage => 'http://github.com/duncs/perl-nagios-object',
+            ci       => 'https://travis-ci.org/duncs/perl-nagios-object',
+            coverage =>
+                'https://coveralls.io/github/duncs/perl-nagios-object',
         },
     },
 

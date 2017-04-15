@@ -3,10 +3,10 @@
    "author" : [
       "Duncan Ferguson <duncs@cpan.org>"
    ],
-   "dynamic_config" : 1,
+   "dynamic_config" : 0,
    "generated_by" : "Module::Build version 0.4216",
    "license" : [
-      "gpl_1"
+      "open_source"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -25,11 +25,6 @@
             "Test::NoWarnings" : "0.08"
          }
       },
-      "configure" : {
-         "requires" : {
-            "Module::Build" : "0.42"
-         }
-      },
       "runtime" : {
          "requires" : {
             "perl" : "v5.6.1"
@@ -46,14 +41,16 @@
          "version" : "35"
       },
       "Nagios::Host" : {
-         "file" : "lib/Nagios/Object.pm"
+         "file" : "lib/Nagios/Object.pm",
+         "version" : "0"
       },
       "Nagios::Host::Status" : {
          "file" : "lib/Nagios/StatusLog.pm",
          "version" : "0.1"
       },
       "Nagios::HostGroup" : {
-         "file" : "lib/Nagios/Object.pm"
+         "file" : "lib/Nagios/Object.pm",
+         "version" : "0"
       },
       "Nagios::Info::Status" : {
          "file" : "lib/Nagios/StatusLog.pm",
@@ -72,14 +69,16 @@
          "version" : "0.1"
       },
       "Nagios::Service" : {
-         "file" : "lib/Nagios/Object.pm"
+         "file" : "lib/Nagios/Object.pm",
+         "version" : "0"
       },
       "Nagios::Service::Status" : {
          "file" : "lib/Nagios/StatusLog.pm",
          "version" : "0.1"
       },
       "Nagios::ServiceGroup" : {
-         "file" : "lib/Nagios/Object.pm"
+         "file" : "lib/Nagios/Object.pm",
+         "version" : "0"
       },
       "Nagios::StatusLog" : {
          "file" : "lib/Nagios/StatusLog.pm",
@@ -97,9 +96,7 @@
       ],
       "repository" : {
          "url" : "http://github.com/duncs/perl-nagios-object"
-      },
-      "x_ci" : "https://travis-ci.org/duncs/perl-nagios-object",
-      "x_coverage" : "https://coveralls.io/github/duncs/perl-nagios-object"
+      }
    },
    "version" : "v0.21.20",
    "x_serialization_backend" : "JSON::PP version 2.27400"
