@@ -21,8 +21,8 @@ ok( my $cf = Nagios::Config->new(
 diag("run tests to make sure inherited Nagios::Config::File methods work")
     if ( $ENV{TEST_VERBOSE} );
 
-is( $cf->get('command_check_interval'),
-    '-1', "get('command_check_interval') returns -1" );
+is( $cf->get('allow_empty_hostgroup_assignment'),
+    '0', "get('allow_empty_hostgroup_assignment') returns 0" );
 
 is( $cf->get('downtime_file'),
     $cf->get_attr('downtime_file'),
