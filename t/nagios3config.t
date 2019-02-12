@@ -12,8 +12,8 @@ eval { chdir('t') };
 use_ok('Nagios::Config');
 
 ok( my $cf = Nagios::Config->new(
-        Filename => "v2_config/nagios.cfg",
-        Version  => 2
+        Filename => "v3_config/nagios.cfg",
+        Version  => 3
     ),
     "Nagios::Config->new()"
 );
