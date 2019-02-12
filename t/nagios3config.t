@@ -78,4 +78,4 @@ ok( scalar(@$host_members) == 1, "linux-servers should have 1 member" );
 }
 
 my @servicegroups = $cf->list_servicegroups();
-ok( scalar(@servicegroups) == 0, "\$parser->list_servicegroups()" );
+is( scalar(@servicegroups), '0', "\$parser->list_servicegroups()" );
