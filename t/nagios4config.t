@@ -59,7 +59,7 @@ ok( defined($linux_servers), "Found linux-servers in configuration" );
 # make sure linux-servers has 1 members, which is a host
 
 my $host_members = $linux_servers->members();
-ok( scalar(@$host_members) == 1, "linux-servers should have 1 member" );
+is( scalar(@$host_members), '1', "linux-servers should have 1 member" );
 
 # diag ("linux-servers members: " . join(', ', map { "[" . join(", ", @{$_} ) . "]" } @$host_members));
 
