@@ -43,6 +43,7 @@ t/nagios-missing-file.cfg
 t/nagios.cfg
 t/nagios2config.t
 t/nagios3config.t
+t/nagios4config.t
 t/nestedtemplates.cfg
 t/nestedtemplates.t
 t/sample-config-bigger.cfg
