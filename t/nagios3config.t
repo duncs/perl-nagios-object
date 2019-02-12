@@ -6,7 +6,7 @@ use Test::NoWarnings;
 
 use lib qw( ./lib ../lib );
 
-BEGIN { plan tests => 25; }
+BEGIN { plan tests => 17; }
 eval { chdir('t') };
 
 use_ok('Nagios::Config');
@@ -47,23 +47,21 @@ ok( $cf->register_objects,
 ok( my @hosts    = $cf->list_hosts(), "\$parser->list_hosts()" );
 ok( my @services = $cf->list_hosts(), "\$parser->list_services()" );
 
-ok( my @hostgroups = $cf->list_hostgroups(), "\$parser->list_hostgroups()" );
+my @hostgroups = $cf->list_hostgroups();
+ok( @hostgroups, "\$parser->list_hostgroups()" );
 
-my @servicegroups = $cf->list_servicegroups();
-ok( @servicegroups, "\$parser->list_servicegroups()" );
+# diag ("host groups: " . join(', ', map { $_->hostgroup_name } @hostgroups));
+my $linux_servers
+    = ( grep { $_->hostgroup_name eq 'linux-servers' } @hostgroups )[0];
 
-# diag ("service groups: " . join(', ', map { $_->servicegroup_name } @servicegroups));
-my $svcgroup1
-    = ( grep { $_->servicegroup_name eq 'svcgroup1' } @servicegroups )[0];
+ok( defined($linux_servers), "Found linux-servers in configuration" );
 
-ok( defined($svcgroup1), "Found servicegroup1 in configuration" );
+# make sure linux-servers has 1 members, which is a host
 
-# make sure svcgroup1 has 3 members, each of which is a host/service pair
+my $host_members = $linux_servers->members();
+ok( scalar(@$host_members) == 1, "linux-servers should have 1 member" );
 
-my $svc_members = $svcgroup1->members();
-ok( scalar(@$svc_members) == 3, "Servicegroup1 should have 3 members" );
-
-# diag ("svcgroup1 members: " . join(', ', map { "[" . join(", ", @{$_} ) . "]" } @$svc_members));
+# diag ("linux-servers members: " . join(', ', map { "[" . join(", ", @{$_} ) . "]" } @$host_members));
 
 {
 
@@ -71,16 +69,13 @@ ok( scalar(@$svc_members) == 3, "Servicegroup1 should have 3 members" );
         my $element = shift;
         my $msg     = shift;
 
-        ok( scalar(@$element) == 2, $msg . " did not have 2 entries" );
-        ok( ref( $element->[0] ) eq 'Nagios::Host',
-            $msg . " index 0 was not a Nagios::Host"
-        );
-        ok( ref( $element->[1] ) eq 'Nagios::Service',
-            $msg . " index 1 was not a Nagios::Host"
+        ok( ref( $element ) eq 'Nagios::Host',
+            $msg . " was not a Nagios::Host"
         );
     }
 
-    checkelement( $svc_members->[0], "Servicegroup1 first entry" );
-    checkelement( $svc_members->[1], "Servicegroup1 second entry" );
-    checkelement( $svc_members->[2], "Servicegroup1 third entry" );
+    checkelement( $host_members->[0], "linux-servers first entry" );
 }
+
+my @servicegroups = $cf->list_servicegroups();
+ok( scalar(@servicegroups) == 0, "\$parser->list_servicegroups()" );
