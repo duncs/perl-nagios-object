@@ -76,7 +76,7 @@ ok( scalar(@$svc_members) == 3, "Servicegroup1 should have 3 members" );
             $msg . " index 0 was not a Nagios::Host"
         );
         ok( ref( $element->[1] ) eq 'Nagios::Service',
-            $msg . " index 1 was not a Nagios::Host"
+            $msg . " index 1 was not a Nagios::Service"
         );
     }
 
