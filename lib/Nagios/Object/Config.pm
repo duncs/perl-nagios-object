@@ -24,6 +24,7 @@ use Nagios::Object qw(:all %nagios_setup);
 use Scalar::Util qw(blessed);
 use File::Basename qw(dirname);
 use File::Find qw(find);
+use Nagios::Template;
 use Symbol;
 use Carp;
 
@@ -537,8 +538,9 @@ sub resolve {
         && defined $object->{use}
         && !exists $object->{_use} )
     {
-        my $template = $self->find_object( $object->use, ref $object );
-        $object->{_use} = $template;
+	$object->{_use} = new Nagios::Template(map {
+	    $self->find_object( $_, ref $object );
+	} split /\s*,\s*/, $object->use);
     }
 
     1;

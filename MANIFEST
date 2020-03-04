@@ -10,6 +10,7 @@ lib/Nagios/Config/File.pm
 lib/Nagios/Object.pm
 lib/Nagios/Object/Config.pm
 lib/Nagios/StatusLog.pm
+lib/Nagios/Template.pm
 MANIFEST
 MANIFEST.SKIP
 META.yml
@@ -46,6 +47,8 @@ t/nagios3config.t
 t/nagios4config.t
 t/nestedtemplates.cfg
 t/nestedtemplates.t
+t/multipletemplates.cfg
+t/multipletemplates.t
 t/sample-config-bigger.cfg
 t/sample-config-minimal.cfg
 t/sample-config-v3.cfg
