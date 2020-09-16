@@ -23,3 +23,8 @@ is($host->active_checks_enabled, 1, 'attribute defined in first parent template'
 is(Dumper([$host->notification_options]), q{[['d','u','r']]},
    'attribute defined in second parent template');
 
+$host = $config->find_object('linuxserver2','Nagios::Host');
+is(Dumper([$host->hostgroups]), q{[['all-servers','linux-servers','web-servers','one']]},
+    'multiple additive inheritance');
+
+is($host->alias, undef, 'undefined attribute');

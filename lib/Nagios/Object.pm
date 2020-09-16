@@ -855,10 +855,13 @@ sub _set ($ $ $) {
         $self->_validate( $key, $value, @{ $vf->{$key} } );
     }
 
-    # Nagios allows the usage of a '+' sign. This breaks member lists.
-    # Ignore the '+' sign completely for now.
+    # Nagios allows the usage of a '+' sign, meaning additive inheritance.
+    # Strip it off lest it breaks member lists, and store the attribute in
+    # _additive hash for eventual use in the "get" accessor (created in the
+    # _make_method below).
     if ( ref $vf->{$key}[0] eq 'ARRAY' && $value =~/^\+(.+)$/ ) {
         $value = $1;
+	$self->{_additive}{$key} = 1;
     }
 
     if ( ref $vf->{$key}[0] eq 'ARRAY' && $value =~ /,/ ) {
@@ -1064,18 +1067,30 @@ GENESIS: {
             my $self  = shift;
             my $value = $self->{$method};
 
-            if ( defined $value || $method eq 'use' ) {
+	    if ( $method eq 'use' ) {
+		return $value
+	    }
+            if ( defined $value && !$self->{_additive}{$method} ) {
                 return $value;
             }
             else {
                 my $template = $self->template;
                 if ( $template && $template->can($method) ) {
-                    return $template->$method;
+		    return _append($template->$method, $value);
                 }
             }
-            return undef;
+            return $value;
         };    # end of anonymous "get" subroutine
     }
+}
+
+sub _append {
+    my ($a, $b) = @_;
+    return $b unless defined $a;
+    return $a unless defined $b;
+    $a = [ $a ] unless ref($a) eq 'ARRAY';
+    $b = [ $b ] unless ref($b) eq 'ARRAY';
+    [ @$a, @$b ]
 }
 
 sub DESTROY { }

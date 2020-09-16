@@ -28,13 +28,16 @@ sub AUTOLOAD {
     my $self = shift;
     $AUTOLOAD =~ s/(?:(.*)::)?(.+)//;
     my ($p, $m) = ($1, $2);
+    my $has_attr;
     foreach my $obj ($self->objects) {
 	if ($obj->can($m)) {
+	    $has_attr = 1;
 	    if (defined(my $v = $obj->${\$m}(@_))) {
 		return $v;
 	    }
 	}
     }
+    return if $has_attr;
     croak "Can't locate object method \"$m\" via package \"$p\"";
 }
 
