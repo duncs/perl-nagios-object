@@ -27,6 +27,8 @@ t/60flexible-attributes1.cfg
 t/60flexible-attributes2.cfg
 t/70status.dat
 t/70status.t
+t/74status.dat
+t/74status.t
 t/98nagios-sample-config.t
 t/99config-extend.t
 t/continuation_lines.t
