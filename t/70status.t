@@ -45,7 +45,7 @@ is_deeply( $admin2, {
     modified_service_attributes => 0,
     service_notification_period => "24x7",
     service_notifications_enabled => 1,
-    }, "Attributes for admin right" );
+    }, "Attributes for admin2 right" );
 
 
 my $host = $log->host("doesnt_exist_1");
