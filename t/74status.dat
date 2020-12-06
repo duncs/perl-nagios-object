@@ -54,65 +54,65 @@ programstatus {
 	}
 
 hoststatus {
-	host_name=localhost
-	modified_attributes=0
-	check_command=check-host-alive
-	check_period=24x7
-	notification_period=workhours
+	host_name=doesnt_exist_1
+	modified_attributes=1
+	check_command=check_host_15!-H $HOSTADDRESS$ -t 3 -w 500.0,80% -c 1000.0,100%
+	check_period=
+	notification_period=24x7
 	importance=0
-	check_interval=5.000000
+	check_interval=0.000000
 	retry_interval=1.000000
 	event_handler=
 	has_been_checked=1
-	should_be_scheduled=1
-	check_execution_time=0.109
-	check_latency=7.156
+	should_be_scheduled=0
+	check_execution_time=3.186
+	check_latency=0.067
 	check_type=0
-	current_state=0
-	last_hard_state=0
-	last_event_id=18
+	current_state=2
+	last_hard_state=2
+	last_event_id=24
 	current_event_id=31
-	current_problem_id=0
-	last_problem_id=1
-	plugin_output=PING OK - Packet loss = 0%, RTA = 0.03 ms
+	current_problem_id=18
+	last_problem_id=0
+	plugin_output=CRITICAL - 192.168.50.10: rta nan, lost 100% with {}
 	long_plugin_output=
-	performance_data=rta=0.025000ms;3000.000000;5000.000000;0.000000 pl=0%;80;100;0
-	last_check=1543912276
-	next_check=1543912576
+	performance_data=rta=0.000ms;500.000;1000.000;0; pl=100%;80;100;;
+	last_check=1233216743
+	next_check=0
 	check_options=0
 	current_attempt=1
-	max_attempts=10
+	max_attempts=2
 	state_type=1
-	last_state_change=1540388616
-	last_hard_state_change=1540388616
-	last_time_up=1543912276
-	last_time_down=1540388616
-	last_time_unreachable=0
-	last_notification=1540388616
-	next_notification=0
+	last_state_change=1233216701
+	last_hard_state_change=1233216701
+	last_time_up=1231947413
+	last_time_down=1231947569
+	last_time_unreachable=1231947633
+	last_notification=1233911011
+	next_notification=1233914611
 	no_more_notifications=0
-	current_notification_number=0
-	current_notification_id=3
+	current_notification_number=46
+	current_notification_id=553
 	notifications_enabled=1
 	problem_has_been_acknowledged=0
 	acknowledgement_type=0
 	active_checks_enabled=1
 	passive_checks_enabled=1
-	event_handler_enabled=1
+	event_handler_enabled=0
 	flap_detection_enabled=1
 	process_performance_data=1
-	obsess=1
-	last_update=1543912399
+	obsess=0
+	last_update=1233914050
 	is_flapping=0
 	percent_state_change=0.00
 	scheduled_downtime_depth=0
 	}
 
 servicestatus {
-	host_name=localhost
-	service_description=PING
-	modified_attributes=0
-	check_command=check_ping!100.0,20%!500.0,60%
+	host_name=doesnt_exist_1
+	service_description=TCP/IP
+	modified_attributes=1
+	check_command=check_icmp!-H $HOSTADDRESS$ -w 100.0,20% -c 500.0,60%
 	check_period=24x7
 	notification_period=24x7
 	importance=0
@@ -121,29 +121,29 @@ servicestatus {
 	event_handler=
 	has_been_checked=1
 	should_be_scheduled=1
-	check_execution_time=4.003
-	check_latency=0.000
+	check_execution_time=3.677
+	check_latency=0.218
 	check_type=0
-	current_state=0
-	last_hard_state=0
-	last_event_id=8
-	current_event_id=36
-	current_problem_id=0
-	last_problem_id=5
+	current_state=2
+	last_hard_state=2
+	last_event_id=0
+	current_event_id=23
+	current_problem_id=17
+	last_problem_id=0
 	current_attempt=1
-	max_attempts=4
+	max_attempts=3
 	state_type=1
-	last_state_change=1540388774
-	last_hard_state_change=1540388774
-	last_time_ok=1543912391
+	last_state_change=1233216735
+	last_hard_state_change=1233216735
+	last_time_ok=1231947411
 	last_time_warning=0
 	last_time_unknown=0
-	last_time_critical=1540388774
-	plugin_output=PING OK - Packet loss = 0%, RTA = 0.06 ms
-	long_plugin_output=
-	performance_data=rta=0.059000ms;100.000000;500.000000;0.000000 pl=0%;20;60;0
-	last_check=1543912391
-	next_check=1543912691
+	last_time_critical=1233914007
+	plugin_output=CRITICAL - 192.168.50.10: rta nan, lost 100%
+	long_plugin_output=IOS (tm) 7200 Software (C7200-P-M), Version 12.2(14)S5, EARLY DEPLOYMENT RELEASE SOFTWARE (fc2)\nTAC Support: http://www.cisco.com/tac\nCopyright (c) 1986-2003 by cisco Systems, Inc.\nCompiled Fri 26-Sep-03 1\n
+	performance_data=rta=0.000ms;100.000;500.000;0; pl=100%;20;60;;
+	last_check=1233914007
+	next_check=1233914307
 	check_options=0
 	current_notification_number=0
 	current_notification_id=0
@@ -158,23 +158,35 @@ servicestatus {
 	acknowledgement_type=0
 	flap_detection_enabled=1
 	process_performance_data=1
-	obsess=1
-	last_update=1543912399
+	obsess=0
+	last_update=1233914050
 	is_flapping=0
 	percent_state_change=0.00
 	scheduled_downtime_depth=0
 	}
 
 contactstatus {
-	contact_name=nagiosadmin
+	contact_name=admin
 	modified_attributes=0
 	modified_host_attributes=0
 	modified_service_attributes=0
 	host_notification_period=24x7
 	service_notification_period=24x7
-	last_host_notification=1543417399
-	last_service_notification=1543912392
+	last_host_notification=0
+	last_service_notification=0
 	host_notifications_enabled=1
 	service_notifications_enabled=1
 	}
 
+contactstatus {
+	contact_name=admin2
+	modified_attributes=0
+	modified_host_attributes=0
+	modified_service_attributes=0
+	host_notification_period=24x7
+	service_notification_period=24x7
+	last_host_notification=1
+	last_service_notification=0
+	host_notifications_enabled=1
+	service_notifications_enabled=1
+	}
