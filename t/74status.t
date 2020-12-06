@@ -72,7 +72,7 @@ is_deeply( $hostattrs, {
          'flap_detection_enabled' => 1,
          'has_been_checked' => 1,
          'host_name' => 'doesnt_exist_1',
-         'importance' => 0,
+         'importance' => 0, # New for Nagios 4
          'is_flapping' => 0,
          'last_check' => 1233216743,
          'last_event_id' => 24,
@@ -94,7 +94,7 @@ is_deeply( $hostattrs, {
          'notification_period' => '24x7',
          'notifications_enabled' => 1,
 #         'obsess_over_host' => 0,
-         'obsess' => 0,
+         'obsess' => 0, # New for Nagios 4
          'passive_checks_enabled' => 1,
          'percent_state_change' => "0.00",
          'performance_data' => 'rta=0.000ms;500.000;1000.000;0; pl=100%;80;100;;',
@@ -132,7 +132,7 @@ is_deeply( $serviceattrs, {
             'flap_detection_enabled' => 1,
             'has_been_checked' => 1,
             'host_name' => 'doesnt_exist_1',
-            'importance' => 0,
+            'importance' => 0, # New for Nagios 4
             'is_flapping' => 0,
             'last_check' => 1233914007,
             'last_event_id' => 0,
@@ -155,7 +155,7 @@ is_deeply( $serviceattrs, {
             'notification_period' => '24x7',
             'notifications_enabled' => 1,
 #            'obsess_over_service' => 0,
-            'obsess' => 0,
+            'obsess' => 0, # New for Nagios 4
             'passive_checks_enabled' => 1,
             'percent_state_change' => "0.00",
             'performance_data' => 'rta=0.000ms;100.000;500.000;0; pl=100%;20;60;;',
