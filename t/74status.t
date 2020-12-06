@@ -32,20 +32,20 @@ is_deeply( $admin_contact, {
     service_notifications_enabled => 1,
     }, "Attributes for admin right" );
 
-#my $admin2 = $log->contact("admin2");
-#isa_ok( $admin2, "Nagios::Contact::Status");
-#is_deeply( $admin2, {
-#    contact_name => "admin2",
-#    host_notification_period => "24x7",
-#    host_notifications_enabled => 1,
-#    last_host_notification => 1,
-#    last_service_notification => 0,
-#    modified_attributes => 0,
-#    modified_host_attributes => 0,
-#    modified_service_attributes => 0,
-#    service_notification_period => "24x7",
-#    service_notifications_enabled => 1,
-#    }, "Attributes for admin2 right" );
+my $admin2 = $log->contact("admin2");
+isa_ok( $admin2, "Nagios::Contact::Status");
+is_deeply( $admin2, {
+    contact_name => "admin2",
+    host_notification_period => "24x7",
+    host_notifications_enabled => 1,
+    last_host_notification => 1,
+    last_service_notification => 0,
+    modified_attributes => 0,
+    modified_host_attributes => 0,
+    modified_service_attributes => 0,
+    service_notification_period => "24x7",
+    service_notifications_enabled => 1,
+    }, "Attributes for admin2 right" );
 
 
 my $host = $log->host("doesnt_exist_1");
