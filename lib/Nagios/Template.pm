@@ -17,7 +17,7 @@ sub can {
 	return $s;
     }
     foreach my $obj ($self->objects) {
-	if ($obj->can($meth)) {
+	if (defined($obj) && $obj->can($meth)) {
 	    return $obj;
 	}
     }
@@ -30,7 +30,7 @@ sub AUTOLOAD {
     my ($p, $m) = ($1, $2);
     my $has_attr;
     foreach my $obj ($self->objects) {
-	if ($obj->can($m)) {
+	if (defined($obj) && $obj->can($m)) {
 	    $has_attr = 1;
 	    if (defined(my $v = $obj->${\$m}(@_))) {
 		return $v;
@@ -40,6 +40,8 @@ sub AUTOLOAD {
     return if $has_attr;
     croak "Can't locate object method \"$m\" via package \"$p\"";
 }
+
+sub DESTROY {}
 
 1;
 
